@@ -1,48 +1,73 @@
 # AWEWEBOS
 
-AWEWEBOS is a local-first web operating environment for the AWE ecosystem. It has a browser-based desktop shell, an installable PWA, and an experimental Tauri native desktop host.
+AWEWEBOS is a **browser-based Web OS environment** with a desktop, taskbar/dock, Start menu, application windows, and a user-selected local workspace. It is not a bootable kernel and does not replace Windows, Linux, macOS, or Android.
 
-## Ways to run it
+## Run it
 
-- **Website:** publish the repository root using GitHub Pages.
-- **PWA:** visit the HTTPS site and choose Install app / Add to Home Screen. Website and installed PWA on the same origin generally share browser storage and service-worker scope.
-- **Native desktop:** the Tauri wrapper can be built for Windows and Linux by the `.github/workflows/native-build.yml` workflow. The native wrapper is an application, not a bootable operating system.
+- **Web:** publish this repository root with GitHub Pages and open the HTTPS URL in a recent Chromium-based browser.
+- **PWA:** use the browser's Install / Add to Home Screen option. The app manifest and service worker provide an installable shell and offline caching of the core UI.
+- **Native wrapper:** the Tauri workflows can package the web environment as a desktop application. That is still a native app containing a Web OS interface, not a bootable operating system.
 
-## Current features
+## Desktop and built-in apps
 
-- Desktop shell, app launcher/dock, movable/minimizable/maximizable windows
-- PWA manifest and offline shell cache
-- Local notes and backup import/export
-- Browser folder picker on supported browsers with explicit permission
-- AWESTORE local HTML mini-app import, on-device storage and sandboxed launch
-- AWE Messenger experimental direct WebRTC data channel; peers exchange offer/answer JSON manually
-- Google Translate widget and best-effort text translation
-- Developer Studio with sandboxed HTML preview
-- AWE ecosystem links, ONECOIN demo balance, AWENET node preference prototype and diagnostics
+The integrated desktop includes a top menu bar, Start menu with application search, dock/taskbar, desktop shortcuts, notifications, right-click context menu, draggable/resizable/minimizable/maximizable windows, and keyboard shortcuts.
 
-## Important limits — please read
+Built-in applications:
+- **Terminal:** commands such as `help`, `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `open`, and `install`, backed by the selected workspace.
+- **Files:** browse the AWEWEBOS workspace and manage real files.
+- **Editor:** edit and save text files.
+- **Notes:** create and keep notes in the workspace.
+- **Calculator:** local calculations.
+- **Paint:** draw on a canvas.
+- **Image Viewer:** view supported image files.
+- **Messenger:** experimental local messaging between AWEWEBOS tabs on the same browser origin. It is not a production internet messenger and has no server, account discovery, voice calls, or push notifications.
+- **App Store:** install/uninstall bundled mini-apps into the workspace.
+- **Themes and Settings:** change appearance and manage system preferences.
 
-This is not a bootable OS and does not include a Linux/Windows/Android kernel. The Tauri target is a native desktop wrapper around the web environment. Full OS integration, boot startup, unrestricted disk/display enumeration, native background node services and privileged device control require OS-level code and explicit user permissions.
+Bundled Store apps include live weather via Open-Meteo (internet required), clock, calendar, Snake, Tetris, Minesweeper, and a runtime monitor. The runtime monitor reports actual AWEWEBOS window/app counts and browser storage estimates; browser security prevents this web app from reading host CPU/RAM utilization reliably, so those metrics are marked unavailable rather than fabricated.
 
-The WebRTC messenger is an experimental peer-to-peer prototype. It has no contact discovery, groups, push notifications, voice/video, offline delivery or guaranteed NAT traversal. Manual signaling avoids a hosted signaling server, but some networks still require a TURN relay. Do not treat it as a production-secure messenger without a threat model and security review.
+## Install to a selected folder
 
-Imported HTML apps are untrusted code. They run in a restricted iframe, but users should only install apps from trusted sources. AWESTORE is currently a local library, not a global package registry. It has no signed package verification or payments.
+On first run, select a folder you control. The installer creates a workspace structure and stores actual files in that folder:
 
-AWENET transport, AWEID resolution, a real ONECOIN ledger, live multi-user sync, production store payments and production voice/video calling are not implemented as live services. The ONECOIN balance is a demo only and has no monetary value.
+```text
+AWEWEBOS workspace/
+├── System/
+│   ├── config.json
+│   ├── users.json
+│   └── Runtime/
+│       ├── index.html
+│       └── manifest.webmanifest
+├── Apps/
+│   ├── catalog.json
+│   └── <app-id>/
+│       ├── manifest.json
+│       ├── package.json
+│       ├── app.js
+│       └── README.txt
+├── Users/user/
+│   ├── Desktop/
+│   ├── Documents/
+│   ├── Downloads/
+│   ├── Pictures/
+│   └── Music/
+├── Themes/
+└── Settings/preferences.json
+```
 
-Translation requires internet access and may send text to Google or another third party. Do not translate confidential content through third-party services. The direct translation endpoint is unofficial; production use needs a supported API and applicable terms.
+The App Store writes package metadata and the bundled app's mount code to the selected folder; installed apps run inside the trusted AWEWEBOS web runtime. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
 
-## Build native desktop
+The folder handle is stored in IndexedDB when the browser supports it. On later visits, the app attempts to reconnect when permission is already granted. If permission was revoked or the browser requires a user gesture, use **Reconnect previous installation** and approve the browser's permission prompt. Browser security means permission cannot be guaranteed to remain granted forever.
 
-The native workflow installs the Tauri CLI, generates app icons, and builds Windows and Linux bundles. Open GitHub Actions and download the `awewebos-windows` or `awewebos-linux` artifact after the workflow succeeds. Build artifacts are not available until CI completes successfully.
+## Storage and security boundaries
 
-## Development
+- The selected folder uses the browser File System Access API and requires explicit user selection and read/write permission. Support varies by browser and platform.
+- Browser-local state and selected-folder files are different storage layers; back up important files separately.
+- Imported or third-party app code should be treated as untrusted. This Store currently installs bundled apps; it is not yet a global signed package registry.
+- Weather requires internet access. Messenger currently works only between tabs sharing the same browser origin and channel; it is not a remote multi-user service.
+- A browser app cannot boot a computer, format a disk, control unrestricted hardware, run native background services, or guarantee access after permissions are revoked.
+- AWENET transport, production AWEID resolution, a real ONECOIN ledger, global store payments, and production voice/video messaging are not implemented by this Web OS shell.
 
-Serve the root over HTTP/HTTPS, not `file://`, to test service workers and PWA installability. Browser APIs differ by browser and OS. Native builds require the Rust toolchain and platform-specific dependencies.
+## Development and CI
 
-
-## Persistent Web OS workspace
-
-The Files application can initialize a directory selected by the user through the browser's File System Access API (supported mainly by Chromium-based desktop browsers over HTTPS). First-run setup can initialize the selected folder immediately. It creates a non-destructive AWEWEBOS folder structure (System, Apps, Users, Desktop, Documents, Downloads, Pictures, Videos, Music, Shared, and Trash) and stores real files there, including system metadata, an app catalog, starter documents, and copies of the web runtime in System/Runtime/.
-
-The file manager supports browsing folders, creating folders and text files, opening/editing/saving small text files, uploading files into the selected folder, and deleting selected items. Deletion is permanent. Initialization creates missing starter files without replacing existing user documents; it refreshes AWEWEBOS runtime assets and system metadata. Choose a folder you control rather than the root of a drive. This feature never formats a disk and does not install native binaries or grant privileged OS access. For security reasons, browser access requires a user gesture and explicit permission. See the [MDN File System Access API documentation](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API).
+Serve the project over HTTPS or localhost. Service workers and PWA installation do not work from ordinary `file://` pages. Check [GitHub Actions](https://github.com/ARARAT33/AWEWEBOS/actions) before treating a commit as successfully deployed or packaged. Native build artifacts are available only after the corresponding workflow completes successfully.
