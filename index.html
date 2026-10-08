@@ -1826,7 +1826,7 @@ const FID = (() => {
     await VFS.mkdir(dir);
     let target = dir + '/' + name;
     if (await VFS.exists(target)) target = dir + '/' + Date.now() + '-' + name;
-    await FS.writeFile(target, new Blob([bytes], {type: outer.type || 'application/octet-stream'}));
+    await VFS.write(target, new Blob([bytes], {type: outer.type || 'application/octet-stream'}));
     Bus.emit('fs.change');
     Notif.push('FID Import', 'Saved to Downloads/' + target.split('/').pop(), 4500, '⇩');
     return target;
@@ -1999,7 +1999,7 @@ Apps.registerBuiltin('editor', {
     } });
     const status = U.mk('div',{style:{padding:'5px 12px',borderTop:'1px solid var(--border)',fontSize:'10px',color:'var(--fg-2)',fontFamily:'var(--font-mono)'}});
     body.append(tb, ta, status);
-    function updateStatus(){const before=ta.value.slice(0,ta.selectionStart);const line=before.split('\n').length;const col=before.length-(before.lastIndexOf('\\n')+1)+1;const words=(ta.value.trim().match(/\\S+/g)||[]).length;status.textContent='Line '+line+' · Column '+col+' · '+words+' words · '+ta.value.length+' chars';}
+    function updateStatus(){const before=ta.value.slice(0,ta.selectionStart);const line=before.split('\n').length;const col=before.length-(before.lastIndexOf('\n')+1)+1;const words=(ta.value.trim().match(/\S+/g)||[]).length;status.textContent='Line '+line+' · Column '+col+' · '+words+' words · '+ta.value.length+' chars';}
     ta.addEventListener('input',updateStatus);ta.addEventListener('keyup',updateStatus);ta.addEventListener('click',updateStatus);
     bFind.onclick=()=>{const needle=prompt('Find text:');if(needle===null||!needle)return;const start=ta.selectionEnd;let at=ta.value.indexOf(needle,start);if(at<0)at=ta.value.indexOf(needle);if(at<0){Notif.push('Editor','Text not found.');return;}ta.focus();ta.setSelectionRange(at,at+needle.length);const replacement=prompt('Replace selected text with (Cancel to only find):',needle);if(replacement!==null){ta.setRangeText(replacement,at,at+needle.length,'select');updateStatus();}};
     (async () => {
