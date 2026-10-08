@@ -39,6 +39,7 @@ jobs:
           npm install
           cargo install cargo-ndk --locked
       - name: Prepare web assets and icons
+        shell: bash
         run: |
           mkdir -p dist
           cp index.html manifest.webmanifest sw.js icon.svg dist/
