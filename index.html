@@ -2337,6 +2337,7 @@ Apps.registerBuiltin('messenger', {
         <div id="messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
         <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;background:rgba(0,0,0,.2)">
           <input class="input" id="msgInput" placeholder="Type a message..." disabled style="flex:1">
+          <button class="btn" id="voiceBtn" disabled>🎙 Voice</button>
           <button class="btn primary" id="sendBtn" disabled>Send</button>
         </div>
       </div>
@@ -2347,6 +2348,7 @@ Apps.registerBuiltin('messenger', {
     const msgsEl = U.q('#messages');
     const inputEl = U.q('#msgInput');
     const sendEl = U.q('#sendBtn');
+    const voiceEl = U.q('#voiceBtn');
     const titleEl = U.q('#chatTitle');
     const meLabel = U.q('#meLabel');
     const nameInput = U.q('#nameInput');
@@ -2445,7 +2447,7 @@ Apps.registerBuiltin('messenger', {
           color: mine ? '#000' : 'var(--fg-0)',
           fontSize: '13px', lineHeight: '1.5', wordBreak: 'break-word',
         } }, [
-          U.mk('div', { text: m.text }),
+          (() => { if (m.audioUrl) { const a=U.mk('audio',{controls:true,src:m.audioUrl,style:{maxWidth:'260px',width:'100%'}}); return a; } return U.mk('div', { text: m.text || '' }); })(),
           U.mk('div', { style: { fontSize: '9px', opacity: '.6', marginTop: '4px', textAlign: 'right' },
             text: new Date(m.time).toLocaleTimeString().slice(0, 5) }),
         ]);
@@ -2473,6 +2475,41 @@ Apps.registerBuiltin('messenger', {
     }
     sendEl.onclick = send;
     inputEl.onkeydown = e => { if (e.key === 'Enter') send(); };
+    let voiceRecorder = null, voiceStream = null, voiceChunks = [], voiceTarget = null;
+    voiceEl.onclick = async () => {
+      if (voiceRecorder && voiceRecorder.state !== 'inactive') { voiceRecorder.stop(); return; }
+      if (!active) { Notif.push('Voice message','Select a contact first.'); return; }
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { Notif.push('Voice message','Audio recording is not supported in this browser.'); return; }
+      try {
+        voiceTarget = { ...active }; voiceChunks = [];
+        voiceStream = await navigator.mediaDevices.getUserMedia({audio:true});
+        voiceRecorder = new MediaRecorder(voiceStream);
+        voiceRecorder.ondataavailable = e => { if(e.data.size) voiceChunks.push(e.data); };
+        voiceRecorder.onstop = async () => {
+          try {
+            const blob = new Blob(voiceChunks,{type:voiceRecorder.mimeType||'audio/webm'});
+            if (blob.size > 1200000) { Notif.push('Voice message','Recording is over 1.2 MB. Try a shorter voice message.',3500); return; }
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const msg={id:U.uid(),from:me.id,fromName:me.name,to:voiceTarget.id,toName:voiceTarget.name,text:'Voice message',audioUrl:String(reader.result),time:Date.now()};
+                const key=convKey(me.id,voiceTarget.id),file='/home/user/Documents/.msgs-'+key+'.json';
+                let msgs=[];try{msgs=JSON.parse((await VFS.read(file))||'[]');}catch(e){}
+                msgs.push(msg);await VFS.write(file,JSON.stringify(msgs));
+                BC.postMessage({type:'msg',from:me,to:voiceTarget.id,msg});
+                if(active&&active.id===voiceTarget.id)await renderMsgs();
+                Notif.push('Voice message','Recorded and saved locally. Cross-tab delivery works only in this browser origin.',4000);
+              } catch(err) { Notif.push('Voice message failed',err.message,3500); }
+            };
+            reader.readAsDataURL(blob);
+          } finally {
+            voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+            voiceEl.textContent='🎙 Voice';voiceEl.classList.remove('danger');
+          }
+        };
+        voiceRecorder.start();voiceEl.textContent='■ Stop & Send';voiceEl.classList.add('danger');
+      } catch(e) { voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;Notif.push('Microphone unavailable',e.message,3500); }
+    };
 
     function announce() { BC.postMessage({ type: 'hello', user: { id: me.id, name: me.name } }); }
     BC.onmessage = async e => {
@@ -2485,6 +2522,13 @@ Apps.registerBuiltin('messenger', {
         onlinePeers.set(m.user.id, m.user);
         loadContacts();
       } else if (m.type === 'msg' && m.msg) {
+        if (m.msg.to === me.id && m.msg.from !== me.id) {
+          const key=convKey(me.id,m.msg.from),file='/home/user/Documents/.msgs-'+key+'.json';
+          try {
+            let incoming=JSON.parse((await VFS.read(file))||'[]');
+            if(!incoming.some(item=>item.id===m.msg.id)){incoming.push(m.msg);await VFS.write(file,JSON.stringify(incoming));}
+          } catch(err) { console.warn('Could not persist incoming message:',err); }
+        }
         const relevant = (m.msg.to === me.id && m.msg.from === active?.id) ||
                          (m.msg.from === me.id && m.msg.to === active?.id);
         if (relevant) await renderMsgs();
@@ -2503,7 +2547,7 @@ Apps.registerBuiltin('messenger', {
     const announceTimer = setInterval(announce, 5000);
     const contactsTimer = setInterval(loadContacts, 3000);
     loadContacts();
-    state.cleanup = () => { clearInterval(announceTimer); clearInterval(contactsTimer); BC.close(); };
+    state.cleanup = () => { clearInterval(announceTimer); clearInterval(contactsTimer); if(voiceRecorder&&voiceRecorder.state!=='inactive')voiceRecorder.stop();voiceStream?.getTracks().forEach(t=>t.stop());BC.close(); };
   },
 });
 
