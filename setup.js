@@ -14,12 +14,6 @@ function outside(e){if(!e.target.closest('#aweContextMenu'))hideContextMenu()}
 document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.code==='Space'){e.preventDefault();launcher()}if(e.key==='Escape')hideContextMenu()});
 
 if(!apps.some(a=>a[0]==='calculator'))apps.push(['calculator','🧮','Calculator'],['calendar','📅','Calendar']);
-const originalContent=window.content;
-window.content=function(id){
-if(id==='calculator')return '<h2>Calculator</h2><div class="card"><input id="calcDisplay" class="field" value="0" readonly aria-label="Calculator display"><div class="cards">'+['7','8','9','÷','4','5','6','×','1','2','3','−','0','.','=','+','C'].map(k=>'<button onclick="calcPress(&quot;'+k+'&quot;)">'+k+'</button>').join('')+'</div></div><p class="small muted">Runs locally on this device.</p>';
-if(id==='calendar')return '<h2>Calendar & reminders</h2><div class="card"><label>Date</label><input id="calDate" type="date" class="field" value="'+new Date().toISOString().slice(0,10)+'"><label>Event</label><input id="calTitle" class="field" placeholder="Reminder title"><button class="primary" onclick="addCalendarEvent()">Save reminder</button></div><div id="calendarEvents" class="list"></div><p class="small muted">Stored locally; no cloud sync.</p>';
-return originalContent(id);
-};
 window.calcPress=function(k){const d=document.getElementById('calcDisplay');if(!d)return;let v=d.value;if(k==='C'){d.value='0';return}if(k==='='){try{const e=v.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');if(!/^[0-9+*/(). -]+$/.test(e))throw 0;const n=Function('"use strict";return ('+e+')')();d.value=Number.isFinite(n)?String(n):'Error'}catch{d.value='Error'}return}d.value=(v==='0'||v==='Error')?k:v+k};
 window.addCalendarEvent=function(){const title=document.getElementById('calTitle').value.trim(),date=document.getElementById('calDate').value;if(!title||!date){toast('Choose a date and title');return}data.calendarEvents=data.calendarEvents||[];data.calendarEvents.push({id:crypto.randomUUID(),title,date});save();renderCalendarEvents();document.getElementById('calTitle').value='';toast('Reminder saved locally')};
 window.renderCalendarEvents=function(){const h=document.getElementById('calendarEvents');if(!h)return;h.innerHTML=(data.calendarEvents||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>'<div class="item"><span><b>'+esc(e.date)+'</b><br>'+esc(e.title)+'</span><button onclick="removeCalendarEvent(&quot;'+e.id+'&quot;)">Delete</button></div>').join('')||'<p class="muted">No reminders yet.</p>'};
