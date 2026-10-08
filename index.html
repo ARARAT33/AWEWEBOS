@@ -70,4 +70,4 @@ async function restoreSharedFolderHandle(){if(!('showDirectoryPicker'in window))
 function monitor(){/* Values are deliberately limited to APIs browsers expose. */}
 async function installPWA(){if(deferredPrompt){deferredPrompt.prompt();let r=await deferredPrompt.userChoice;toast(r.outcome==='accepted'?'Install accepted':'Install dismissed');deferredPrompt=null}else toast('Use browser menu → Install app / Add to Home Screen. HTTPS required.')}
 init();restoreSharedFolderHandle();
-</script><script src="./setup.js"></script></body></html>
+</script><script src="./webos-fs.js"></script><script src="./setup.js"></script></body></html>
