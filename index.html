@@ -1455,10 +1455,10 @@ const Start = (() => {
       .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
       .sort((a, b) => a.title.localeCompare(b.title));
     const groups = [
-      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser']],
+      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser','storage']],
       ['Productivity', ['editor','notes','calc','calendar','clock','contacts']],
       ['Creative', ['paint','viewer','media']],
-      ['Communication', ['messenger','contacts']],
+      ['Communication', ['messenger']],
       ['Games', ['snake','tetris','mines']],
       ['Other apps', []],
     ];
@@ -1987,20 +1987,25 @@ Apps.registerBuiltin('editor', {
     const bSave = U.mk('button', { class: 'btn primary', text: 'Save' });
     const bSaveAs = U.mk('button', { class: 'btn', text: 'Save as…' });
     const bFormat = U.mk('button', { class: 'btn', text: 'Format' });
+    const bFind = U.mk('button', { class: 'btn', text: 'Find / Replace' });
     const bPreview = U.mk('button', { class: 'btn', text: 'Preview' });
     const bClose = U.mk('button', { class: 'btn', text: 'Close' });
-    tb.append(fileLabel, bSave, bSaveAs, bFormat, bPreview, bClose);
+    tb.append(fileLabel, bSave, bSaveAs, bFormat, bFind, bPreview, bClose);
 
     const ta = U.mk('textarea', { spellcheck: 'false', style: {
       flex: '1', padding: '14px', background: '#0a0e17', color: '#e0f7ff',
       fontFamily: 'var(--font-mono)', fontSize: '13px', border: 'none',
       outline: 'none', resize: 'none', lineHeight: '1.6', width: '100%',
     } });
-    body.append(tb, ta);
-
+    const status = U.mk('div',{style:{padding:'5px 12px',borderTop:'1px solid var(--border)',fontSize:'10px',color:'var(--fg-2)',fontFamily:'var(--font-mono)'}});
+    body.append(tb, ta, status);
+    function updateStatus(){const before=ta.value.slice(0,ta.selectionStart);const line=before.split('\\n').length;const col=before.length-(before.lastIndexOf('\\n')+1)+1;const words=(ta.value.trim().match(/\\S+/g)||[]).length;status.textContent='Line '+line+' · Column '+col+' · '+words+' words · '+ta.value.length+' chars';}
+    ta.addEventListener('input',updateStatus);ta.addEventListener('keyup',updateStatus);ta.addEventListener('click',updateStatus);
+    bFind.onclick=()=>{const needle=prompt('Find text:');if(needle===null||!needle)return;const start=ta.selectionEnd;let at=ta.value.indexOf(needle,start);if(at<0)at=ta.value.indexOf(needle);if(at<0){Notif.push('Editor','Text not found.');return;}ta.focus();ta.setSelectionRange(at,at+needle.length);const replacement=prompt('Replace selected text with (Cancel to only find):',needle);if(replacement!==null){ta.setRangeText(replacement,at,at+needle.length,'select');updateStatus();}};
     (async () => {
       const c = await VFS.read(path);
       if (c !== null) ta.value = c;
+      updateStatus();
       state.setTitle('Editor · ' + path.split('/').pop());
     })();
 
@@ -2500,6 +2505,45 @@ Apps.registerBuiltin('messenger', {
     loadContacts();
     state.cleanup = () => { clearInterval(announceTimer); clearInterval(contactsTimer); BC.close(); };
   },
+});
+
+/* ---------- STORAGE & WORKSPACE ---------- */
+Apps.registerBuiltin('storage', {
+  title: 'Storage & Drives', icon: '▤', width: 760, height: 560, autoMax: true,
+  mount(body) {
+    body.style.padding='0';
+    const wrap=U.mk('div',{style:{padding:'18px',display:'flex',flexDirection:'column',gap:'12px',height:'100%',overflow:'auto'}});
+    const head=U.mk('div',{style:{display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}});
+    head.appendChild(U.mk('h2',{text:'Storage & Drives',style:{fontSize:'20px',flex:'1'}}));
+    const refresh=U.mk('button',{class:'btn primary',text:'Refresh'});const files=U.mk('button',{class:'btn',text:'Open Files'});head.append(refresh,files);
+    const cards=U.mk('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))',gap:'10px'}});
+    const list=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}});
+    const limitation=U.mk('div',{text:'Browser security only exposes folders you explicitly select. This view cannot enumerate or inspect every Windows/macOS/Linux disk automatically. Your chosen AWEWEBOS workspace is the mounted drive.',style:{padding:'12px',border:'1px solid var(--border)',borderRadius:'8px',color:'var(--fg-2)',fontSize:'11px',lineHeight:'1.6'}});
+    wrap.append(head,cards,limitation,U.mk('h3',{text:'Workspace root'}),list);body.appendChild(wrap);
+    files.onclick=()=>Apps.launch('files');refresh.onclick=load;
+    function card(title,value,sub){return U.mk('div',{style:{padding:'14px',border:'1px solid var(--border)',borderRadius:'10px',background:'rgba(0,0,0,.1)'}},[U.mk('div',{text:title,style:{fontSize:'11px',color:'var(--fg-2)'}}),U.mk('div',{text:value,style:{fontSize:'20px',fontWeight:'700',margin:'4px 0',wordBreak:'break-word'}}),U.mk('div',{text:sub,style:{fontSize:'10px',color:'var(--fg-3)' }})]);}
+    function fmt(n){if(!Number.isFinite(n))return '—';const units=['B','KB','MB','GB','TB'];let i=0;while(n>=1024&&i<units.length-1){n/=1024;i++;}return n.toFixed(i?2:0)+' '+units[i];}
+    async function load(){
+      cards.innerHTML='';list.innerHTML='';
+      cards.appendChild(card('Mounted workspace',FS.root?.name||'Not connected','User-selected folder'));
+      let filesCount=0,dirsCount=0,total=0,errors=0,visited=0;const maxEntries=3000;
+      async function walk(dir,rel=''){
+        for await(const [name,handle] of dir.entries()){
+          if(++visited>maxEntries)return;
+          if(handle.kind==='directory'){dirsCount++;if(dirsCount<500)await walk(handle,rel+'/'+name);}
+          else{filesCount++;try{total+=(await handle.getFile()).size;}catch(e){errors++;}}
+          if(!rel){const row=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'10px',padding:'9px 10px',border:'1px solid var(--border)',borderRadius:'7px'}});
+            row.append(U.mk('div',{text:handle.kind==='directory'?'📁':'📄'}),U.mk('div',{text:name,style:{flex:'1',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}),U.mk('div',{text:handle.kind==='directory'?'Folder': 'File',style:{fontSize:'10px',color:'var(--fg-2)'}}));list.appendChild(row);}
+        }
+      }
+      try{if(FS.root)await walk(FS.root);else list.appendChild(U.mk('div',{text:'Workspace not connected. Reconnect the installation first.'}));}catch(e){errors++;}
+      cards.append(card('Files',String(filesCount),'Files visible in workspace'),card('Folders',String(dirsCount),'Folders visible in workspace'),card('File sizes',fmt(total),'Sum of readable file sizes'));
+      if(visited>=maxEntries)list.appendChild(U.mk('div',{text:'Scan stopped at 3,000 entries to keep the UI responsive.',style:{color:'var(--fg-2)',padding:'8px'}}));
+      if(errors)list.appendChild(U.mk('div',{text:errors+' entries could not be read.',style:{color:'#f59e0b',padding:'8px'}}));
+      try{const q=await navigator.storage?.estimate?.();if(q){cards.appendChild(card('Browser storage used',fmt(q.usage||0),'Current browser origin'));cards.appendChild(card('Browser storage quota',fmt(q.quota||0),'Estimate, not the whole disk'));}}catch(e){}
+    }
+    load();
+  }
 });
 
 /* ---------- CONTACTS ---------- */
@@ -3516,6 +3560,7 @@ async function launchOS() {
     { app: 'contacts', name: 'Contacts', ic: '♙' },
     { app: 'media', name: 'Media Studio', ic: '♫' },
     { app: 'browser', name: 'Browser', ic: '◎' },
+    { app: 'storage', name: 'Storage', ic: '▤' },
     { app: 'themes', name: 'Themes', ic: '◨' },
     { app: 'settings', name: 'Settings', ic: '⚙' },
   ]);
