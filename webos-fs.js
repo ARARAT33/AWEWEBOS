@@ -261,6 +261,7 @@
       if (id === 'files') queueMicrotask(mountFileManager);
     };
   }
+  window.connectAweFilesystem = function(handle){if(!handle)return;rootHandle=handle;stack=[{name:handle.name,handle}];if(typeof folder!=='undefined')folder=handle;renderExplorer();};
   window.awewebosRefreshFiles = renderExplorer;
   window.awewebosChooseWorkspace = chooseFolder;
 })();
