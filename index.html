@@ -922,6 +922,7 @@ const Kernel = (() => {
       wallpaper: 'aurora',
       volume: 0.7,
       notifSound: true,
+      appearance: 'dark',
     },
     installedApps: [],
   };
@@ -1007,6 +1008,20 @@ const Kernel = (() => {
     document.documentElement.style.setProperty('--accent-2', t[1]);
     const rgb = hexToRgb(t[0]);
     document.documentElement.style.setProperty('--accent-rgb', rgb);
+    const light = config.settings.appearance === 'light';
+    const vars = light ? {
+      '--bg-0':'#f4f6fb','--bg-1':'#ffffff','--bg-2':'#edf1f7','--bg-3':'#e2e8f0','--bg-4':'#d5deea',
+      '--fg-0':'#101827','--fg-1':'#334155','--fg-2':'#64748b','--fg-3':'#94a3b8',
+      '--border':'rgba(15,23,42,.12)','--border-strong':'rgba(15,23,42,.2)',
+      '--shadow':'0 8px 24px rgba(15,23,42,.12)','--shadow-lg':'0 20px 60px rgba(15,23,42,.2)'
+    } : {
+      '--bg-0':'#050608','--bg-1':'#0b0f19','--bg-2':'#111827','--bg-3':'#1a2233','--bg-4':'#232d42',
+      '--fg-0':'#f0f6fc','--fg-1':'#c9d5e3','--fg-2':'#8b9bb4','--fg-3':'#5a6a82',
+      '--border':'rgba(255,255,255,.08)','--border-strong':'rgba(255,255,255,.14)',
+      '--shadow':'0 8px 24px rgba(0,0,0,.5)','--shadow-lg':'0 20px 60px rgba(0,0,0,.7)'
+    };
+    Object.entries(vars).forEach(([key,value])=>document.documentElement.style.setProperty(key,value));
+    document.documentElement.style.colorScheme = light ? 'light' : 'dark';
   }
 
   function hexToRgb(hex) {
@@ -1287,6 +1302,9 @@ const Ctx = (() => {
         const n = prompt('Folder name:', 'New Folder');
         if (n) { await VFS.mkdir('/home/user/Desktop/' + n); Notif.push('Files', 'Created ' + n); Bus.emit('fs.change'); }
       } },
+      { label: 'Open Contacts', icon: '♙', action: () => Apps.launch('contacts') },
+      { label: 'Open Media Studio', icon: '♫', action: () => Apps.launch('media') },
+      { label: 'Open Browser', icon: '◎', action: () => Apps.launch('browser') },
       { sep: true },
       { label: 'Change Wallpaper', icon: '◨', action: () => cycleWallpaper() },
       { label: 'Close All Windows', icon: '✕', action: () => WM.closeAll() },
@@ -1891,6 +1909,7 @@ Apps.registerBuiltin('files', {
             e.preventDefault(); e.stopPropagation();
             Ctx.show(e.clientX, e.clientY, [
               { label: 'Open', action: () => el.ondblclick() },
+              { label: 'Copy path', icon: '▣', action: async () => { const p = (cur === '/' ? '/' : cur + '/') + it.name; try { await navigator.clipboard.writeText(p); Notif.push('Files','Path copied: '+p); } catch(e) { prompt('File path:',p); } } },
               { label: 'Share - FID', icon: '⇧', action: () => FID.shareHandle(it.handle, it.name) },
               { label: 'Rename', icon: '✎', action: async () => {
                 const next = prompt('New name:', it.name);
@@ -2005,7 +2024,7 @@ Apps.registerBuiltin('editor', {
       } else if (/\.html?$/i.test(path)) {
         ta.value = ta.value.replace(/>\s*</g, '>\n<').replace(/\n{3,}/g, '\n\n');
       } else {
-        ta.value = ta.value.split('\n').map(line => line.replace(/[ \t]+$/g, '')).join('\\n');
+        ta.value = ta.value.split('\n').map(line => line.replace(/[ \t]+$/g, '')).join('\n');
       }
     };
     bPreview.onclick = () => {
@@ -3248,7 +3267,12 @@ Apps.registerBuiltin('settings', {
       return g;
     }
 
-    const g1 = grp('Theme');
+    const g1 = grp('Appearance');
+    const appearanceRow = U.mk('div', { class: 'settings-item' });
+    const appearanceSel = U.mk('select');
+    [['dark','Dark'],['light','Light']].forEach(([value,label])=>{const o=U.mk('option',{value,text:label});if((Kernel.config.settings.appearance||'dark')===value)o.selected=true;appearanceSel.appendChild(o);});
+    appearanceSel.onchange=()=>Kernel.setSetting('appearance',appearanceSel.value);
+    appearanceRow.append(U.mk('div',{text:'Light / dark mode'}),appearanceSel);g1.appendChild(appearanceRow);
     const themeRow = U.mk('div', { class: 'settings-item' });
     const tSel = U.mk('select');
     THEMES_LIST.forEach(t => {
