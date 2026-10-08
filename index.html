@@ -1921,7 +1921,7 @@ Apps.registerBuiltin('files', {
                   const to = cur === '/' ? '/' + next : cur + '/' + next;
                   if (it.type === 'dir') { Notif.push('Files', 'Folder rename is not supported by this browser API; move it manually.', 3500); return; }
                   const bytes = await it.handle.getFile();
-                  await FS.writeFile(to, bytes);
+                  await VFS.write(to, bytes);
                   await VFS.remove(from);
                   await render();
                 } catch (err) { Notif.push('Rename failed', err.message, 3500); }
