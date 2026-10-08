@@ -36,7 +36,8 @@ On first run, select a folder you control. The installer creates a workspace str
 ```text
 AWEWEBOS workspace/
 ├── System/
-│   ├── device.json\n│   ├── config.json
+│   ├── device.json
+│   ├── config.json
 │   ├── users.json
 │   └── Runtime/
 │       ├── index.html
