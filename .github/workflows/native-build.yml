@@ -36,6 +36,7 @@ jobs:
       - name: Install frontend tools
         run: npm install
       - name: Prepare web assets and icons
+        shell: bash
         run: |
           mkdir -p dist
           cp index.html manifest.webmanifest sw.js icon.svg dist/
