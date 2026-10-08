@@ -1757,7 +1757,7 @@ const FID = (() => {
     let binary = '';
     const chunk = 0x8000;
     for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-    return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
   }
   function decodeUtf8(value) {
     const base = value.replace(/-/g, '+').replace(/_/g, '/');
@@ -2003,9 +2003,9 @@ Apps.registerBuiltin('editor', {
         try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); }
         catch (e) { Notif.push('Format', 'Invalid JSON: ' + e.message, 3500); }
       } else if (/\.html?$/i.test(path)) {
-        ta.value = ta.value.replace(/>\s*</g, '>\\n<').replace(/\\n{3,}/g, '\\n\\n');
+        ta.value = ta.value.replace(/>\s*</g, '>\n<').replace(/\n{3,}/g, '\n\n');
       } else {
-        ta.value = ta.value.split('\\n').map(line => line.replace(/[ \\t]+$/g, '')).join('\\n');
+        ta.value = ta.value.split('\n').map(line => line.replace(/[ \t]+$/g, '')).join('\\n');
       }
     };
     bPreview.onclick = () => {
@@ -3031,7 +3031,7 @@ Apps.registerBuiltin('store', {
       const html=prompt('Paste the HTML app source (self-contained HTML/CSS/JS):','<!doctype html><html><body style="font-family:system-ui;padding:20px"><h1>Hello from AWEWEBOS</h1><button onclick="document.querySelector(\'h1\').textContent=\'It works!\'">Test</button></body></html>');if(!html)return;
       if(html.length>180000) return Notif.push('App Hub','Mini-app source is limited to 180 KB for portable AppIDs.',4000);
       const pack={format:'AWEAPP1',name:name.slice(0,80),description:description.slice(0,240),version:'1.0.0',author:Kernel.config.user.id,createdAt:Date.now(),html};
-      const enc=btoa(unescape(encodeURIComponent(JSON.stringify(pack)))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/g,'');
+      const enc=btoa(unescape(encodeURIComponent(JSON.stringify(pack)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');
       const appId='AWEAPP1-'+enc;
       await VFS.mkdir('/home/user/Documents/PublishedApps');
       await VFS.write('/home/user/Documents/PublishedApps/'+name.replace(/[^a-z0-9._-]/gi,'_').slice(0,60)+'.aweapp',JSON.stringify(pack,null,2));
