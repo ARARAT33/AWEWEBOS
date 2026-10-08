@@ -926,7 +926,17 @@ const Kernel = (() => {
     installedApps: [],
   };
 
+  let deviceId = null;
   async function init() {
+    // A stable identifier belongs to this selected workspace, not a remote account.
+    try {
+      const savedDeviceId = await FS.readFile('System/device.json');
+      if (savedDeviceId) deviceId = JSON.parse(savedDeviceId).uid || null;
+    } catch (e) {}
+    if (!deviceId) {
+      deviceId = 'AWEDEV-' + U.uid().replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 24);
+      await FS.writeFile('System/device.json', JSON.stringify({ uid: deviceId, createdAt: new Date().toISOString(), format: 1 }, null, 2));
+    }
     // Read config from folder
     const cfgStr = await FS.readFile('System/config.json');
     if (cfgStr) {
@@ -948,7 +958,7 @@ const Kernel = (() => {
       } catch (e) {}
     }
     if (!config.user) {
-      config.user = { name: 'User', id: U.uid().slice(0, 8), avatar: 'U' };
+      config.user = { name: 'User', id: 'AWE-' + U.uid().replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 20), avatar: 'U' };
       await FS.writeFile('System/users.json', JSON.stringify({ default: config.user }, null, 2));
     }
   }
@@ -1006,6 +1016,7 @@ const Kernel = (() => {
 
   return {
     get config() { return config; },
+    get deviceId() { return deviceId; },
     init, save, setSetting, addInstalledApp, removeInstalledApp, applyTheme,  };
 })();
 
@@ -1263,7 +1274,10 @@ const Ctx = (() => {
     show(e.clientX, e.clientY, [
       { label: 'Terminal', icon: '▶', action: () => Apps.launch('terminal') },
       { label: 'Files', icon: '▣', action: () => Apps.launch('files') },
-      { label: 'App Store', icon: '⛬', action: () => Apps.launch('store') },
+      { label: 'App Hub', icon: '⬡', action: () => Apps.launch('store') },
+      { label: 'Contacts', icon: '♙', action: () => Apps.launch('contacts') },
+      { label: 'Media Studio', icon: '♫', action: () => Apps.launch('media') },
+      { label: 'Browser', icon: '◎', action: () => Apps.launch('browser') },
       { sep: true },
       { label: 'New File', icon: '+', action: async () => {
         const n = prompt('File name:', 'untitled.txt');
@@ -1423,10 +1437,10 @@ const Start = (() => {
       .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
       .sort((a, b) => a.title.localeCompare(b.title));
     const groups = [
-      ['System & tools', ['terminal','files','settings','themes','store','sysmon']],
-      ['Productivity', ['editor','notes','calc','calendar','clock']],
-      ['Creative', ['paint','viewer']],
-      ['Communication', ['messenger']],
+      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser']],
+      ['Productivity', ['editor','notes','calc','calendar','clock','contacts']],
+      ['Creative', ['paint','viewer','media']],
+      ['Communication', ['messenger','contacts']],
       ['Games', ['snake','tetris','mines']],
       ['Other apps', []],
     ];
@@ -1736,6 +1750,77 @@ Apps.registerBuiltin('terminal', {
   },
 });
 
+/* ---------- PORTABLE FID SHARING (local-first) ---------- */
+const FID = (() => {
+  const MAX_BYTES = 1200000;
+  function encodeUtf8(bytes) {
+    let binary = '';
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+    return btoa(binary).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/g, '');
+  }
+  function decodeUtf8(value) {
+    const base = value.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = atob(base + '='.repeat((4 - base.length % 4) % 4));
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes;
+  }
+  async function shareHandle(handle, name) {
+    try {
+      if (handle.kind !== 'file') { Notif.push('FID Share', 'Select a file, not a folder.', 3000); return; }
+      const file = await handle.getFile();
+      if (file.size > MAX_BYTES) {
+        Notif.push('FID Share', 'Portable FID limit is 1.2 MB. Large files need a direct peer transfer channel, which is not configured yet.', 5000);
+        return;
+      }
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const record = { v: 1, name: String(name).slice(0, 180), type: file.type || 'application/octet-stream', size: file.size, createdAt: Date.now(), data: encodeUtf8(bytes) };
+      const fid = 'AWFID1-' + encodeUtf8(new TextEncoder().encode(JSON.stringify(record)));
+      try { await navigator.clipboard.writeText(fid); } catch (e) {}
+      const wrap = U.mk('div', { style: { display:'flex', flexDirection:'column', gap:'10px', padding:'16px' } });
+      wrap.appendChild(U.mk('div', { text:'Portable File ID (FID)', style:{fontWeight:'700',fontSize:'16px'} }));
+      wrap.appendChild(U.mk('div', { text:'This ID contains the file data, so the recipient does not need a central server or your device to stay online. It is intended for small files (up to 1.2 MB).', style:{color:'var(--fg-2)',lineHeight:'1.6'} }));
+      const ta = U.mk('textarea', { class:'input', style:{height:'160px',resize:'vertical',fontFamily:'var(--font-mono)',fontSize:'10px',wordBreak:'break-all'} });
+      ta.value = fid; wrap.appendChild(ta);
+      const row = U.mk('div', { style:{display:'flex',gap:'8px',flexWrap:'wrap'} });
+      const copy = U.mk('button', { class:'btn primary', text:'Copy FID' });
+      copy.onclick = async () => { try { await navigator.clipboard.writeText(fid); Notif.push('FID Share','Copied to clipboard.'); } catch(e) { ta.select(); document.execCommand('copy'); } };
+      const save = U.mk('button', { class:'btn', text:'Save .awfid file' });
+      save.onclick = () => { const blob = new Blob([fid],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=(name.replace(/[^a-z0-9._-]/gi,'_')||'shared')+'.awfid'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); };
+      row.append(copy,save); wrap.appendChild(row);
+      const modal = U.mk('div', { style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.72)',display:'grid',placeItems:'center',padding:'18px'} });
+      const card = U.mk('div', { style:{width:'min(640px,100%)',maxHeight:'90%',overflow:'auto',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'14px',boxShadow:'var(--shadow-lg)'} });
+      const close = U.mk('button',{class:'btn',text:'Close',style:{float:'right',margin:'12px'}});
+      close.onclick=()=>modal.remove(); card.append(close,wrap); modal.appendChild(card); document.body.appendChild(modal);
+    } catch (e) { Notif.push('FID Share', e.message, 4000); }
+  }
+  async function importCode(raw) {
+    const code = String(raw || '').trim().replace(/^["']|["']$/g,'');
+    if (!code.startsWith('AWFID1-')) throw new Error('Unknown FID format. Expected AWFID1-…');
+    const outer = JSON.parse(new TextDecoder().decode(decodeUtf8(code.slice(7))));
+    if (outer.v !== 1 || typeof outer.data !== 'string' || outer.data.length > 1800000) throw new Error('Invalid or unsupported FID package.');
+    const bytes = decodeUtf8(outer.data);
+    if (bytes.byteLength !== outer.size || bytes.byteLength > MAX_BYTES) throw new Error('FID size validation failed.');
+    let name = String(outer.name || 'received.bin').replace(/[\\/\\0]/g,'_').slice(0,180);
+    if (!name || name === '.' || name === '..') name = 'received.bin';
+    const dir = '/home/user/Downloads';
+    await VFS.mkdir(dir);
+    let target = dir + '/' + name;
+    if (await VFS.exists(target)) target = dir + '/' + Date.now() + '-' + name;
+    await FS.writeFile(target, new Blob([bytes], {type: outer.type || 'application/octet-stream'}));
+    Bus.emit('fs.change');
+    Notif.push('FID Import', 'Saved to Downloads/' + target.split('/').pop(), 4500, '⇩');
+    return target;
+  }
+  function importPrompt() {
+    const raw = prompt('Paste a portable FID (AWFID1-…). You can also paste the contents of a .awfid file:');
+    if (!raw) return;
+    importCode(raw).catch(e => Notif.push('FID Import failed', e.message, 4500));
+  }
+  return { shareHandle, importCode, importPrompt };
+})();
+
 /* ---------- FILES ---------- */
 Apps.registerBuiltin('files', {
   title: 'Files', icon: '▣', width: 800, height: 540, autoMax: true,
@@ -1750,9 +1835,12 @@ Apps.registerBuiltin('files', {
     const home = U.mk('button', { class: 'btn', text: '⌂' });
     const root = U.mk('button', { class: 'btn', text: '/' });
     const path = U.mk('div', { class: 'files-path', text: cur });
+    const search = U.mk('input', { class: 'input', placeholder: 'Search this folder…', style: { width: '150px', padding: '7px' } });
+    const fidBtn = U.mk('button', { class: 'btn primary', text: '⇧ FID' });
+    const importFidBtn = U.mk('button', { class: 'btn', text: '⇩ Import FID' });
     const nFile = U.mk('button', { class: 'btn primary', text: '+ File' });
-    const nDir = U.mk('button', { class: 'btn', text: '+ Dir' });
-    tb.append(up, home, root, path, nFile, nDir);
+    const nDir = U.mk('button', { class: 'btn', text: '+ Folder' });
+    tb.append(up, home, root, path, search, fidBtn, importFidBtn, nFile, nDir);
 
     const list = U.mk('div', { class: 'files-list' });
     body.append(tb, list);
@@ -1774,7 +1862,7 @@ Apps.registerBuiltin('files', {
       }
       try {
         const items = await VFS.list(cur);
-        items.forEach(it => {
+        items.filter(it => it.name.toLowerCase().includes(search.value.trim().toLowerCase())).forEach(it => {
           const icon = it.type === 'dir' ? '📁' :
             it.name.endsWith('.txt') ? '📄' :
             it.name.endsWith('.png') || it.name.endsWith('.jpg') ? '🖼' :
@@ -1788,17 +1876,35 @@ Apps.registerBuiltin('files', {
             if (it.type === 'dir') nav(cur === '/' ? '/' + it.name : cur + '/' + it.name);
             else {
               const full = cur === '/' ? '/' + it.name : cur + '/' + it.name;
-              if (/\.(txt|md|json|log|js|html|css)$/.test(it.name)) {
+              if (/\.(txt|md|json|log|js|html|css|xml|csv|yml|yaml|toml|py|rs|ts|jsx|tsx)$/.test(it.name)) {
                 Apps.launch('editor', { path: full });
-              } else if (it.name.endsWith('.png') || it.name.endsWith('.jpg')) {
+              } else if (/\.(png|jpe?g|gif|webp|bmp|svg|avif)$/.test(it.name)) {
                 Apps.launch('viewer', { path: full });
-              } else Notif.push('Files', 'No default app for ' + it.name);
+              } else if (/\.(mp3|wav|ogg|m4a|aac|flac)$/.test(it.name)) {
+                Apps.launch('media', { path: full, kind: 'audio' });
+              } else if (/\.(mp4|webm|mov|mkv|m4v)$/.test(it.name)) {
+                Apps.launch('media', { path: full, kind: 'video' });
+              } else Notif.push('Files', 'No preview app for ' + it.name + '. Use Import / Open with a compatible browser tool.');
             }
           };
           el.oncontextmenu = e => {
             e.preventDefault(); e.stopPropagation();
             Ctx.show(e.clientX, e.clientY, [
               { label: 'Open', action: () => el.ondblclick() },
+              { label: 'Share - FID', icon: '⇧', action: () => FID.shareHandle(it.handle, it.name) },
+              { label: 'Rename', icon: '✎', action: async () => {
+                const next = prompt('New name:', it.name);
+                if (!next || next === it.name || /[\\/]/.test(next)) return;
+                try {
+                  const from = cur === '/' ? '/' + it.name : cur + '/' + it.name;
+                  const to = cur === '/' ? '/' + next : cur + '/' + next;
+                  if (it.type === 'dir') { Notif.push('Files', 'Folder rename is not supported by this browser API; move it manually.', 3500); return; }
+                  const bytes = await it.handle.getFile();
+                  await FS.writeFile(to, bytes);
+                  await VFS.remove(from);
+                  await render();
+                } catch (err) { Notif.push('Rename failed', err.message, 3500); }
+              } },
               { label: 'Delete', action: async () => {
                 if (!confirm('Delete ' + it.name + '?')) return;
                 const full = cur === '/' ? '/' + it.name : cur + '/' + it.name;
@@ -1816,6 +1922,9 @@ Apps.registerBuiltin('files', {
         list.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--fg-3)">Cannot read folder: ' + U.esc(e.message) + '</div>';
       }
     }
+    search.oninput = () => render();
+    fidBtn.onclick = () => FID.importPrompt();
+    importFidBtn.onclick = () => FID.importPrompt();
     up.onclick = () => {
       if (cur === '/') return;
       const parts = cur.split('/').filter(Boolean);
@@ -1856,9 +1965,12 @@ Apps.registerBuiltin('editor', {
 
     const tb = U.mk('div', { class: 'files-toolbar' });
     const fileLabel = U.mk('div', { class: 'files-path', text: path });
-    const bSave = U.mk('button', { class: 'btn primary', text: 'SAVE' });
+    const bSave = U.mk('button', { class: 'btn primary', text: 'Save' });
+    const bSaveAs = U.mk('button', { class: 'btn', text: 'Save as…' });
+    const bFormat = U.mk('button', { class: 'btn', text: 'Format' });
+    const bPreview = U.mk('button', { class: 'btn', text: 'Preview' });
     const bClose = U.mk('button', { class: 'btn', text: 'Close' });
-    tb.append(fileLabel, bSave, bClose);
+    tb.append(fileLabel, bSave, bSaveAs, bFormat, bPreview, bClose);
 
     const ta = U.mk('textarea', { spellcheck: 'false', style: {
       flex: '1', padding: '14px', background: '#0a0e17', color: '#e0f7ff',
@@ -1875,8 +1987,34 @@ Apps.registerBuiltin('editor', {
 
     async function save() {
       await VFS.write(path, ta.value);
+      Bus.emit('fs.change');
       Notif.push('Editor', 'Saved ' + path.split('/').pop(), 2000, '✐');
     }
+    bSaveAs.onclick = async () => {
+      const next = prompt('Save as path:', path);
+      if (!next || next === '/' || /[\\\\]/.test(next)) return;
+      path = next.startsWith('/') ? next : '/home/user/Documents/' + next;
+      fileLabel.textContent = path;
+      state.setTitle('Editor · ' + path.split('/').pop());
+      await save();
+    };
+    bFormat.onclick = () => {
+      if (/\.json$/i.test(path)) {
+        try { ta.value = JSON.stringify(JSON.parse(ta.value), null, 2); }
+        catch (e) { Notif.push('Format', 'Invalid JSON: ' + e.message, 3500); }
+      } else if (/\.html?$/i.test(path)) {
+        ta.value = ta.value.replace(/>\s*</g, '>\\n<').replace(/\\n{3,}/g, '\\n\\n');
+      } else {
+        ta.value = ta.value.split('\\n').map(line => line.replace(/[ \\t]+$/g, '')).join('\\n');
+      }
+    };
+    bPreview.onclick = () => {
+      const blob = new Blob([ta.value], { type: /\.html?$/i.test(path) ? 'text/html' : 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url, '_blank', 'noopener');
+      if (!w) Notif.push('Preview', 'Popup blocked. Allow popups to preview this file.', 3000);
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    };
     bSave.onclick = save;
     bClose.onclick = () => state.close();
     ta.onkeydown = e => {
@@ -2340,6 +2478,83 @@ Apps.registerBuiltin('messenger', {
   },
 });
 
+/* ---------- CONTACTS ---------- */
+Apps.registerBuiltin('contacts', {
+  title: 'Contacts', icon: '♙', width: 720, height: 540, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div',{style:{padding:'16px',display:'flex',flexDirection:'column',gap:'12px',height:'100%'}});
+    const me = Kernel.config.user;
+    const idCard = U.mk('div',{style:{padding:'12px',border:'1px solid var(--border)',borderRadius:'10px',background:'rgba(0,212,255,.06)'}});
+    idCard.append(U.mk('div',{text:'YOUR STABLE USER UID',style:{fontSize:'10px',color:'var(--fg-2)',letterSpacing:'1px'}}),U.mk('div',{text:me.id,style:{fontFamily:'var(--font-mono)',fontSize:'13px',wordBreak:'break-all',margin:'5px 0'}}),U.mk('div',{text:'DEVICE UID: '+(Kernel.deviceId||'available after setup'),style:{fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--fg-2)',wordBreak:'break-all'}}));
+    const form = U.mk('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}});
+    const name = U.mk('input',{class:'input',placeholder:'Contact name'});
+    const uid = U.mk('input',{class:'input',placeholder:'Paste exact UID'});
+    const add = U.mk('button',{class:'btn primary',text:'Add contact'});
+    form.append(name,uid,add);
+    const list = U.mk('div',{style:{overflow:'auto',display:'flex',flexDirection:'column',gap:'8px',flex:'1'}});
+    const note = U.mk('div',{text:'UIDs identify contacts; adding an ID does not prove identity or automatically connect to that device. This app stores contacts locally.',style:{fontSize:'11px',color:'var(--fg-2)',lineHeight:'1.5'}});
+    wrap.append(idCard,form,list,note); body.appendChild(wrap);
+    async function load(){ list.innerHTML=''; let items=[]; try{items=JSON.parse((await VFS.read('/home/user/Documents/contacts.json'))||'[]');if(!Array.isArray(items))items=[];}catch(e){}
+      if(!items.length) list.appendChild(U.mk('div',{text:'No contacts yet. Add a contact using their UID.',style:{padding:'24px',textAlign:'center',color:'var(--fg-2)'}}));
+      items.forEach((c,i)=>{const row=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'10px',padding:'12px',border:'1px solid var(--border)',borderRadius:'8px'}});
+        const info=U.mk('div',{style:{flex:'1',minWidth:'0'}},[U.mk('div',{text:c.name,style:{fontWeight:'600'}}),U.mk('div',{text:c.uid,style:{fontFamily:'var(--font-mono)',fontSize:'10px',color:'var(--fg-2)',wordBreak:'break-all'}})]);
+        const msg=U.mk('button',{class:'btn',text:'Message'});msg.onclick=()=>Apps.launch('messenger',{contact:{id:c.uid,name:c.name}});
+        const del=U.mk('button',{class:'btn danger',text:'Remove'});del.onclick=async()=>{items.splice(i,1);await VFS.write('/home/user/Documents/contacts.json',JSON.stringify(items,null,2));load();};
+        row.append(info,msg,del);list.appendChild(row);
+      });
+    }
+    add.onclick=async()=>{const n=name.value.trim(),id=uid.value.trim();if(!n||!id)return Notif.push('Contacts','Enter a name and UID.');if(id===me.id)return Notif.push('Contacts','That is your own UID.');let items=[];try{items=JSON.parse((await VFS.read('/home/user/Documents/contacts.json'))||'[]');}catch(e){}if(items.some(c=>c.uid===id))return Notif.push('Contacts','That UID is already saved.');items.push({name:n,uid:id,addedAt:Date.now()});await VFS.write('/home/user/Documents/contacts.json',JSON.stringify(items,null,2));name.value='';uid.value='';load();};
+    load();
+  }
+});
+
+/* ---------- MEDIA STUDIO ---------- */
+Apps.registerBuiltin('media', {
+  title: 'Media Studio', icon: '♫', width: 780, height: 560, autoMax: true,
+  mount(body, state, opts={}) {
+    body.style.padding='0';
+    const wrap=U.mk('div',{style:{padding:'16px',display:'flex',flexDirection:'column',gap:'12px',height:'100%',overflow:'auto'}});
+    const bar=U.mk('div',{style:{display:'flex',gap:'8px',flexWrap:'wrap',alignItems:'center'}});
+    const open=U.mk('button',{class:'btn primary',text:'Open audio/video'});
+    const record=U.mk('button',{class:'btn',text:'Record audio'});
+    const stop=U.mk('button',{class:'btn',text:'Stop recording',disabled:true});
+    const save=U.mk('button',{class:'btn',text:'Save recording',disabled:true});
+    const input=U.mk('input',{type:'file',accept:'audio/*,video/*',style:{display:'none'}});
+    const player=U.mk('div',{style:{minHeight:'180px',display:'grid',placeItems:'center',border:'1px solid var(--border)',borderRadius:'12px',padding:'12px',background:'rgba(0,0,0,.2)'}});
+    const hint=U.mk('div',{text:'Open media from your computer, or open a file from Files. Browser codec support varies.',style:{color:'var(--fg-2)',fontSize:'12px'}});
+    bar.append(open,record,stop,save,input);wrap.append(bar,player,hint);body.appendChild(wrap);
+    let currentUrl=null, recorder=null, chunks=[], stream=null, recordedBlob=null;
+    function showFile(file){if(currentUrl)URL.revokeObjectURL(currentUrl);currentUrl=URL.createObjectURL(file);player.innerHTML='';const media=document.createElement(file.type.startsWith('audio/')?'audio':'video');media.controls=true;media.src=currentUrl;media.style.maxWidth='100%';media.style.width='100%';media.style.maxHeight='360px';player.appendChild(media);hint.textContent=file.name+' · '+file.type+' · '+(file.size/1024/1024).toFixed(2)+' MB';}
+    open.onclick=()=>input.click();input.onchange=()=>{const f=input.files&&input.files[0];if(f)showFile(f);};
+    record.onclick=async()=>{try{if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw new Error('Audio recording is not supported in this browser or context.');stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];recorder=new MediaRecorder(stream);recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};recorder.onstop=()=>{recordedBlob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});showFile(new File([recordedBlob],'recording.webm',{type:recordedBlob.type}));save.disabled=false;stream?.getTracks().forEach(t=>t.stop());stream=null;};recorder.start();record.disabled=true;stop.disabled=false;hint.textContent='Recording… microphone permission is active.';}catch(e){Notif.push('Recording unavailable',e.message,4000);}};
+    stop.onclick=()=>{if(recorder&&recorder.state!=='inactive')recorder.stop();record.disabled=false;stop.disabled=true;};
+    save.onclick=()=>{if(!recordedBlob)return;const a=document.createElement('a');a.href=URL.createObjectURL(recordedBlob);a.download='recording.webm';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+    if(opts.path){(async()=>{try{const resolved=VFS.resolve(opts.path);const handle=await FS.getFileHandle(resolved,false);const file=await handle.getFile();showFile(file);}catch(e){hint.textContent='Could not open selected media: '+e.message;}})();}
+    state.cleanup=()=>{if(recorder&&recorder.state!=='inactive')recorder.stop();stream?.getTracks().forEach(t=>t.stop());if(currentUrl)URL.revokeObjectURL(currentUrl);};
+  }
+});
+
+/* ---------- LOCAL BROWSER ---------- */
+Apps.registerBuiltin('browser', {
+  title: 'Browser', icon: '◎', width: 900, height: 620, autoMax: true,
+  mount(body) {
+    body.style.padding='0';body.style.display='flex';body.style.flexDirection='column';
+    const bar=U.mk('div',{class:'files-toolbar'});
+    const address=U.mk('input',{class:'input',placeholder:'https://example.com or search terms',style:{flex:'1',minWidth:'180px'}});
+    const go=U.mk('button',{class:'btn primary',text:'Go'});
+    const back=U.mk('button',{class:'btn',text:'Back to start'});
+    const frame=U.mk('iframe',{title:'Browser content',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',background:'#fff'},sandbox:'allow-forms allow-scripts allow-same-origin allow-popups'});
+    const info=U.mk('div',{text:'Web pages can block embedding. For safety, this in-app browser uses a restricted iframe; use Open externally when a site refuses to load.',style:{padding:'6px 10px',fontSize:'10px',color:'var(--fg-2)',borderTop:'1px solid var(--border)'}});
+    bar.append(back,address,go);body.append(bar,frame,info);
+    function navigate(){let value=address.value.trim();if(!value)return;if(!/^[a-z]+:\/\//i.test(value)){value=/\s/.test(value)?'https://www.google.com/search?q='+encodeURIComponent(value):'https://'+value;}try{const u=new URL(value);if(!['http:','https:'].includes(u.protocol))throw new Error('Only HTTP and HTTPS URLs are allowed.');frame.src=u.href;address.value=u.href;}catch(e){Notif.push('Browser',e.message);}}
+    go.onclick=navigate;address.onkeydown=e=>{if(e.key==='Enter')navigate();};
+    back.onclick=()=>{address.value='';frame.removeAttribute('src');frame.srcdoc='<html><body style="font-family:system-ui;background:#0b0f19;color:#eef;padding:30px"><h1>AWEWEBOS Browser</h1><p>Enter a URL or search above.</p><p>Some websites block embedded browsing for security reasons.</p></body></html>';};
+    back.click();
+    const external=U.mk('button',{class:'btn',text:'Open externally'});external.onclick=()=>{const v=address.value.trim();if(v&&/^https?:\/\//i.test(v))window.open(v,'_blank','noopener,noreferrer');};bar.appendChild(external);
+  }
+});
+
 /* ============================================================
    APP STORE (real install to /Apps/)
    ============================================================ */
@@ -2792,7 +3007,7 @@ const Store = (() => {
 })();
 
 Apps.registerBuiltin('store', {
-  title: 'App Store', icon: '⛬', width: 820, height: 620, autoMax: true,
+  title: 'App Hub', icon: '⬡', width: 820, height: 620, autoMax: true,
   mount(body, state) {
     body.style.padding = '0';
     const wrap = U.mk('div', { class: 'store-app' });
@@ -2800,7 +3015,51 @@ Apps.registerBuiltin('store', {
     const categories = ['All', ...new Set(STORE_APPS.map(a => a.category))];
 
     const header = U.mk('div', { class: 'store-header' });
-    header.appendChild(U.mk('h2', { text: 'App Store' }));
+    header.appendChild(U.mk('h2', { text: 'App Hub · Local & Portable Apps' }));
+    const hubNote = U.mk('div',{text:'Install bundled apps, or create a portable HTML mini-app package and share its AppID. Portable IDs include the app source; there is no central registry. Only install code you trust.',style:{padding:'10px 14px',fontSize:'11px',color:'var(--fg-2)',lineHeight:'1.5',borderBottom:'1px solid var(--border)'}});
+    const portableBar = U.mk('div',{style:{padding:'10px 14px',display:'flex',gap:'8px',flexWrap:'wrap',borderBottom:'1px solid var(--border)'}});
+    const publishBtn=U.mk('button',{class:'btn primary',text:'＋ Create / Publish mini-app'});
+    const installBtn=U.mk('button',{class:'btn',text:'⇩ Install by AppID'});
+    publishBtn.onclick=async()=>{
+      const name=prompt('App name:','My mini-app');if(!name)return;
+      const description=prompt('Short description:','A local HTML mini-app')||'';
+      const html=prompt('Paste the HTML app source (self-contained HTML/CSS/JS):','<!doctype html><html><body style="font-family:system-ui;padding:20px"><h1>Hello from AWEWEBOS</h1><button onclick="document.querySelector(\'h1\').textContent=\'It works!\'">Test</button></body></html>');if(!html)return;
+      if(html.length>180000) return Notif.push('App Hub','Mini-app source is limited to 180 KB for portable AppIDs.',4000);
+      const pack={format:'AWEAPP1',name:name.slice(0,80),description:description.slice(0,240),version:'1.0.0',author:Kernel.config.user.id,createdAt:Date.now(),html};
+      const enc=btoa(unescape(encodeURIComponent(JSON.stringify(pack)))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=+$/g,'');
+      const appId='AWEAPP1-'+enc;
+      await VFS.mkdir('/home/user/Documents/PublishedApps');
+      await VFS.write('/home/user/Documents/PublishedApps/'+name.replace(/[^a-z0-9._-]/gi,'_').slice(0,60)+'.aweapp',JSON.stringify(pack,null,2));
+      try{await navigator.clipboard.writeText(appId);}catch(e){}
+      const modal=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.72)',display:'grid',placeItems:'center',padding:'16px'}});
+      const card=U.mk('div',{style:{width:'min(620px,100%)',background:'var(--bg-2)',padding:'18px',borderRadius:'12px',border:'1px solid var(--border-strong)'}});
+      card.appendChild(U.mk('h3',{text:'Your portable AppID'}));card.appendChild(U.mk('p',{text:'Anyone with this ID can import the package. It contains the app code and can become very long. For larger packages, share the .aweapp file. The recipient does not need your computer online because the package travels inside the ID.',style:{color:'var(--fg-2)',fontSize:'11px',lineHeight:'1.5',margin:'8px 0'}}));
+      const ta=U.mk('textarea',{class:'input',style:{height:'150px',fontFamily:'var(--font-mono)',fontSize:'10px',wordBreak:'break-all'}});ta.value=appId;card.appendChild(ta);
+      const copy=U.mk('button',{class:'btn primary',text:'Copy AppID'});copy.onclick=async()=>{try{await navigator.clipboard.writeText(appId);Notif.push('App Hub','AppID copied.');}catch(e){ta.select();document.execCommand('copy');}};
+      const file=U.mk('button',{class:'btn',text:'Export .aweapp'});file.onclick=()=>{const blob=new Blob([JSON.stringify(pack,null,2)],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name.replace(/[^a-z0-9._-]/gi,'_')+'.aweapp';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
+      const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>modal.remove();card.append(copy,file,close);modal.appendChild(card);document.body.appendChild(modal);
+    };
+    installBtn.onclick=async()=>{
+      const raw=prompt('Paste AWEAPP1- AppID, or paste the JSON contents of a .aweapp file:');if(!raw)return;
+      try{
+        let pack;
+        if(raw.trim().startsWith('AWEAPP1-')){const b=raw.trim().slice(8).replace(/-/g,'+').replace(/_/g,'/');pack=JSON.parse(decodeURIComponent(escape(atob(b+'='.repeat((4-b.length%4)%4)))));}
+        else pack=JSON.parse(raw);
+        if(pack.format!=='AWEAPP1'||typeof pack.name!=='string'||typeof pack.html!=='string'||pack.html.length>180000)throw new Error('Invalid or oversized AWEAPP package.');
+        const id='shared-'+(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pack.name+'|'+pack.html)).then(b=>Array.from(new Uint8Array(b).slice(0,8)).map(x=>x.toString(16).padStart(2,'0')).join('')));
+        await VFS.mkdir('/Apps/'+id);
+        await VFS.write('/Apps/'+id+'/manifest.json',JSON.stringify({id,name:pack.name,description:pack.description||'',version:pack.version||'1.0.0',source:'portable-html',author:pack.author||'unknown'},null,2));
+        await VFS.write('/Apps/'+id+'/index.html',pack.html);
+        const preview=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.78)',display:'grid',placeItems:'center',padding:'16px'}});
+        const card=U.mk('div',{style:{width:'min(820px,100%)',height:'min(640px,90%)',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'12px',display:'flex',flexDirection:'column',overflow:'hidden'}});
+        const top=U.mk('div',{style:{padding:'10px',display:'flex',gap:'8px',alignItems:'center'}},[U.mk('strong',{text:pack.name,style:{flex:'1'}})]);
+        const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>preview.remove();top.appendChild(close);
+        const frame=U.mk('iframe',{title:'Sandboxed app preview',sandbox:'allow-scripts allow-forms',style:{border:'0',width:'100%',flex:'1',background:'#fff'}});frame.srcdoc=pack.html;
+        card.append(top,frame);preview.appendChild(card);document.body.appendChild(preview);
+        Notif.push('App Hub','Installed package '+pack.name+' in /Apps/'+id+'. It opens in a sandboxed preview; trusted integration into the OS app registry is not automatic.',5000);
+      }catch(e){Notif.push('Install failed',e.message,4500);}
+    };
+    portableBar.append(publishBtn,installBtn);
 
     const tabs = U.mk('div', { class: 'store-tabs' });
     categories.forEach(cat => {
@@ -2816,7 +3075,7 @@ Apps.registerBuiltin('store', {
 
     const list = U.mk('div', { class: 'store-list' });
 
-    wrap.append(header, tabs, list);
+    wrap.append(header, hubNote, portableBar, tabs, list);
     body.appendChild(wrap);
 
     function renderList() {
@@ -3027,8 +3286,14 @@ Apps.registerBuiltin('settings', {
     g3.appendChild(nameRow);
 
     const idRow = U.mk('div', { class: 'settings-item' });
-    idRow.append(U.mk('div', { text: 'User ID' }), U.mk('div', { class: 'val', text: '#' + Kernel.config.user.id }));
+    idRow.append(U.mk('div', { text: 'User UID' }), U.mk('div', { class: 'val', text: Kernel.config.user.id }));
     g3.appendChild(idRow);
+    const deviceRow = U.mk('div', { class: 'settings-item' });
+    deviceRow.append(U.mk('div', { text: 'Stable device UID' }), U.mk('div', { class: 'val', text: Kernel.deviceId || 'Not initialized' }));
+    g3.appendChild(deviceRow);
+    const copyUid = U.mk('button', { class: 'btn', text: 'Copy User UID' });
+    copyUid.onclick = async () => { try { await navigator.clipboard.writeText(Kernel.config.user.id); Notif.push('Settings','UID copied.'); } catch(e) { prompt('Copy your UID:',Kernel.config.user.id); } };
+    const uidRow = U.mk('div',{class:'settings-item'});uidRow.append(U.mk('div',{text:'Share your identity'}),copyUid);g3.appendChild(uidRow);
 
     const g4 = grp('Storage');
     (async () => {
@@ -3047,6 +3312,12 @@ Apps.registerBuiltin('settings', {
       });
     })();
 
+    const gPrivacy = grp('Privacy & permissions');
+    const privacyText = U.mk('div',{text:'AWEWEBOS stores workspace files in the folder you selected. Browser permissions can be revoked by the browser or operating system. UID is an identifier, not proof of identity. Do not paste untrusted AppIDs or run untrusted scripts.',style:{padding:'10px 12px',fontSize:'11px',color:'var(--fg-2)',lineHeight:'1.7'}});
+    gPrivacy.appendChild(privacyText);
+    const exportBtn=U.mk('button',{class:'btn',text:'Export local profile'});
+    exportBtn.onclick=()=>{const pack={format:'AWEWEBOS-profile-v1',user:Kernel.config.user,deviceId:Kernel.deviceId,settings:Kernel.config.settings,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(pack,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='awewebos-profile.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+    const exportRow=U.mk('div',{class:'settings-item'});exportRow.append(U.mk('div',{text:'Backup identity & settings'}),exportBtn);gPrivacy.appendChild(exportRow);
     const g5 = grp('Danger Zone');
     const rRow = U.mk('div', { class: 'settings-item' });
     const clearBtn = U.mk('button', { class: 'btn danger', text: '⚠ Reset OS (delete files)' });
@@ -3212,7 +3483,10 @@ async function launchOS() {
     { app: 'messenger', name: 'Messenger', ic: '✉' },
     { app: 'notes', name: 'Notes', ic: '✎' },
     { app: 'paint', name: 'Paint', ic: '◈' },
-    { app: 'store', name: 'App Store', ic: '⛬' },
+    { app: 'store', name: 'App Hub', ic: '⬡' },
+    { app: 'contacts', name: 'Contacts', ic: '♙' },
+    { app: 'media', name: 'Media Studio', ic: '♫' },
+    { app: 'browser', name: 'Browser', ic: '◎' },
     { app: 'themes', name: 'Themes', ic: '◨' },
     { app: 'settings', name: 'Settings', ic: '⚙' },
   ]);
