@@ -2424,6 +2424,7 @@ Apps.registerBuiltin('messenger', {
       titleEl.textContent = name;
       inputEl.disabled = false;
       sendEl.disabled = false;
+      voiceEl.disabled = false;
       await renderMsgs();
       inputEl.focus();
       loadContacts();
@@ -2598,7 +2599,7 @@ Apps.registerBuiltin('contacts', {
     const wrap = U.mk('div',{style:{padding:'16px',display:'flex',flexDirection:'column',gap:'12px',height:'100%'}});
     const me = Kernel.config.user;
     const idCard = U.mk('div',{style:{padding:'12px',border:'1px solid var(--border)',borderRadius:'10px',background:'rgba(0,212,255,.06)'}});
-    idCard.append(U.mk('div',{text:'YOUR STABLE USER UID',style:{fontSize:'10px',color:'var(--fg-2)',letterSpacing:'1px'}}),U.mk('div',{text:me.id,style:{fontFamily:'var(--font-mono)',fontSize:'13px',wordBreak:'break-all',margin:'5px 0'}}),U.mk('div',{text:'DEVICE UID: '+(Kernel.deviceId||'available after setup'),style:{fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--fg-2)',wordBreak:'break-all'}}));
+    idCard.append(U.mk('div',{text:'YOUR STABLE USER UID',style:{fontSize:'10px',color:'var(--fg-2)',letterSpacing:'1px'}}),U.mk('div',{text:me.id,style:{fontFamily:'var(--font-mono)',fontSize:'13px',wordBreak:'break-all',margin:'5px 0'}}),U.mk('div',{text:'WORKSPACE UID: '+(Kernel.deviceId||'available after setup'),style:{fontFamily:'var(--font-mono)',fontSize:'11px',color:'var(--fg-2)',wordBreak:'break-all'}}));
     const form = U.mk('div',{style:{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}});
     const name = U.mk('input',{class:'input',placeholder:'Contact name'});
     const uid = U.mk('input',{class:'input',placeholder:'Paste exact UID'});
@@ -3406,7 +3407,7 @@ Apps.registerBuiltin('settings', {
     idRow.append(U.mk('div', { text: 'User UID' }), U.mk('div', { class: 'val', text: Kernel.config.user.id }));
     g3.appendChild(idRow);
     const deviceRow = U.mk('div', { class: 'settings-item' });
-    deviceRow.append(U.mk('div', { text: 'Stable device UID' }), U.mk('div', { class: 'val', text: Kernel.deviceId || 'Not initialized' }));
+    deviceRow.append(U.mk('div', { text: 'Stable workspace UID' }), U.mk('div', { class: 'val', text: Kernel.deviceId || 'Not initialized' }));
     g3.appendChild(deviceRow);
     const copyUid = U.mk('button', { class: 'btn', text: 'Copy User UID' });
     copyUid.onclick = async () => { try { await navigator.clipboard.writeText(Kernel.config.user.id); Notif.push('Settings','UID copied.'); } catch(e) { prompt('Copy your UID:',Kernel.config.user.id); } };
