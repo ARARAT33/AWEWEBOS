@@ -27,7 +27,7 @@ Built-in applications:
 - **App Hub:** browse bundled mini-apps and create/import portable sandboxed HTML mini-app packages by AppID. Packages are local-first and not listed in a global server registry.
 - **Themes and Settings:** change appearance and manage system preferences.
 
-Bundled Store apps include live weather via Open-Meteo (internet required), clock, calendar, Snake, Tetris, Minesweeper, and a runtime monitor. The runtime monitor reports actual AWEWEBOS window/app counts and browser storage estimates; browser security prevents this web app from reading host CPU/RAM utilization reliably, so those metrics are marked unavailable rather than fabricated.
+Bundled mini-apps include live weather via Open-Meteo (internet required), clock, calendar, Snake, Tetris, Minesweeper, and a runtime monitor. The runtime monitor reports actual AWEWEBOS window/app counts and browser storage estimates; browser security prevents this web app from reading host CPU/RAM utilization reliably, so those metrics are marked unavailable rather than fabricated.
 
 ## Install to a selected folder
 
@@ -36,7 +36,7 @@ On first run, select a folder you control. The installer creates a workspace str
 ```text
 AWEWEBOS workspace/
 ├── System/
-│   ├── config.json
+│   ├── device.json\n│   ├── config.json
 │   ├── users.json
 │   └── Runtime/
 │       ├── index.html
@@ -58,15 +58,15 @@ AWEWEBOS workspace/
 └── Settings/preferences.json
 ```
 
-The App Store writes package metadata and the bundled app's mount code to the selected folder; installed apps run inside the trusted AWEWEBOS web runtime. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
+The App Hub writes package metadata and app source into the selected folder; bundled apps run inside the trusted AWEWEBOS runtime. Portable HTML packages are saved under `/Apps/` and opened in a sandboxed preview. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
 
 The folder handle is stored in IndexedDB when the browser supports it. On later visits, the app attempts to reconnect when permission is already granted. If permission was revoked or the browser requires a user gesture, use **Reconnect previous installation** and approve the browser's permission prompt. Browser security means permission cannot be guaranteed to remain granted forever.
 
 ## Storage and security boundaries
 
-- The selected folder uses the browser File System Access API and requires explicit user selection and read/write permission. Support varies by browser and platform.
+- The selected folder uses the browser File System Access API and requires explicit user selection and read/write permission. Storage & Drives shows the selected workspace and browser-origin storage estimates; it cannot enumerate every OS disk automatically. Support varies by browser and platform.
 - Browser-local state and selected-folder files are different storage layers; back up important files separately.
-- Imported or third-party app code should be treated as untrusted. This Store currently installs bundled apps; it is not yet a global signed package registry.
+- Imported or third-party app code should be treated as untrusted. The App Hub is not a global signed package registry.
 - Weather requires internet access. Messenger currently works only between tabs sharing the same browser origin and channel; it is not a remote multi-user service. Contacts are local-only. Portable FIDs embed files (maximum 1.2 MB) and portable AppIDs embed self-contained HTML (maximum 180 KB); these do not provide global online discovery or a live-host peer transfer.
 - A browser app cannot boot a computer, format a disk, control unrestricted hardware, run native background services, or guarantee access after permissions are revoked.
 - AWENET transport, production AWEID resolution, a real ONECOIN ledger, global store payments, and production voice/video messaging are not implemented by this Web OS shell.
