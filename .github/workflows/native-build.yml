@@ -39,7 +39,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          cp index.html manifest.webmanifest sw.js icon.svg dist/
+          cp index.html manifest.webmanifest sw.js icon.svg setup.js setup.css dist/
           npx tauri icon icon.svg
       - name: Build native app
         run: npx tauri build
