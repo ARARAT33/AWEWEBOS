@@ -20,7 +20,7 @@ Built-in applications:
 - **Calculator:** local calculations.
 - **Paint:** draw on a canvas.
 - **Image Viewer:** view supported image files.
-- **Messenger:** experimental same-origin tab messaging only; it is not a production internet messenger and has no remote account discovery or voice/video calls.
+- **Messenger:** experimental same-origin tab messaging with local text and recorded voice messages; it is not a production internet messenger and has no remote account discovery or voice/video calls.
 - **Contacts:** save names and stable UIDs locally.
 - **Media Studio:** play local audio/video files and record microphone audio where supported.
 - **Browser:** restricted in-app browser; some sites block iframe embedding.
@@ -59,7 +59,7 @@ AWEWEBOS workspace/
 └── Settings/preferences.json
 ```
 
-The App Hub writes package metadata and app source into the selected folder; bundled apps run inside the trusted AWEWEBOS runtime. Portable HTML packages are saved under `/Apps/` and opened in a sandboxed preview. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
+The App Hub writes package metadata and app source into the selected folder; bundled apps run inside the trusted AWEWEBOS runtime. Portable HTML packages are saved under `/Apps/`, remain listed after restart, and open in a sandboxed preview. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
 
 The folder handle is stored in IndexedDB when the browser supports it. On later visits, the app attempts to reconnect when permission is already granted. If permission was revoked or the browser requires a user gesture, use **Reconnect previous installation** and approve the browser's permission prompt. Browser security means permission cannot be guaranteed to remain granted forever.
 
