@@ -1882,10 +1882,12 @@ Apps.registerBuiltin('files', {
         const items = await VFS.list(cur);
         items.filter(it => it.name.toLowerCase().includes(search.value.trim().toLowerCase())).forEach(it => {
           const icon = it.type === 'dir' ? '📁' :
-            it.name.endsWith('.txt') ? '📄' :
-            it.name.endsWith('.png') || it.name.endsWith('.jpg') ? '🖼' :
-            it.name.endsWith('.json') ? '📋' :
-            it.name.endsWith('.js') ? '📜' : '📄';
+            /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(it.name) ? '🖼' :
+            /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(it.name) ? '🎵' :
+            /\.(mp4|webm|mov|mkv|m4v)$/i.test(it.name) ? '🎬' :
+            /\.(txt|md|log|csv)$/i.test(it.name) ? '📄' :
+            /\.(json|yml|yaml|toml|xml)$/i.test(it.name) ? '📋' :
+            /\.(js|ts|jsx|tsx|css|html|py|rs)$/i.test(it.name) ? '📜' : '📄';
           const el = U.mk('div', { class: 'file-item' }, [
             U.mk('div', { class: 'fi', text: icon }),
             U.mk('div', { class: 'fn', text: it.name }),
@@ -2301,17 +2303,28 @@ Apps.registerBuiltin('viewer', {
   mount(body, state, opts) {
     body.style.padding = '0';
     body.style.background = '#000';
-    const img = U.mk('img', { style: { maxWidth: '100%', maxHeight: '100%', display: 'block', margin: 'auto' } });
-    body.appendChild(img);
+    body.style.display = 'grid';
+    body.style.placeItems = 'center';
+    const img = U.mk('img', { style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block', margin: 'auto' } });
+    const info = U.mk('div',{style:{position:'absolute',bottom:'8px',left:'8px',right:'8px',padding:'6px 10px',background:'rgba(0,0,0,.6)',color:'#fff',fontSize:'10px',textAlign:'center'}});
+    body.append(img,info);
+    let objectUrl = null;
     (async () => {
       const p = opts.path || '/home/user/Pictures';
-      if (p && p.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
-        const data = await VFS.read(p);
-        if (data) img.src = data.startsWith('data:') ? data : 'data:image/png;base64,' + data;
+      if (p && p.match(/\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i)) {
+        try {
+          const handle = await FS.getFileHandle(VFS.resolve(p), false);
+          const file = await handle.getFile();
+          objectUrl = URL.createObjectURL(file);
+          img.src = objectUrl;
+          info.textContent = file.name + ' · ' + file.type + ' · ' + (file.size/1024).toFixed(1) + ' KB';
+          state.setTitle('Image Viewer · ' + file.name);
+        } catch (e) { info.textContent = 'Unable to open image: ' + e.message; }
       } else {
-        body.innerHTML = '<div style="color:#888;padding:40px;text-align:center">No image</div>';
+        info.textContent = 'No supported image selected.';
       }
     })();
+    state.cleanup = () => { if(objectUrl) URL.revokeObjectURL(objectUrl); };
   },
 });
 
@@ -2657,7 +2670,7 @@ Apps.registerBuiltin('browser', {
     const address=U.mk('input',{class:'input',placeholder:'https://example.com or search terms',style:{flex:'1',minWidth:'180px'}});
     const go=U.mk('button',{class:'btn primary',text:'Go'});
     const back=U.mk('button',{class:'btn',text:'Back to start'});
-    const frame=U.mk('iframe',{title:'Browser content',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',background:'#fff'},sandbox:'allow-forms allow-scripts allow-same-origin allow-popups'});
+    const frame=U.mk('iframe',{title:'Browser content',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',background:'#fff'},sandbox:'allow-forms allow-scripts allow-popups'});
     const info=U.mk('div',{text:'Web pages can block embedding. For safety, this in-app browser uses a restricted iframe; use Open externally when a site refuses to load.',style:{padding:'6px 10px',fontSize:'10px',color:'var(--fg-2)',borderTop:'1px solid var(--border)'}});
     bar.append(back,address,go);body.append(bar,frame,info);
     function navigate(){let value=address.value.trim();if(!value)return;if(!/^[a-z]+:\/\//i.test(value)){value=/\s/.test(value)?'https://www.google.com/search?q='+encodeURIComponent(value):'https://'+value;}try{const u=new URL(value);if(!['http:','https:'].includes(u.protocol))throw new Error('Only HTTP and HTTPS URLs are allowed.');frame.src=u.href;address.value=u.href;}catch(e){Notif.push('Browser',e.message);}}
