@@ -2320,35 +2320,45 @@ Apps.registerBuiltin('messenger', {
 const STORE_APPS = [
   {
     id: 'weather', name: 'Weather', icon: '☀', category: 'Utilities',
-    desc: 'Check weather for cities around the world (simulated).',
-    version: '1.0.0', size: '12 KB',
+    desc: 'Live weather from Open-Meteo; requires an internet connection.',
+    version: '1.1.0', size: '14 KB',
     mount(body, state) {
       body.style.padding = '0';
       const wrap = U.mk('div', { style: { padding: '20px', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', gap: '14px', overflow: 'auto' } });
       body.appendChild(wrap);
-      const cities = ['Yerevan', 'Moscow', 'Tokyo', 'New York', 'Berlin', 'Paris', 'London', 'Dubai'];
-      const conds = [{ i: '☀', n: 'Clear' }, { i: '⛅', n: 'Partly Cloudy' }, { i: '☁', n: 'Cloudy' }, { i: '🌧', n: 'Rain' }, { i: '⛈', n: 'Storm' }, { i: '❄', n: 'Snow' }];
-      let city = 'Yerevan';
+      const cities = [
+        {name:'Yerevan',lat:40.1792,lon:44.4991},{name:'Moscow',lat:55.7558,lon:37.6173},
+        {name:'Tokyo',lat:35.6762,lon:139.6503},{name:'New York',lat:40.7128,lon:-74.006},
+        {name:'Berlin',lat:52.52,lon:13.405},{name:'Paris',lat:48.8566,lon:2.3522},
+        {name:'London',lat:51.5072,lon:-0.1276},{name:'Dubai',lat:25.2048,lon:55.2708}
+      ];
+      let city = cities[0], requestId = 0;
+      const condition = code => code===0?'Clear':([1,2,3].includes(code)?'Cloudy':([45,48].includes(code)?'Fog':([51,53,55,56,57].includes(code)?'Drizzle':([61,63,65,66,67,80,81,82].includes(code)?'Rain':([71,73,75,77,85,86].includes(code)?'Snow':([95,96,99].includes(code)?'Thunderstorm':'Current conditions'))))));
+      const symbol = code => code===0?'☀':([1,2,3].includes(code)?'⛅':([45,48].includes(code)?'🌫':([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)?'🌧':([71,73,75,77,85,86].includes(code)?'❄':([95,96,99].includes(code)?'⛈':'🌡')))));
       async function render() {
-        const c = conds[U.rint(0, conds.length - 1)];
-        const temp = U.rint(-5, 35);
-        wrap.innerHTML = `
-          <div style="font-size:13px;color:var(--fg-2);letter-spacing:3px;text-transform:uppercase;font-weight:500">${city}</div>
-          <div style="font-size:90px;line-height:1">${c.i}</div>
-          <div style="font-size:96px;font-weight:200;color:var(--accent);line-height:1;letter-spacing:-4px">${temp}°</div>
-          <div style="font-size:14px;color:var(--fg-1);letter-spacing:2px;margin-bottom:20px;font-weight:500">${c.n}</div>
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            ${cities.map(cc => '<button class="btn" data-city="' + cc + '" style="padding:6px 14px;font-size:11px">' + cc + '</button>').join('')}
-          </div>
-        `;
-        wrap.querySelectorAll('[data-city]').forEach(b => {
-          b.onclick = () => { city = b.dataset.city; render(); };
-        });
+        const id = ++requestId;
+        wrap.innerHTML = '<div style="font-size:13px;color:var(--fg-2);letter-spacing:3px;text-transform:uppercase;font-weight:500">'+U.esc(city.name)+'</div><div style="font-size:52px">⏳</div><div style="color:var(--fg-1)">Loading live weather…</div><div id="weatherCities" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"></div>';
+        const picker=wrap.querySelector('#weatherCities');
+        cities.forEach(cc=>{const b=U.mk('button',{class:'btn',text:cc.name});b.style.cssText='padding:6px 12px;font-size:11px';b.onclick=()=>{city=cc;render()};picker.appendChild(b)});
+        try {
+          const url='https://api.open-meteo.com/v1/forecast?latitude='+city.lat+'&longitude='+city.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto';
+          const response=await fetch(url,{headers:{Accept:'application/json'}});
+          if(!response.ok)throw new Error('Weather service returned HTTP '+response.status);
+          const json=await response.json();if(id!==requestId)return;
+          const c=json.current;if(!c)throw new Error('No current weather data was returned');
+          wrap.innerHTML='<div style="font-size:13px;color:var(--fg-2);letter-spacing:3px;text-transform:uppercase;font-weight:500">'+U.esc(city.name)+'</div><div style="font-size:76px;line-height:1">'+symbol(c.weather_code)+'</div><div style="font-size:82px;font-weight:200;color:var(--accent);line-height:1;letter-spacing:-4px">'+Math.round(c.temperature_2m)+'°C</div><div style="font-size:14px;color:var(--fg-1);margin-bottom:8px">'+condition(c.weather_code)+'</div><div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;color:var(--fg-2)"><span>Feels like <b>'+Math.round(c.apparent_temperature)+'°C</b></span><span>Humidity <b>'+c.relative_humidity_2m+'%</b></span><span>Wind <b>'+Math.round(c.wind_speed_10m)+' km/h</b></span></div><div style="font-size:10px;color:var(--fg-3)">Updated '+U.esc(c.time||'now')+' · Open-Meteo</div><div id="weatherCities" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"></div>';
+          const picker2=wrap.querySelector('#weatherCities');
+          cities.forEach(cc=>{const b=U.mk('button',{class:'btn',text:cc.name});b.style.cssText='padding:6px 12px;font-size:11px';b.onclick=()=>{city=cc;render()};picker2.appendChild(b)});
+        } catch(e) {
+          if(id!==requestId)return;
+          const msg=U.mk('div',{style:{color:'#fca5a5',padding:'8px'},text:'Could not load live weather: '+e.message});
+          wrap.appendChild(msg);
+          const note=U.mk('div',{class:'small',text:'Check your internet connection and retry.'});wrap.appendChild(note);
+          const retry=U.mk('button',{class:'btn primary',text:'Retry'});retry.onclick=render;wrap.appendChild(retry);
+        }
       }
       render();
     },
-  },
-  {
     id: 'clock', name: 'Clock', icon: '◷', category: 'Utilities',
     desc: 'Digital clock with timer and stopwatch.',
     version: '1.0.0', size: '8 KB',
@@ -2696,8 +2706,20 @@ const Store = (() => {
     await VFS.write('/Apps/' + id + '/manifest.json', JSON.stringify({
       id: app.id, name: app.name, version: app.version,
       category: app.category, icon: app.icon, desc: app.desc,
+      entrypoint: 'app.js', runtime: 'AWEWEBOS Web Runtime',
       installed: Date.now(),
     }, null, 2));
+    await VFS.write('/Apps/' + id + '/package.json', JSON.stringify({
+      name: app.id, displayName: app.name, version: app.version,
+      description: app.desc, category: app.category, entrypoint: 'app.js',
+      runtime: 'AWEWEBOS Web Runtime', permissions: ['awewebos.files.readwrite'],
+      installedAt: new Date().toISOString()
+    }, null, 2));
+    await VFS.write('/Apps/' + id + '/app.js',
+      '/* AWEWEBOS app package. Runs inside the bundled AWEWEBOS runtime; it is not a native executable. */\\n' +
+      'export default {' + app.mount.toString() + '};\\n');
+    await VFS.write('/Apps/' + id + '/README.txt',
+      app.name + '\\nInstalled by AWEWEBOS App Store.\\nEntrypoint: app.js\\nRuntime: AWEWEBOS Web Runtime\\nThis package uses the built-in AWEWEBOS APIs and does not run as a standalone OS-native program.\\n');
 
     // Register app
     Apps.registerInstalled(id, {
