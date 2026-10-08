@@ -3199,10 +3199,45 @@ Apps.registerBuiltin('store', {
       tabs.appendChild(t);
     });
 
+    const localPackages = U.mk('div',{style:{padding:'10px 14px',borderBottom:'1px solid var(--border)',display:'flex',flexDirection:'column',gap:'8px'}});
+    localPackages.appendChild(U.mk('h3',{text:'My installed portable apps',style:{fontSize:'12px',color:'var(--fg-1)'}}));
+    const localPackageList = U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}});
+    localPackages.appendChild(localPackageList);
     const list = U.mk('div', { class: 'store-list' });
 
-    wrap.append(header, hubNote, portableBar, tabs, list);
+    wrap.append(header, hubNote, portableBar, localPackages, tabs, list);
     body.appendChild(wrap);
+    async function loadLocalPackages() {
+      localPackageList.innerHTML='';
+      try {
+        const dirs=await VFS.list('/Apps');
+        let found=0;
+        for(const item of dirs) {
+          if(item.type!=='dir')continue;
+          const base='/Apps/'+item.name;
+          const html=await VFS.read(base+'/index.html');
+          if(html===null)continue;
+          let manifest={name:item.name,description:'Portable HTML mini-app'};
+          try{manifest=JSON.parse((await VFS.read(base+'/manifest.json'))||'{}');}catch(e){}
+          found++;
+          const row=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'8px',border:'1px solid var(--border)',borderRadius:'7px'}});
+          const info=U.mk('div',{style:{flex:'1',minWidth:'0'}},[U.mk('div',{text:manifest.name||item.name,style:{fontWeight:'600'}}),U.mk('div',{text:manifest.description||'Portable HTML mini-app',style:{fontSize:'10px',color:'var(--fg-2)',overflow:'hidden',textOverflow:'ellipsis'}})]);
+          const open=U.mk('button',{class:'btn primary',text:'Open'});open.onclick=()=>openPackage(manifest.name||item.name,html);
+          const remove=U.mk('button',{class:'btn danger',text:'Remove'});remove.onclick=async()=>{if(!confirm('Remove '+(manifest.name||item.name)+' from /Apps?'))return;try{await VFS.remove(base);await loadLocalPackages();Notif.push('App Hub','Package removed.');}catch(e){Notif.push('Remove failed',e.message);}};
+          row.append(info,open,remove);localPackageList.appendChild(row);
+        }
+        if(!found)localPackageList.appendChild(U.mk('div',{text:'No portable apps installed yet. Create or install an AppID above.',style:{fontSize:'11px',color:'var(--fg-2)'}}));
+      } catch(e) { localPackageList.appendChild(U.mk('div',{text:'Could not scan /Apps: '+e.message,style:{fontSize:'11px',color:'#f59e0b'}})); }
+    }
+    function openPackage(name,html) {
+      const modal=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.78)',display:'grid',placeItems:'center',padding:'16px'}});
+      const card=U.mk('div',{style:{width:'min(900px,100%)',height:'min(700px,90%)',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'12px',display:'flex',flexDirection:'column',overflow:'hidden'}});
+      const top=U.mk('div',{style:{padding:'10px',display:'flex',gap:'8px',alignItems:'center'}},[U.mk('strong',{text:name,style:{flex:'1'}})]);
+      const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>modal.remove();top.appendChild(close);
+      const frame=U.mk('iframe',{title:'Sandboxed portable app',sandbox:'allow-scripts allow-forms',style:{border:'0',width:'100%',flex:'1',background:'#fff'}});frame.srcdoc=html;
+      card.append(top,frame);modal.appendChild(card);document.body.appendChild(modal);
+    }
+    loadLocalPackages();
 
     function renderList() {
       list.innerHTML = '';
