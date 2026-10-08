@@ -39,3 +39,10 @@ The native workflow installs the Tauri CLI, generates app icons, and builds Wind
 ## Development
 
 Serve the root over HTTP/HTTPS, not `file://`, to test service workers and PWA installability. Browser APIs differ by browser and OS. Native builds require the Rust toolchain and platform-specific dependencies.
+
+
+## Persistent Web OS workspace
+
+The Files application can initialize a directory selected by the user through the browser's File System Access API (supported mainly by Chromium-based desktop browsers over HTTPS). First-run setup can initialize the selected folder immediately. It creates a non-destructive AWEWEBOS folder structure (System, Apps, Users, Desktop, Documents, Downloads, Pictures, Videos, Music, Shared, and Trash) and stores real files there, including system metadata, an app catalog, starter documents, and copies of the web runtime in System/Runtime/.
+
+The file manager supports browsing folders, creating folders and text files, opening/editing/saving small text files, uploading files into the selected folder, and deleting selected items. Deletion is permanent. Initialization creates missing starter files without replacing existing user documents; it refreshes AWEWEBOS runtime assets and system metadata. Choose a folder you control rather than the root of a drive. This feature never formats a disk and does not install native binaries or grant privileged OS access. For security reasons, browser access requires a user gesture and explicit permission. See the [MDN File System Access API documentation](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API).
