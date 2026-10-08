@@ -35,6 +35,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install frontend tools
         run: npm install
+      - name: Prepare web assets and icons
+        run: |
+          mkdir -p dist
+          cp index.html manifest.webmanifest sw.js icon.svg dist/
+          npx tauri icon icon.svg
       - name: Build native app
         run: npx tauri build
       - name: Upload native bundles
