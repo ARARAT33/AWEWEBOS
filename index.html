@@ -1,88 +1,3226 @@
-<!doctype html>
-<html lang="hy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080d18"><meta name="description" content="AWEWEBOS local-first web operating environment"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg"><title>AWEWEBOS — AWE Operating Environment</title>
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b0f19">
+<title>AWEWEBOS — Web Operating System</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300d4ff'/%3E%3Cstop offset='1' stop-color='%237c3aed'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='112' fill='%230b0f19'/%3E%3Ctext x='50%25' y='58%25' font-size='260' text-anchor='middle' dominant-baseline='middle' fill='url(%23g)' font-family='sans-serif' font-weight='800'%3EA%3C/text%3E%3C/svg%3E">
 <style>
-:root{color-scheme:dark;--bg:#080d18;--panel:#101c30;--line:#2a3d59;--text:#e9f2ff;--muted:#9aabc4;--cyan:#45d7f5;--blue:#6888ff;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% 20%,#18365c,transparent 38%),radial-gradient(ellipse at 20% 85%,#112c45,transparent 42%),#080d18;color:var(--text);height:100dvh;overflow:hidden}button,input,textarea,select{font:inherit}button{color:inherit;background:#17243a;border:1px solid var(--line);border-radius:11px;padding:9px 12px;cursor:pointer}button:hover{border-color:var(--cyan)}button.primary{background:linear-gradient(135deg,#147c9a,#3d59bb)}input,textarea,select{color:var(--text);background:#08111f;border:1px solid #31445f;border-radius:10px;padding:10px;max-width:100%}.muted{color:var(--muted)}.small{font-size:12px}.hidden{display:none!important}header{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 15px;background:#080d18b8;border-bottom:1px solid #ffffff18;backdrop-filter:blur(18px);position:relative;z-index:5}#brand{font-weight:900;letter-spacing:1px}#brand b{color:var(--cyan)}#desktop{height:calc(100dvh - 44px);padding:18px;position:relative;background-image:linear-gradient(#5bd5ff08 1px,transparent 1px),linear-gradient(90deg,#5bd5ff08 1px,transparent 1px);background-size:38px 38px}.icons{display:grid;grid-template-columns:repeat(2,86px);gap:8px}.deskicon{display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent;border-color:transparent;font-size:12px;height:88px}.emoji{font-size:24px;background:#1a2d48;border-radius:15px;width:46px;height:46px;display:grid;place-items:center}.hero{position:absolute;right:5%;top:13%;text-align:right;pointer-events:none}.hero h1{font-size:clamp(38px,6vw,76px);line-height:.95;letter-spacing:-4px;margin:0}.hero h1 span{color:var(--cyan)}.hero p{max-width:350px;color:#b4c6df;margin-left:auto}#dock{position:fixed;bottom:0;left:0;right:0;transform:none;display:flex;align-items:center;gap:5px;padding:7px 10px;background:#080f1eef;border-top:1px solid #ffffff24;border-radius:0;max-width:none;overflow-x:auto;z-index:150;backdrop-filter:blur(22px);min-height:62px}#dock .start-button{flex:0 0 52px;width:52px;font-size:22px;background:linear-gradient(135deg,#167d9c,#4658bb)}#dock .task-spacer{flex:1;min-width:8px}#dock .task-status{font-size:11px;color:var(--muted);white-space:nowrap;padding:0 8px}#desktop{padding-bottom:80px}#dock button{flex:0 0 46px;width:46px;height:46px;padding:0;font-size:21px;border-radius:14px}.window{position:absolute;z-index:10;left:50%;top:49%;transform:translate(-50%,-50%);width:min(840px,calc(100vw - 24px));height:min(590px,calc(100dvh - 145px));display:flex;flex-direction:column;background:#0d1728f5;border:1px solid #3b506d;border-radius:16px;box-shadow:0 25px 80px #000a;overflow:hidden}.window.max{left:8px;top:44px;transform:none;width:calc(100vw - 16px);height:calc(100dvh - 122px)}.winhead{height:44px;flex:0 0 44px;background:#142239;display:flex;align-items:center;justify-content:space-between;padding:0 12px;cursor:move}.winhead button{padding:1px 8px}.winbody{padding:17px;overflow:auto;flex:1}.winbody h2{margin:0 0 8px}.winbody p{color:#b5c5da}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row input,.row textarea{flex:1}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px}.card{background:#142239;border:1px solid #2b3e59;border-radius:13px;padding:13px}.card h3{margin:5px 0}.field{width:100%;margin:5px 0 10px}.list{display:grid;gap:7px}.item{background:#101e32;border:1px solid #263952;border-radius:10px;padding:10px;display:flex;justify-content:space-between;gap:8px}.metric{font-size:25px;font-weight:800;color:var(--cyan)}.terminal{background:#050a12;color:#a7f2d2;padding:12px;border-radius:10px;font:13px/1.6 ui-monospace,monospace;white-space:pre-wrap}.toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%);background:#172941;border:1px solid #45617e;border-radius:11px;padding:10px 15px;z-index:99;max-width:90vw}.goog-te-gadget{color:#9aabc4!important}.goog-te-gadget .goog-te-combo{background:#0c1728;color:#fff;border:1px solid #30435d;border-radius:8px;padding:7px}.goog-logo-link,.goog-te-gadget span{display:none!important}iframe{max-width:100%}a{color:var(--cyan)}@media(max-width:650px){.hero{display:none}#desktop{padding:12px 6px 78px}.window{width:calc(100vw - 12px);height:calc(100dvh - 130px)}.winbody{padding:12px}.cards{grid-template-columns:1fr}#dock{gap:4px;padding:5px;min-height:55px}#dock button{flex-basis:39px;width:39px;height:39px}#dock .start-button{flex-basis:46px;width:46px}header{padding:0 8px}}
-
-#startMenu{position:fixed;left:10px;bottom:72px;width:min(390px,calc(100vw - 20px));max-height:min(72dvh,680px);overflow:hidden;z-index:170;background:#0c1729f5;border:1px solid #415a7b;border-radius:18px;box-shadow:0 28px 90px #000b;backdrop-filter:blur(24px);display:flex;flex-direction:column}#startMenu.hidden{display:none!important}.start-top{padding:14px 14px 10px;border-bottom:1px solid #ffffff16}.start-top strong{font-size:18px}.start-search{width:100%;margin-top:10px}.start-scroll{overflow:auto;padding:10px 12px 14px}.start-label{font-size:11px;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin:10px 4px 7px}.start-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.start-app{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:78px;background:transparent;border-color:transparent;font-size:11px;text-align:center;padding:7px 3px}.start-app .emoji{width:39px;height:39px;font-size:21px}.start-app:hover{background:#233b5b;border-color:#45617f}.start-row{display:flex;align-items:center;gap:7px}.start-row button{flex:1;text-align:left;background:transparent;border-color:transparent}.start-category{border:1px solid #ffffff12;border-radius:10px;margin:6px 0;overflow:hidden}.start-category summary{padding:10px 12px;cursor:pointer;background:#142239;font-size:13px;font-weight:700;list-style:none}.start-category summary::after{content:'＋';float:right;color:var(--muted)}.start-category[open] summary::after{content:'−'}.start-category .start-grid{padding:5px}.start-footer{display:flex;gap:6px;padding:8px 12px;border-top:1px solid #ffffff16}.start-footer button{flex:1;font-size:12px}.task-running{outline:1px solid #45d7f5!important;background:#203852!important}
-</style><link rel="stylesheet" href="./setup.css"></head><body>
-<header><div id="brand">◈ <b>AWE</b>WEBOS <span class="small muted">· WEB KERNEL</span></div><div class="row"><span id="net" class="small muted">● Local system</span><span id="clock" class="small"></span><button onclick="openApp('settings')" title="Settings">⚙</button></div></header>
-<main id="desktop"><div class="icons" id="icons"></div><div class="hero"><h1>YOUR DEVICE.<br><span>YOUR WORLD.</span></h1><p>A local-first web operating environment for the AWE ecosystem.</p><span class="muted small">PWA · Local storage · Offline shell</span></div><div id="windows"></div><nav id="dock"></nav></main><div id="toast" class="toast hidden"></div>
-<script>
-const apps=[
-['files','📁','Files & Storage'],['translate','🌐','Universal Translate'],['browser','🧭','AWE Browser'],['notes','📝','Notes'],['store','🛍️','AWESTORE'],['wallet','◉','ONECOIN Wallet'],['node','🔗','AWENET Node'],['messenger','💬','AWE Messenger'],['studio','⌘','Developer Studio'],['terminal','>_','Terminal'],['monitor','📊','System Monitor'],['settings','⚙️','Settings'],['help','❔','System Guide']
-];
-const $=id=>document.getElementById(id);let z=10, folder=null, deferredPrompt=null;
-let data={notes:'',name:'AWE User',coins:10,messages:[],theme:'aurora',...(JSON.parse(localStorage.getItem('awewebos.v2')||'{}'))};
-function save(){try{data.settingsUpdatedAt=new Date().toISOString();localStorage.setItem('awewebos.v2',JSON.stringify(data));if(typeof window.persistWorkspaceSettings==='function')window.persistWorkspaceSettings(data)}catch{toast('Browser storage unavailable or full.')}}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function toast(s){$('toast').textContent=s;$('toast').classList.remove('hidden');clearTimeout(window.tt);window.tt=setTimeout(()=>$('toast').classList.add('hidden'),3200)}
-function appInfo(id){return apps.find(a=>a[0]===id)||apps[0]}
-function init(){const ids=['files','translate','browser','notes','store','node','messenger','studio','settings'];$('icons').innerHTML=ids.map(id=>{let a=appInfo(id);return '<button class="deskicon" onclick="openApp(&quot;'+id+'&quot;)"><span class="emoji">'+a[1]+'</span>'+a[2]+'</button>'}).join('');$('dock').innerHTML='<button class="start-button" onclick="launcher()" title="Start menu">◈</button>'+['files','browser','translate','notes','messenger','store','terminal','settings','monitor'].map(id=>'<button title="'+appInfo(id)[2]+'" onclick="openApp(&quot;'+id+'&quot;)">'+appInfo(id)[1]+'</button>').join('')+'<span class="task-spacer"></span><span class="task-status" id="taskWorkspace">Local workspace</span>';setInterval(()=>$('clock').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),1000);if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});window.addEventListener('online',()=>{$('net').textContent='● Online'});window.addEventListener('offline',()=>{$('net').textContent='● Offline'});window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e});if('launchQueue'in window)window.launchQueue.setConsumer(p=>{if(p.files?.length)toast('Received '+p.files.length+' file(s)')})}
-function openApp(id){let old=$('w-'+id);if(old){old.classList.remove('hidden');old.style.zIndex=++z;return}let a=appInfo(id),w=document.createElement('section');w.className='window';w.id='w-'+id;w.style.zIndex=++z;w.innerHTML='<div class="winhead"><b>'+a[1]+' '+a[2]+'</b><div><button onclick="minApp(&quot;'+id+'&quot;)">—</button><button onclick="maxApp(&quot;'+id+'&quot;)">□</button><button onclick="closeApp(&quot;'+id+'&quot;)">×</button></div></div><div class="winbody">'+content(id)+'</div>';$('windows').appendChild(w);drag(w);if(id==='notes')$('notesArea').value=data.notes||'';if(id==='studio')$('code').value=localStorage.getItem('awewebos.code')||'<h1>Hello AWEWEBOS</h1><p>Build something on your device.</p>';if(id==='translate')loadTranslate();if(id==='monitor')monitor();if(id==='files')storageEstimate();if(id==='settings'){const t=$('settingsTheme');if(t)t.value=data.theme||'aurora';const l=$('settingsLanguage');if(l)l.value=data.language||'hy';const k=$('settingsKeyboard');if(k)k.value=data.keyboard||'hy';const ws=$('settingsWorkspace');if(ws)ws.textContent=folder?'Connected workspace: '+folder.name:(data.workspaceName?'Saved workspace: '+data.workspaceName+' · permission may need reconnection':'No workspace folder selected');if(navigator.storage?.estimate)navigator.storage.estimate().then(e=>{const h=$('settingsStorage');if(h)h.textContent='Browser origin storage: '+((e.usage||0)/1048576).toFixed(1)+' MB used'})}if(id==='calendar')renderCalendarEvents()}
-function closeApp(id){$('w-'+id)?.remove()}function minApp(id){$('w-'+id).classList.add('hidden')}function maxApp(id){$('w-'+id).classList.toggle('max')}
-function drag(w){let h=w.querySelector('.winhead'),sx,sy,x,y;h.addEventListener('pointerdown',e=>{if(e.target.closest('button')||w.classList.contains('max'))return;sx=e.clientX;sy=e.clientY;let r=w.getBoundingClientRect();x=r.left;y=r.top;w.style.transform='none';w.style.left=x+'px';w.style.top=y+'px';w.style.zIndex=++z;h.setPointerCapture(e.pointerId)});h.addEventListener('pointermove',e=>{if(!h.hasPointerCapture(e.pointerId))return;w.style.left=Math.max(0,Math.min(innerWidth-w.offsetWidth,x+e.clientX-sx))+'px';w.style.top=Math.max(44,Math.min(innerHeight-80,y+e.clientY-sy))+'px'});h.addEventListener('pointerup',e=>{try{h.releasePointerCapture(e.pointerId)}catch{}})}
-function content(id){switch(id){
-case'files':return '<h2>Files & Storage</h2><p>Open a folder explicitly. Browser permissions and capabilities vary.</p><div class="row"><button class="primary" onclick="pickFolder()">📂 Open folder</button><button onclick="exportData()">Export backup</button><button onclick="$(&quot;importFile&quot;).click()">Import backup</button><input id="importFile" type="file" accept="application/json" class="hidden" onchange="importData(this)"></div><div id="folderStatus" class="item">No external folder selected.</div><div id="storage" class="card">Checking origin storage…</div><div id="fileList" class="list"></div><div class="row"><input id="fileName" placeholder="new-file.txt"><button onclick="createFile()">Create text file</button></div>';
-case'translate':return '<h2>Universal Translator</h2><p>Google Translate widget can translate this interface into many supported languages.</p><div id="google_translate_element"></div><h3>Translate text</h3><textarea id="sourceText" class="field" rows="5" placeholder="Type or paste text…"></textarea><div class="row"><select id="targetLang" class="field" style="flex:1">'+[['en','English'],['hy','Հայերեն'],['ru','Русский'],['fr','Français'],['de','Deutsch'],['es','Español'],['ar','العربية'],['zh-CN','中文（简体）'],['zh-TW','中文（繁體）'],['hi','हिन्दी'],['ja','日本語'],['ko','한국어'],['pt','Português'],['it','Italiano'],['tr','Türkçe'],['fa','فارسی'],['uk','Українська'],['el','Ελληνικά'],['nl','Nederlands'],['pl','Polski'],['he','עברית'],['ka','ქართული'],['az','Azərbaycanca'],['bn','বাংলা'],['id','Indonesia'],['vi','Tiếng Việt'],['th','ไทย'],['sw','Kiswahili'],['sv','Svenska'],['no','Norsk'],['da','Dansk'],['fi','Suomi'],['cs','Čeština'],['ro','Română'],['hu','Magyar'],['sr','Српски'],['hr','Hrvatski'],['bg','Български'],['sk','Slovenčina'],['sl','Slovenščina'],['ur','اردو'],['ta','தமிழ்'],['te','తెలుగు'],['mr','मराठी'],['ms','Melayu'],['fil','Filipino'],['ca','Català'],['et','Eesti'],['lv','Latviešu'],['lt','Lietuvių']].map(x=>'<option value="'+x[0]+'">'+x[1]+'</option>').join('')+'</select><button class="primary" onclick="translateText()">Translate</button></div><textarea id="translatedText" class="field" rows="5" readonly placeholder="Translation…"></textarea><p class="small muted">Needs internet. Text may be sent to Google; do not translate confidential content. The direct endpoint is unofficial, not a guaranteed public API.</p>';
-case'browser':return '<h2>AWE Browser</h2><p>Open a web address or try AWE ecosystem links. Live AWEID resolution needs an AWENET gateway, not configured yet.</p><div class="row"><input id="url" class="field" placeholder="https://example.com or AWEID"><button class="primary" onclick="goURL()">Open ↗</button></div><div class="row"><button onclick="quickURL(&quot;https://github.com/ARARAT33/AWENET&quot;)">AWENET</button><button onclick="quickURL(&quot;https://github.com/ARARAT33/AWE&quot;)">AWE</button><button onclick="quickURL(&quot;https://github.com/ARARAT33/AWEWEBOS&quot;)">AWEWEBOS</button></div><div class="card"><b>Note</b><p>External sites open in a separate tab. Some websites block embedding by design.</p></div>';
-case'notes':return '<h2>Local Notes</h2><p>Automatically saved to this browser.</p><textarea id="notesArea" class="field" rows="13" oninput="data.notes=this.value;save()" placeholder="Your notes…"></textarea><button onclick="downloadText(&quot;awe-notes.txt&quot;,data.notes)">Download TXT</button>';
-case'store':return '<h2>AWESTORE · On-device app library</h2><p>Install an HTML mini-app from a file on your device. It is stored locally and launched in a sandbox. Only install code you trust.</p><div class="row"><input id="appPackage" type="file" accept=".html,.htm,text/html" class="field"><button class="primary" onclick="installLocalApp()">Install HTML app</button></div><div id="installedApps" class="list"></div><h3>Built-in apps</h3><div class="cards">'+[['translate','🌐','Translator'],['studio','⌘','Developer Studio'],['monitor','📊','System Monitor'],['notes','📝','Notes']].map(a=>'<div class="card"><div class="metric">'+a[1]+'</div><h3>'+a[2]+'</h3><button class="primary" onclick="openApp(&quot;'+a[0]+'&quot;)">Launch</button></div>').join('')+'</div><p class="small muted">Imported apps run with restricted iframe permissions. This local library is not yet a signed, shared global store or payment system.</p>';
-case'wallet':return '<h2>ONECOIN Wallet · Demo</h2><div class="card"><div class="muted">Local demo balance</div><div class="metric">'+Number(data.coins||10).toFixed(2)+' ONECOIN</div><span class="small">No monetary value · not a real wallet</span></div><div class="row" style="margin-top:12px"><button class="primary" onclick="data.coins=Number(data.coins||0)+.1;save();closeApp(&quot;wallet&quot;);openApp(&quot;wallet&quot;);toast(&quot;Demo balance updated only&quot;)">Demo reward +0.1</button><button onclick="data.coins=10;save();closeApp(&quot;wallet&quot;);openApp(&quot;wallet&quot;)">Reset</button></div><p>Real ONECOIN requires an audited protocol, secure keys, transaction validation, network consensus and anti-abuse controls. This prototype cannot send/receive funds.</p>';
-case'node':return '<h2>AWENET Node</h2><div class="cards"><div class="card"><div class="metric">LOCAL</div><b>Device runtime</b><p>This app runs on your device.</p></div><div class="card"><div class="metric">NOT CONNECTED</div><b>AWENET transport</b><p>No live node endpoint configured.</p></div></div><h3>Contribution preferences (saved locally only)</h3><label>Storage quota GB</label><input class="field" id="quota" type="number" min="0" max="10000" value="'+esc(localStorage.getItem('awe.node.quota')||'5')+'"><label>CPU quota %</label><input class="field" id="cpu" type="range" min="0" max="50" value="'+esc(localStorage.getItem('awe.node.cpu')||'5')+'"><button class="primary" onclick="localStorage.setItem(&quot;awe.node.quota&quot;,$ (&quot;quota&quot;).value);localStorage.setItem(&quot;awe.node.cpu&quot;,$ (&quot;cpu&quot;).value);toast(&quot;Preferences saved; no node started&quot;)">Save</button><p class="small muted">No resource sharing runs. A real node requires a reviewed native service, explicit opt-in, isolation and quotas.</p>';
-case'messenger':return '<h2>AWE Messenger · Direct peer connection</h2><p>Connect two browsers directly using WebRTC. Exchange the offer and answer manually (copy/paste) to avoid a hosted signaling server. Both peers need internet/network reachability; some networks require a TURN relay.</p><div class="row"><button class="primary" onclick="p2pCreateOffer()">1. Create offer</button><button onclick="p2pAcceptOffer()">2. Accept offer</button><button onclick="p2pApplyAnswer()">3. Apply answer</button><button onclick="p2pDisconnect()">Disconnect</button></div><label>Connection code (copy to the other device, or paste their reply)</label><textarea id="signalBox" class="field" rows="4" placeholder="Offer/answer JSON appears here…"></textarea><div class="item"><b>Connection status</b><span id="p2pStatus">Not connected</span></div><div class="list" id="messages">'+(data.messages||[]).map(m=>'<div class="item"><div><b>'+esc(m.author)+'</b><br>'+esc(m.text)+'<div class="small muted">'+esc(m.time)+'</div></div></div>').join('')+'</div><div class="row"><input id="message" placeholder="Send direct message…"><button class="primary" onclick="sendMessage()">Send</button></div><p class="small muted">Messages can be sent to the connected peer over an encrypted WebRTC data channel. This is not a full messenger yet: no account discovery, groups, push, voice/video, offline delivery, or guaranteed NAT traversal.</p>';
-case'studio':return '<h2>Developer Studio</h2><p>HTML editor with a sandboxed preview. Draft stays local.</p><textarea id="code" class="field" rows="8" spellcheck="false"></textarea><div class="row"><button class="primary" onclick="preview()">Preview</button><button onclick="localStorage.setItem(&quot;awewebos.code&quot;,$ (&quot;code&quot;).value);toast(&quot;Saved locally&quot;)">Save</button><button onclick="downloadText(&quot;awe-project.html&quot;,$ (&quot;code&quot;).value)">Download</button><button onclick="installStudioApp()">Install in AWESTORE</button></div><iframe id="preview" sandbox="allow-scripts" title="HTML preview" style="width:100%;height:200px;background:white;border-radius:10px;margin-top:12px"></iframe>';
-case'terminal':return '<h2>Safe Command Console</h2><p>Not an OS shell. Commands run only inside this web app.</p><div class="terminal" id="termOut">AWEWEBOS Shell v2\nType help to see commands.</div><div class="row"><span>user@awewebos:~$</span><input id="cmd" onkeydown="if(event.key===&quot;Enter&quot;)command()" placeholder="help"></div>';
-case'monitor':return '<h2>System Monitor</h2><div class="cards"><div class="card"><div class="metric">'+(navigator.hardwareConcurrency||'—')+'</div><div class="muted small">Reported logical CPU cores</div></div><div class="card"><div class="metric">'+(navigator.onLine?'ONLINE':'OFFLINE')+'</div><div class="muted small">Network hint</div></div><div class="card"><div class="metric">'+esc(navigator.language||'—')+'</div><div class="muted small">Browser language</div></div><div class="card"><div class="metric">'+('serviceWorker'in navigator?'YES':'NO')+'</div><div class="muted small">Service worker API</div></div></div><p>Browsers do not expose all hardware telemetry, every monitor, or all disks to ordinary web apps.</p><button onclick="document.documentElement.requestFullscreen().catch(()=>toast(&quot;Fullscreen unavailable&quot;))">Fullscreen</button>';
-case'calculator':return '<h2>Calculator</h2><div class="card"><input id="calcDisplay" class="field" value="0" readonly aria-label="Calculator display"><div class="cards">'+['7','8','9','÷','4','5','6','×','1','2','3','−','0','.','=','+','C'].map(k=>'<button onclick="calcPress(&quot;'+k+'&quot;)">'+k+'</button>').join('')+'</div></div><p class="small muted">Runs locally on this device.</p>';
-case'calendar':return '<h2>Calendar & reminders</h2><div class="card"><label>Date</label><input id="calDate" type="date" class="field" value="'+new Date().toISOString().slice(0,10)+'"><label>Event</label><input id="calTitle" class="field" placeholder="Reminder title"><button class="primary" onclick="addCalendarEvent()">Save reminder</button></div><div id="calendarEvents" class="list"></div><p class="small muted">Stored locally; no cloud sync.</p>';
-case'settings':return '<h2>System Settings</h2><p>Preferences are saved in this browser and mirrored into your chosen workspace when write permission is available.</p><div class="cards"><div class="card"><h3>👤 Profile</h3><label>Display name</label><input id="name" class="field" value="'+esc(data.name||'AWE User')+'"><button class="primary" onclick="data.name=$(&quot;name&quot;).value.trim()||&quot;AWE User&quot;;save();toast(&quot;Profile saved&quot;)">Save profile</button></div><div class="card"><h3>🎨 Appearance</h3><label>Theme</label><select id="settingsTheme" class="field" onchange="data.theme=this.value;save();applyTheme()"><option value="aurora">Aurora Dark</option><option value="midnight">Midnight Blue</option><option value="light">Light</option><option value="contrast">High Contrast</option></select><label>Language</label><select id="settingsLanguage" class="field" onchange="data.language=this.value;document.documentElement.lang=this.value;save()"><option value="hy">Հայերեն</option><option value="en">English</option><option value="ru">Русский</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="es">Español</option><option value="ka">ქართული</option><option value="ar">العربية</option></select><button onclick="showSetup()">Advanced setup…</button></div><div class="card"><h3>⌨️ Keyboard & accessibility</h3><label>Keyboard layout preference</label><select id="settingsKeyboard" class="field" onchange="data.keyboard=this.value;save()"><option value="hy">Armenian</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="ru">Russian</option><option value="fr">French</option><option value="de">German</option><option value="other">System default</option></select><p class="small muted">This saves your preference; a website cannot change the host operating system keyboard layout.</p><button onclick="document.documentElement.requestFullscreen().catch(()=>toast(&quot;Fullscreen unavailable&quot;))">Enter fullscreen</button></div><div class="card"><h3>💾 Storage & backup</h3><p id="settingsWorkspace" class="small muted">Checking workspace…</p><button class="primary" onclick="openApp(&quot;files&quot;)">Manage workspace folder</button><button onclick="requestSavedWorkspacePermission()">Reconnect saved folder</button><button onclick="exportData()">Export settings backup</button><button onclick="$(&quot;importSettingsFile&quot;).click()">Restore backup</button><input id="importSettingsFile" type="file" accept="application/json" class="hidden" onchange="importData(this)"><div id="settingsStorage" class="small muted"></div></div><div class="card"><h3>🔐 Privacy & security</h3><p>Imported HTML apps run in a sandbox. External translation services and websites may receive text or data you submit.</p><button onclick="if(confirm(&quot;Clear only the cached offline shell? The next launch may require internet.&quot;))caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith(&quot;awewebos-shell-&quot;)).map(k=>caches.delete(k)))).then(()=>toast(&quot;Offline shell cache cleared&quot;))">Clear offline cache</button><button onclick="if(confirm(&quot;Clear AWEWEBOS browser settings and restart? Workspace files will not be deleted.&quot;)){localStorage.removeItem(&quot;awewebos.v2&quot;);localStorage.removeItem(&quot;awewebos.setup.complete&quot;);location.reload()}">Reset browser settings</button></div><div class="card"><h3>🧩 System & updates</h3><p>Web OS shell · PWA · local-first storage</p><div class="small muted">Browser: '+esc(navigator.userAgent.slice(0,110))+'</div><button onclick="installPWA()">Install / Add to device</button><button onclick="if(confirm(&quot;Reload the current Web OS shell?&quot;))location.reload()">Restart shell</button></div></div><p class="small muted">A Web OS cannot boot the device like a native operating system or guarantee permanent browser folder permission. Folder handles are remembered where supported; if permission is revoked, reconnect it here without losing preferences.</p>';
-default:return '<h2>About AWEWEBOS</h2><p>AWEWEBOS is a browser-based operating environment foundation, not a bootable OS or a native kernel.</p><div class="list">'+[['Desktop, windows, launcher','Implemented in browser'],['Offline app shell','PWA manifest and service worker'],['Notes and settings','Local browser storage'],['Folder access','Explicit permission; supported browsers only'],['Translation','Google Translate widget; online service'],['AWENET/AWEID/ONECOIN','Integration prototypes; not live services'],['Boot startup/all disks/all displays','Requires OS/native companion']].map(x=>'<div class="item"><b>'+x[0]+'</b><span class="small muted">'+x[1]+'</span></div>').join('')+'</div><p><a href="https://github.com/ARARAT33/AWENET" target="_blank" rel="noopener">AWENET ↗</a> · <a href="https://github.com/ARARAT33/AWE" target="_blank" rel="noopener">AWE ↗</a> · <a href="https://github.com/ARARAT33/AWEWEBOS" target="_blank" rel="noopener">Source ↗</a></p>';
-}}
-function launcher(){
-if($('startMenu')){hideStartMenu();return}
-const menu=document.createElement('section');menu.id='startMenu';
-menu.innerHTML='<div class="start-top"><div class="start-row"><span class="emoji">◈</span><div><strong>AWEWEBOS</strong><div class="small muted">Applications · Settings · Workspace</div></div></div><input id="startSearch" class="start-search" type="search" placeholder="Search apps and settings…" autocomplete="off"></div><div class="start-scroll"><div class="start-label">Pinned apps</div><div id="startPinned" class="start-grid"></div><div class="start-label">Applications & submenus</div><div id="startAll"></div><div class="start-label">System folders</div><div class="start-row"><button data-launch="files">📁 Files & documents</button><button data-launch="files">⬇ Downloads</button></div><div class="start-label">Quick settings</div><div class="start-row"><button data-launch="settings">⚙ System settings</button><button data-setup="1">✨ Setup wizard</button></div></div><div class="start-footer"><button data-launch="settings">⚙ System</button><button data-install="1">⬇ Install</button><button data-restart="1">↻ Restart</button></div>';
-document.body.appendChild(menu);
-const draw=q=>{const filtered=apps.filter(a=>(a[2]+' '+a[0]).toLowerCase().includes(q.toLowerCase()));const make=a=>'<button class="start-app" data-id="'+a[0]+'"><span class="emoji">'+a[1]+'</span><span>'+esc(a[2])+'</span></button>';const pinned=['files','browser','notes','messenger','store','settings'].map(id=>appInfo(id)).filter(a=>filtered.includes(a));$('startPinned').innerHTML=pinned.map(make).join('')||'<span class="small muted">No matches</span>';const groups=[['Productivity',['notes','calendar','calculator','studio']],['Internet & language',['browser','translate']],['AWE ecosystem',['messenger','store','wallet','node']],['System tools',['files','terminal','monitor','settings','help']]];$('startAll').innerHTML=groups.map((g,i)=>{const items=filtered.filter(a=>g[1].includes(a[0]));return items.length?'<details class="start-category" '+(q?'open':'')+'><summary>'+g[0]+' <span class="small muted">('+items.length+')</span></summary><div class="start-grid">'+items.map(make).join('')+'</div></details>':''}).join('')||'<p class="muted small">No applications found.</p>';menu.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{openApp(b.dataset.id);hideStartMenu()})};
-draw('');$('startSearch').addEventListener('input',e=>draw(e.target.value));
-menu.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.launch)openApp(b.dataset.launch);if(b.dataset.setup)showSetup();if(b.dataset.install)installPWA();if(b.dataset.restart&&confirm('Reload AWEWEBOS? Unsaved editor text may be lost.'))location.reload();if(b.dataset.launch||b.dataset.setup||b.dataset.install||b.dataset.restart)hideStartMenu()});
-const outside=e=>{if(!e.target.closest('#startMenu')&&!e.target.closest('.start-button')){hideStartMenu();document.removeEventListener('pointerdown',outside)}};setTimeout(()=>document.addEventListener('pointerdown',outside),0);$('startSearch').focus()
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg-0:#050608;--bg-1:#0b0f19;--bg-2:#111827;--bg-3:#1a2233;--bg-4:#232d42;
+--fg-0:#f0f6fc;--fg-1:#c9d5e3;--fg-2:#8b9bb4;--fg-3:#5a6a82;
+--border:rgba(255,255,255,.08);--border-strong:rgba(255,255,255,.14);
+--accent:#00d4ff;--accent-2:#7c3aed;--accent-rgb:0,212,255;
+--radius-sm:6px;--radius:10px;--radius-lg:16px;
+--shadow:0 8px 24px rgba(0,0,0,.5);--shadow-lg:0 20px 60px rgba(0,0,0,.7);
+--blur:20px;--blur-heavy:40px;
+--font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+--font-mono:'SF Mono','Cascadia Code','Consolas','Courier New',monospace;
+--transition:180ms cubic-bezier(.4,0,.2,1);
+--menubar-h:30px;--dock-h:64px;
 }
-function hideStartMenu(){$('startMenu')?.remove()}
-async function pickFolder(){if(!window.showDirectoryPicker){toast('Folder picker unsupported in this browser. Try desktop Chromium.');return}try{folder=await showDirectoryPicker({mode:'readwrite'});await folder.requestPermission({mode:'readwrite'});await saveSharedFolderHandle(folder);$('folderStatus').textContent='Connected: '+folder.name+' · handle saved for this browser origin';let html='';for await(const [n,h] of folder.entries())html+='<div class="item"><span>'+esc(n)+'</span><span class="small">'+h.kind+'</span></div>';$('fileList').innerHTML=html;toast('Folder access granted')}catch(e){if(e.name!=='AbortError')toast('Folder permission denied or cancelled')}}
-async function createFile(){if(!folder){toast('Open a folder first');return}let n=$('fileName').value.trim();if(!n||/[\\/]/.test(n)){toast('Enter a simple file name');return}try{let h=await folder.getFileHandle(n,{create:true}),w=await h.createWritable();await w.write('Created by AWEWEBOS\n');await w.close();toast('File created');pickFolder()}catch(e){toast('Could not create file')}}
-async function storageEstimate(){if(navigator.storage?.estimate){let e=await navigator.storage.estimate();$('storage').textContent='Origin storage used: '+((e.usage||0)/1048576).toFixed(2)+' MB / '+((e.quota||0)/1048576).toFixed(0)+' MB estimated quota'}}
-function exportData(){downloadText('awewebos-backup.json',JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2),'application/json')}
-function importData(input){let f=input.files?.[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data={...data,...JSON.parse(r.result)};save();toast('Backup imported; reload to apply all fields')}catch{toast('Invalid backup JSON')}};r.readAsText(f)}
-function downloadText(name,text,type='text/plain'){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
-function goURL(){let u=$('url').value.trim();if(!u)return;if(!/^https?:\/\//i.test(u)){if(!u.includes('.')&&!u.includes('/')){toast('AWEID gateway not configured');return}u='https://'+u}try{let p=new URL(u);if(!['http:','https:'].includes(p.protocol))throw 0;window.open(p.href,'_blank','noopener,noreferrer')}catch{toast('Invalid URL')}}
-function quickURL(u){window.open(u,'_blank','noopener,noreferrer')}
-function loadTranslate(){if(window.google?.translate?.TranslateElement)return;window.googleTranslateElementInit=()=>{try{new google.translate.TranslateElement({pageLanguage:'hy',autoDisplay:false},'google_translate_element')}catch{}};if(!document.querySelector('[data-translate-script]')){let s=document.createElement('script');s.dataset.translateScript='1';s.src='https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';s.onerror=()=>toast('Google Translate needs internet access');document.head.appendChild(s)}}
-async function translateText(){let text=$('sourceText').value.trim(),target=$('targetLang').value;if(!text){toast('Enter text first');return}let out=$('translatedText');out.value='Translating…';try{let r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='+encodeURIComponent(target)+'&dt=t&q='+encodeURIComponent(text));if(!r.ok)throw Error();let d=await r.json();out.value=(d[0]||[]).map(x=>x[0]||'').join('')}catch{out.value='Translation endpoint unavailable. Use the Google Translate page widget or translate.google.com. The direct endpoint is unofficial.'}}
-function sendMessage(){let v=$('message').value.trim();if(!v)return;const m={author:data.name||'AWE User',text:v,time:new Date().toLocaleString()};data.messages.push(m);save();if(dataChannel?.readyState==='open'){try{dataChannel.send(JSON.stringify({type:'chat',author:m.author,text:v}));p2pSetStatus('Connected · message sent')}catch{toast('Could not send over peer connection')}}else toast('Saved locally only — connect to a peer to send');closeApp('messenger');openApp('messenger')}
-function preview(){$('preview').srcdoc=$('code').value}
-function command(){let c=$('cmd').value.trim(),o=$('termOut');$('cmd').value='';let r={help:'help, clear, date, whoami, apps, status, open <app>, export',date:new Date().toString(),whoami:data.name,apps:apps.map(a=>a[0]+' — '+a[2]).join('\n'),status:'Local browser kernel active; AWENET not connected.'};if(c==='clear')o.textContent='';else if(c.startsWith('open ')){let id=c.slice(5).trim();if(apps.some(a=>a[0]===id)){openApp(id);r='Opening '+id}else r='Unknown app; type apps'}else if(c==='export'){exportData();r='Backup exported'}else r=r[c]||'Unknown command. Type help.';if(c!=='clear')o.textContent+='\n$ '+c+'\n'+r}
+html,body{height:100%;overflow:hidden;background:var(--bg-0);color:var(--fg-0);
+font-family:var(--font);font-size:13px;line-height:1.5;overscroll-behavior:none;
+-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,textarea,select{font:inherit;color:inherit;background:none;border:none;outline:none}
+button{cursor:pointer}
+::selection{background:var(--accent);color:#000}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:5px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.3);background-clip:padding-box}
+body{user-select:none;-webkit-user-select:none;touch-action:manipulation}
+input,textarea{user-select:text;-webkit-user-select:text}
+.hidden{display:none!important}
 
-let appDbPromise=null, peer=null, dataChannel=null;
-function appDB(){if(appDbPromise)return appDbPromise;appDbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open('awewebos-app-library',2);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('apps'))req.result.createObjectStore('apps',{keyPath:'id'});if(!req.result.objectStoreNames.contains('settings'))req.result.createObjectStore('settings')};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});return appDbPromise}
-async function installLocalApp(){const f=$('appPackage').files?.[0];if(!f){toast('Choose an HTML file first');return}if(f.size>5*1024*1024){toast('For safety, HTML apps are limited to 5 MB');return}const source=await f.text();if(!/<html|<!doctype|<body/i.test(source)){toast('This does not look like an HTML app');return}const record={id:crypto.randomUUID(),name:f.name.replace(/\.(html?|HTML?)$/,''),source,bytes:f.size,installedAt:new Date().toISOString()};try{const db=await appDB();await new Promise((resolve,reject)=>{const tx=db.transaction('apps','readwrite');tx.objectStore('apps').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});toast('Installed on this device');renderInstalledApps()}catch(e){toast('Could not save app: browser storage may be unavailable')}}
-async function renderInstalledApps(){const host=$('installedApps');if(!host)return;try{const db=await appDB(),items=await new Promise((resolve,reject)=>{const q=db.transaction('apps').objectStore('apps').getAll();q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});host.innerHTML=items.length?items.map(a=>'<div class="item"><div><b>'+esc(a.name)+'</b><div class="small muted">'+(a.bytes/1024).toFixed(1)+' KB · stored on this device</div></div><div class="row"><button onclick="launchLocalApp(\''+a.id+'\')">Launch</button><button onclick="removeLocalApp(\''+a.id+'\')">Remove</button></div></div>').join(''):'<div class="item muted">No imported apps yet.</div>'}catch{host.textContent='Local app database unavailable'}}
-async function launchLocalApp(id){const db=await appDB(),a=await new Promise((resolve,reject)=>{const q=db.transaction('apps').objectStore('apps').get(id);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});if(!a)return;const w=document.createElement('section');w.className='window max';w.style.zIndex=++z;w.innerHTML='<div class="winhead"><b>📦 '+esc(a.name)+'</b><button>×</button></div><iframe title="Sandboxed installed app" sandbox="allow-scripts" referrerpolicy="no-referrer" style="border:0;flex:1;width:100%;background:white"></iframe>';$('windows').appendChild(w);w.querySelector('button').onclick=()=>w.remove();w.querySelector('iframe').srcdoc=a.source;drag(w)}
-async function removeLocalApp(id){const db=await appDB();await new Promise((resolve,reject)=>{const tx=db.transaction('apps','readwrite');tx.objectStore('apps').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});renderInstalledApps();toast('App removed from this device')}
-function p2pSetStatus(s){const e=$('p2pStatus');if(e)e.textContent=s}
-function p2pSetupChannel(ch){dataChannel=ch;ch.onopen=()=>p2pSetStatus('Connected · direct peer channel');ch.onclose=()=>p2pSetStatus('Disconnected');ch.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}if(m.type==='chat'){data.messages.push({author:m.author||'Peer',text:String(m.text||''),time:new Date().toLocaleString()});save();const box=$('messages');if(box){const d=document.createElement('div');d.className='item';d.textContent=(m.author||'Peer')+': '+m.text;box.appendChild(d)}}}}
-async function p2pCreateOffer(){try{peer?.close();peer=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});p2pSetupChannel(peer.createDataChannel('awe-chat'));const offer=await peer.createOffer();await peer.setLocalDescription(offer);await new Promise(resolve=>{if(peer.iceGatheringState==='complete')return resolve();const timer=setTimeout(resolve,7000);peer.onicegatheringstatechange=()=>{if(peer.iceGatheringState==='complete'){clearTimeout(timer);resolve()}}});$('signalBox').value=JSON.stringify(peer.localDescription);p2pSetStatus('Offer created · send this code to peer');}catch(e){toast('Could not create offer: '+e.message)}}
-async function p2pAcceptOffer(){try{const offer=JSON.parse($('signalBox').value);if(offer.type!=='offer')throw Error('Paste an offer JSON first');peer?.close();peer=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});peer.ondatachannel=e=>p2pSetupChannel(e.channel);await peer.setRemoteDescription(offer);const answer=await peer.createAnswer();await peer.setLocalDescription(answer);await new Promise(resolve=>{if(peer.iceGatheringState==='complete')return resolve();const timer=setTimeout(resolve,7000);peer.onicegatheringstatechange=()=>{if(peer.iceGatheringState==='complete'){clearTimeout(timer);resolve()}}});$('signalBox').value=JSON.stringify(peer.localDescription);p2pSetStatus('Answer created · send this code back');}catch(e){toast('Could not accept offer: '+e.message)}}
-async function p2pApplyAnswer(){try{const answer=JSON.parse($('signalBox').value);if(answer.type!=='answer')throw Error('Paste the answer JSON from the other device');await peer.setRemoteDescription(answer);p2pSetStatus('Answer applied · connecting…')}catch(e){toast('Could not apply answer: '+e.message)}}
-function p2pDisconnect(){try{peer?.close()}catch{}peer=null;dataChannel=null;p2pSetStatus('Disconnected')}
+/* ============ SETUP WIZARD ============ */
+#setup{
+position:fixed;inset:0;z-index:99999;
+background:radial-gradient(circle at 30% 30%,rgba(0,212,255,.15),transparent 60%),
+radial-gradient(circle at 70% 70%,rgba(124,58,237,.15),transparent 60%),
+linear-gradient(135deg,#050608,#0b0f19);
+display:flex;align-items:center;justify-content:center;
+padding:24px;overflow-y:auto;
+}
+.setup-card{
+width:min(640px,100%);
+background:rgba(11,15,25,.85);
+backdrop-filter:blur(40px) saturate(180%);
+-webkit-backdrop-filter:blur(40px) saturate(180%);
+border:1px solid var(--border-strong);
+border-radius:var(--radius-lg);
+box-shadow:var(--shadow-lg);
+padding:40px 32px;
+display:flex;flex-direction:column;gap:24px;
+}
+.setup-logo{
+font-size:42px;font-weight:800;letter-spacing:10px;
+background:linear-gradient(135deg,var(--accent),var(--accent-2));
+-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+text-align:center;
+}
+.setup-subtitle{
+text-align:center;color:var(--fg-2);font-size:13px;
+letter-spacing:2px;text-transform:uppercase;margin-top:-12px;
+}
+.setup-step{padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+background:rgba(0,0,0,.2);display:flex;gap:16px;align-items:flex-start}
+.setup-step-num{
+width:32px;height:32px;flex-shrink:0;border-radius:50%;
+background:linear-gradient(135deg,var(--accent),var(--accent-2));
+display:flex;align-items:center;justify-content:center;
+font-weight:700;color:#000;font-size:14px;
+}
+.setup-step-content{flex:1}
+.setup-step-title{font-size:14px;font-weight:600;margin-bottom:4px;color:var(--fg-0)}
+.setup-step-desc{font-size:12px;color:var(--fg-2);line-height:1.6}
+.setup-btn{
+padding:16px 32px;font-size:14px;font-weight:600;
+background:linear-gradient(135deg,var(--accent),var(--accent-2));
+color:#000;border-radius:100px;
+letter-spacing:2px;text-transform:uppercase;
+transition:var(--transition);
+box-shadow:0 8px 24px rgba(var(--accent-rgb),.3);
+}
+.setup-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(var(--accent-rgb),.5)}
+.setup-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.setup-info{
+padding:14px;border-radius:var(--radius);
+background:rgba(0,212,255,.08);
+border-left:3px solid var(--accent);
+font-size:12px;color:var(--fg-1);line-height:1.7;
+}
+.setup-info b{color:var(--accent)}
+.setup-warning{
+padding:14px;border-radius:var(--radius);
+background:rgba(244,63,94,.08);
+border-left:3px solid #f43f5e;
+font-size:12px;color:#fca5a5;line-height:1.7;
+}
+.setup-tree{
+font-family:var(--font-mono);font-size:11px;
+color:var(--fg-2);line-height:1.8;
+padding:14px;background:rgba(0,0,0,.4);
+border-radius:var(--radius);border:1px solid var(--border);
+}
+.setup-tree .dir{color:var(--accent)}
+.setup-tree .file{color:var(--fg-1)}
+.setup-tree .comment{color:var(--fg-3);font-style:italic}
+.setup-progress{
+height:6px;background:rgba(255,255,255,.08);
+border-radius:3px;overflow:hidden;
+}
+.setup-progress>i{
+display:block;height:100%;width:0;
+background:linear-gradient(90deg,var(--accent),var(--accent-2));
+transition:width .3s;border-radius:3px;
+box-shadow:0 0 16px var(--accent);
+}
+.setup-log{
+font-family:var(--font-mono);font-size:10px;
+color:var(--fg-3);height:80px;overflow:hidden;
+line-height:1.8;padding-left:12px;
+border-left:2px solid var(--accent);
+}
 
-async function installStudioApp(){const source=$('code')?.value||'';if(!source.trim()){toast('Write HTML first');return}const name=(prompt('App name','My AWE app')||'').trim();if(!name)return;try{const db=await appDB(),record={id:crypto.randomUUID(),name,source,bytes:new Blob([source]).size,installedAt:new Date().toISOString()};await new Promise((resolve,reject)=>{const tx=db.transaction('apps','readwrite');tx.objectStore('apps').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});toast('Installed in AWESTORE');closeApp('store');openApp('store');renderInstalledApps()}catch{toast('Could not install app locally')}}
-async function saveSharedFolderHandle(handle){try{const db=await appDB();await new Promise((resolve,reject)=>{const tx=db.transaction('settings','readwrite');tx.objectStore('settings').put(handle,'sharedFolderHandle');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)})}catch(e){console.warn('Folder handle could not be persisted',e)}}
-async function persistWorkspaceSettings(settings){try{if(!folder||await folder.queryPermission({mode:'readwrite'})!=='granted')return;const dir=await folder.getDirectoryHandle('System',{create:true});const cfg=await dir.getDirectoryHandle('Config',{create:true});const h=await cfg.getFileHandle('user-settings.json',{create:true});const w=await h.createWritable();await w.write(JSON.stringify({app:'AWEWEBOS',schemaVersion:1,updatedAt:settings.settingsUpdatedAt||new Date().toISOString(),settings},null,2));await w.close();const users=await folder.getDirectoryHandle('Users',{create:true});const def=await users.getDirectoryHandle('Default',{create:true});const ph=await def.getFileHandle('settings.json',{create:true});const pw=await ph.createWritable();await pw.write(JSON.stringify({displayName:settings.name||'AWE User',language:settings.language||'hy',keyboard:settings.keyboard||'hy',theme:settings.theme||'aurora',workspaceName:settings.workspaceName||folder.name},null,2));await pw.close()}catch(e){console.warn('Workspace settings mirror failed',e)}}
-async function requestSavedWorkspacePermission(){try{const db=await appDB();const handle=await new Promise((resolve,reject)=>{const q=db.transaction('settings').objectStore('settings').get('sharedFolderHandle');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});if(!handle){toast('No saved workspace yet. Choose a folder first.');return}let p=await handle.queryPermission({mode:'readwrite'});if(p!=='granted')p=await handle.requestPermission({mode:'readwrite'});if(p!=='granted'){toast('Folder permission was not granted');return}folder=handle;data.workspaceName=handle.name;await saveSharedFolderHandle(handle);if(typeof window.connectAweFilesystem==='function')window.connectAweFilesystem(handle);save();const task=$('taskWorkspace');if(task)task.textContent=handle.name;toast('Reconnected to '+handle.name);if($('w-files'))window.awewebosRefreshFiles?.()}catch(e){toast('Could not reconnect workspace: '+e.message)}}
-window.requestSavedWorkspacePermission=requestSavedWorkspacePermission;window.persistWorkspaceSettings=persistWorkspaceSettings;
-async function restoreSharedFolderHandle(){if(!('showDirectoryPicker'in window))return;try{const db=await appDB(),handle=await new Promise((resolve,reject)=>{const q=db.transaction('settings').objectStore('settings').get('sharedFolderHandle');q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});if(!handle)return;const permission=await handle.queryPermission({mode:'readwrite'});if(permission==='granted'){try{const sys=await handle.getDirectoryHandle('System');const cfg=await sys.getDirectoryHandle('Config');const file=await cfg.getFileHandle('user-settings.json');const saved=JSON.parse(await (await file.getFile()).text());if(saved.settings&&(!data.settingsUpdatedAt||String(saved.updatedAt||'')>String(data.settingsUpdatedAt)))data={...data,...saved.settings}}catch{}folder=handle;data.workspaceName=handle.name;save();if(typeof window.connectAweFilesystem==='function')window.connectAweFilesystem(handle);const status=$('folderStatus');if(status)status.textContent='Reconnected to shared folder: '+folder.name;const task=$('taskWorkspace');if(task)task.textContent=folder.name;const host=$('fileList');if(host){let html='';for await(const [n,h] of folder.entries())html+='<div class="item"><span>'+esc(n)+'</span><span class="small">'+h.kind+'</span></div>';host.innerHTML=html}}else{const task=$('taskWorkspace');if(task)task.textContent='Workspace permission needed';console.info('Saved workspace handle found; user gesture required to re-grant access.')}}catch(e){console.warn('Could not restore folder handle',e)}}
-function monitor(){/* Values are deliberately limited to APIs browsers expose. */}
-async function installPWA(){if(deferredPrompt){deferredPrompt.prompt();let r=await deferredPrompt.userChoice;toast(r.outcome==='accepted'?'Install accepted':'Install dismissed');deferredPrompt=null}else toast('Use browser menu → Install app / Add to Home Screen. HTTPS required.')}
-init();restoreSharedFolderHandle();
-</script><script src="./webos-fs.js"></script><script src="./setup.js"></script></body></html>
+/* ============ OS ============ */
+#os{
+position:fixed;inset:0;
+display:grid;grid-template-rows:var(--menubar-h) 1fr;
+opacity:0;transition:opacity .5s;
+}
+#os.on{opacity:1}
+
+/* Menubar */
+#menubar{
+background:rgba(11,15,25,.72);
+backdrop-filter:blur(40px) saturate(180%);
+-webkit-backdrop-filter:blur(40px) saturate(180%);
+border-bottom:1px solid var(--border);
+display:flex;align-items:center;padding:0 12px;
+gap:14px;font-size:11px;font-weight:500;
+z-index:1000;position:relative;
+}
+.mb-logo{
+display:flex;align-items:center;gap:6px;
+font-weight:700;font-size:12px;letter-spacing:1px;
+background:linear-gradient(135deg,var(--accent),var(--accent-2));
+-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+cursor:pointer;padding:2px 6px;border-radius:var(--radius-sm);
+}
+.mb-logo:hover{background:rgba(255,255,255,.06);-webkit-text-fill-color:var(--fg-0)}
+.mb-item{color:var(--fg-1);cursor:pointer;padding:3px 8px;
+border-radius:var(--radius-sm);transition:var(--transition);white-space:nowrap}
+.mb-item:hover{background:rgba(255,255,255,.08);color:var(--fg-0)}
+.mb-spacer{flex:1}
+.mb-status{display:flex;gap:14px;align-items:center;color:var(--fg-2);
+font-family:var(--font-mono);font-size:10px}
+.mb-status .dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+background:#22c55e;box-shadow:0 0 8px #22c55e;margin-right:4px;
+vertical-align:middle;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.4}}
+.mb-clock{color:var(--fg-0);font-weight:600}
+@media(max-width:800px){.mb-item{display:none}.mb-status>span:not(.mb-clock){display:none}}
+
+/* Desktop */
+#desktop{
+position:relative;overflow:hidden;
+background:
+radial-gradient(circle at 15% 20%,rgba(var(--accent-rgb),.12),transparent 50%),
+radial-gradient(circle at 85% 80%,rgba(124,58,237,.12),transparent 50%),
+linear-gradient(135deg,#0b0f19 0%,#050608 100%);
+}
+#desktop::before{content:"";position:absolute;inset:0;
+background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,.02) 1px,transparent 0);
+background-size:40px 40px;pointer-events:none}
+
+.desk-icons{
+position:absolute;inset:0;padding:16px;
+display:grid;grid-template-columns:repeat(auto-fill,88px);
+grid-auto-rows:96px;gap:4px;align-content:start;
+pointer-events:none;overflow:hidden;
+}
+.desk-icon{
+pointer-events:auto;
+display:flex;flex-direction:column;align-items:center;gap:6px;
+padding:10px 6px;cursor:pointer;border-radius:var(--radius);
+font-size:11px;text-align:center;color:var(--fg-0);
+transition:var(--transition);border:1px solid transparent;
+}
+.desk-icon:hover{background:rgba(255,255,255,.08);border-color:var(--border);transform:translateY(-2px)}
+.desk-icon .di{font-size:36px;line-height:1;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));transition:var(--transition)}
+.desk-icon:hover .di{transform:scale(1.08)}
+.desk-icon .dn{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+@media(max-width:640px){.desk-icons{display:none}}
+
+/* Dock */
+#dock{
+position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
+z-index:1500;
+background:rgba(11,15,25,.7);
+backdrop-filter:blur(40px) saturate(180%);
+-webkit-backdrop-filter:blur(40px) saturate(180%);
+border:1px solid var(--border-strong);
+border-radius:24px;padding:10px 14px;
+display:flex;gap:8px;align-items:center;
+box-shadow:var(--shadow-lg);transition:var(--transition);
+max-width:calc(100vw - 24px);overflow-x:auto;scrollbar-width:none;
+}
+#dock::-webkit-scrollbar{display:none}
+@media(max-width:640px){#dock{bottom:0;left:0;right:0;transform:none;border-radius:0;justify-content:center}}
+.dock-item{
+position:relative;width:48px;height:48px;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;font-size:24px;
+background:rgba(255,255,255,.06);border-radius:var(--radius);
+cursor:pointer;transition:var(--transition);border:1px solid transparent;
+}
+.dock-item:hover{background:rgba(255,255,255,.14);transform:translateY(-8px) scale(1.15);
+border-color:var(--border-strong);box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.dock-item.running::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);
+width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.dock-tooltip{
+position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);
+background:rgba(11,15,25,.95);color:var(--fg-0);padding:6px 12px;
+border-radius:var(--radius-sm);font-size:11px;white-space:nowrap;
+opacity:0;pointer-events:none;transition:var(--transition);
+border:1px solid var(--border);backdrop-filter:blur(20px);
+}
+.dock-item:hover .dock-tooltip{opacity:1;transform:translateX(-50%) translateY(-4px)}
+@media(max-width:640px){.dock-item{width:44px;height:44px;font-size:22px}}
+
+/* Windows */
+.win{
+position:absolute;min-width:280px;min-height:180px;
+background:rgba(11,15,25,.88);
+backdrop-filter:blur(40px) saturate(180%);
+-webkit-backdrop-filter:blur(40px) saturate(180%);
+border:1px solid var(--border-strong);border-radius:var(--radius);
+box-shadow:var(--shadow-lg);display:flex;flex-direction:column;
+overflow:hidden;z-index:10;
+animation:winIn .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes winIn{from{opacity:0;transform:scale(.94) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.win.focused{box-shadow:0 0 0 1px rgba(var(--accent-rgb),.5),var(--shadow-lg);border-color:rgba(var(--accent-rgb),.4)}
+.win.minimized{display:none}
+.win.maximized{inset:0!important;width:100%!important;height:100%!important;border-radius:0;border:none}
+@media(max-width:640px){.win:not(.maximized){inset:0!important;width:100%!important;height:100%!important;border-radius:0}}
+.win-titlebar{
+display:flex;align-items:center;height:36px;padding:0 12px;
+background:linear-gradient(180deg,rgba(255,255,255,.04),transparent);
+border-bottom:1px solid var(--border);cursor:grab;user-select:none;flex-shrink:0;
+}
+.win-titlebar.dragging{cursor:grabbing}
+.win-icon{font-size:15px;margin-right:10px;flex-shrink:0}
+.win-title{flex:1;font-size:12px;font-weight:500;color:var(--fg-0);
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.win-buttons{display:flex;gap:2px;flex-shrink:0}
+.win-btn{width:32px;height:26px;display:flex;align-items:center;justify-content:center;
+cursor:pointer;color:var(--fg-1);border-radius:var(--radius-sm);font-size:14px;transition:var(--transition)}
+.win-btn:hover{background:rgba(255,255,255,.1);color:var(--fg-0)}
+.win-btn.close:hover{background:#e81123;color:#fff}
+.win-body{flex:1;overflow:auto;position:relative}
+.win-resize{position:absolute;right:0;bottom:0;width:20px;height:20px;
+cursor:nwse-resize;opacity:.4;
+background:linear-gradient(135deg,transparent 50%,var(--fg-2) 50%)}
+.win-resize:hover{opacity:1}
+
+/* Context menu */
+#contextMenu{
+position:fixed;min-width:200px;
+background:rgba(11,15,25,.92);
+backdrop-filter:blur(40px);
+-webkit-backdrop-filter:blur(40px);
+border:1px solid var(--border-strong);border-radius:var(--radius);
+box-shadow:var(--shadow-lg);padding:6px;z-index:9100;display:none;
+}
+#contextMenu.open{display:block;animation:ctxIn .12s ease-out}
+@keyframes ctxIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.ctx-item{padding:8px 12px;cursor:pointer;border-radius:var(--radius-sm);
+font-size:12px;color:var(--fg-1);display:flex;align-items:center;gap:10px;transition:var(--transition)}
+.ctx-item:hover{background:rgba(var(--accent-rgb),.15);color:var(--fg-0)}
+.ctx-item .ci{width:16px;text-align:center;font-size:14px}
+.ctx-sep{height:1px;background:var(--border);margin:4px 8px}
+
+/* Notifications */
+#notifications{
+position:fixed;top:calc(var(--menubar-h) + 12px);right:12px;
+display:flex;flex-direction:column;gap:10px;
+z-index:9000;pointer-events:none;max-width:calc(100vw - 24px);
+}
+.notif{
+pointer-events:auto;min-width:280px;max-width:360px;
+padding:14px 16px;background:rgba(11,15,25,.9);
+backdrop-filter:blur(40px);
+-webkit-backdrop-filter:blur(40px);
+border:1px solid var(--border-strong);border-left:3px solid var(--accent);
+border-radius:var(--radius);box-shadow:var(--shadow-lg);
+font-size:12px;animation:notifIn .3s cubic-bezier(.4,0,.2,1);
+display:flex;gap:12px;align-items:flex-start;
+}
+@keyframes notifIn{from{opacity:0;transform:translateX(40px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+.notif.out{opacity:0;transform:translateX(40px);transition:var(--transition)}
+.notif-icon{font-size:20px;flex-shrink:0}
+.notif-content{flex:1;min-width:0}
+.notif-title{font-weight:600;color:var(--fg-0);margin-bottom:2px;font-size:12px}
+.notif-msg{color:var(--fg-2);font-size:11px;line-height:1.4;word-break:break-word}
+
+/* Start menu */
+#startMenu{
+position:fixed;bottom:calc(var(--dock-h) + 32px);left:50%;
+transform:translateX(-50%) scale(.94);
+width:min(600px,calc(100vw - 24px));
+max-height:min(680px,70vh);
+background:rgba(11,15,25,.85);
+backdrop-filter:blur(40px) saturate(180%);
+-webkit-backdrop-filter:blur(40px) saturate(180%);
+border:1px solid var(--border-strong);border-radius:var(--radius-lg);
+box-shadow:var(--shadow-lg);z-index:2000;
+display:none;flex-direction:column;overflow:hidden;opacity:0;
+transition:var(--transition);
+}
+#startMenu.open{display:flex;opacity:1;transform:translateX(-50%) scale(1);
+animation:smIn .22s cubic-bezier(.4,0,.2,1)}
+@keyframes smIn{from{opacity:0;transform:translateX(-50%) scale(.94) translateY(20px)}
+to{opacity:1;transform:translateX(-50%) scale(1) translateY(0)}}
+@media(max-width:640px){#startMenu{bottom:0;left:0;right:0;transform:none;width:100%;max-height:80vh;border-radius:var(--radius-lg) var(--radius-lg) 0 0}}
+.sm-search{padding:16px;border-bottom:1px solid var(--border)}
+.sm-search input{
+width:100%;padding:12px 16px;background:rgba(255,255,255,.06);
+border:1px solid var(--border);border-radius:var(--radius);
+color:var(--fg-0);font-size:14px;transition:var(--transition);
+}
+.sm-search input:focus{border-color:var(--accent);background:rgba(var(--accent-rgb),.08);
+box-shadow:0 0 0 3px rgba(var(--accent-rgb),.15)}
+.sm-apps{
+flex:1;overflow-y:auto;padding:12px;
+display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;
+}
+.sm-app{
+padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;
+cursor:pointer;border-radius:var(--radius);font-size:11px;color:var(--fg-1);
+text-align:center;transition:var(--transition);border:1px solid transparent;
+}
+.sm-app:hover{background:rgba(var(--accent-rgb),.12);border-color:rgba(var(--accent-rgb),.3);
+color:var(--fg-0);transform:translateY(-2px)}
+.sm-app .ai{font-size:28px;line-height:1}
+.sm-footer{padding:12px 16px;border-top:1px solid var(--border);
+display:flex;justify-content:space-between;align-items:center;
+font-size:11px;color:var(--fg-2)}
+.sm-actions{display:flex;gap:8px}
+.sm-btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
+cursor:pointer;color:var(--fg-1);background:rgba(255,255,255,.04);
+transition:var(--transition);font-size:11px;font-weight:500}
+.sm-btn:hover{background:rgba(255,255,255,.12);color:var(--fg-0)}
+.sm-btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.sm-btn.primary:hover{box-shadow:0 0 20px rgba(var(--accent-rgb),.5)}
+
+/* App shared */
+.btn{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;
+border:1px solid var(--border-strong);background:rgba(255,255,255,.05);
+color:var(--fg-0);border-radius:var(--radius-sm);transition:var(--transition);
+display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(255,255,255,.12)}
+.btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+.btn.primary:hover{box-shadow:0 0 20px rgba(var(--accent-rgb),.5)}
+.btn.danger{border-color:rgba(244,63,94,.4);color:#f43f5e}
+.btn.danger:hover{background:rgba(244,63,94,.15)}
+.input{width:100%;padding:10px 12px;background:rgba(0,0,0,.3);
+border:1px solid var(--border);border-radius:var(--radius-sm);
+color:var(--fg-0);font-size:13px;transition:var(--transition)}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.15);
+background:rgba(0,0,0,.5)}
+.row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.grow{flex:1}
+.label{font-size:11px;color:var(--fg-2);letter-spacing:.5px;margin-bottom:4px;display:block}
+
+/* Terminal */
+.term-app{background:#0a0e17;color:#7ef7a3;font-family:var(--font-mono);
+font-size:13px;padding:14px;height:100%;overflow-y:auto;line-height:1.6;
+white-space:pre-wrap;word-break:break-word}
+.term-app .p{color:var(--accent)}
+.term-app .e{color:#f43f5e}
+.term-app .w{color:#fbbf24}
+.term-app .i{color:#60a5fa}
+.term-input{background:transparent;border:none;color:#7ef7a3;outline:none;
+font-family:inherit;font-size:inherit;caret-color:var(--accent);
+width:calc(100% - 32ch)}
+
+/* Files */
+.files-toolbar{display:flex;gap:6px;padding:10px;
+border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);
+align-items:center;flex-wrap:wrap}
+.files-path{font-family:var(--font-mono);font-size:11px;
+color:var(--accent);padding:0 8px;flex:1;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+gap:8px;padding:14px;flex:1;overflow:auto;align-content:start}
+.file-item{display:flex;flex-direction:column;align-items:center;gap:6px;
+padding:12px 6px;cursor:pointer;border-radius:var(--radius);
+font-size:11px;text-align:center;transition:var(--transition);border:1px solid transparent}
+.file-item:hover{background:rgba(255,255,255,.06)}
+.file-item.selected{background:rgba(var(--accent-rgb),.15);border-color:rgba(var(--accent-rgb),.4)}
+.file-item .fi{font-size:36px;line-height:1}
+.file-item .fn{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Notes */
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+gap:12px;padding:14px;flex:1;overflow:auto;align-content:start}
+.note-card{padding:14px;border-radius:var(--radius);
+background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2);
+cursor:pointer;font-size:12px;min-height:130px;
+display:flex;flex-direction:column;transition:var(--transition)}
+.note-card:hover{transform:translateY(-3px);
+box-shadow:0 12px 32px rgba(251,191,36,.15);
+border-color:rgba(251,191,36,.4)}
+.note-card .nt{font-weight:600;color:#fbbf24;margin-bottom:6px;
+overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.note-card .nb{flex:1;color:var(--fg-1);font-size:11px;line-height:1.5;
+white-space:pre-wrap;overflow:hidden}
+.note-card .nd{font-size:9px;color:var(--fg-3);margin-top:8px}
+
+/* Calculator */
+.calc{display:flex;flex-direction:column;height:100%;
+padding:14px;gap:10px;max-width:360px;margin:0 auto}
+.calc-display{background:#000;border:1px solid var(--border);
+border-radius:var(--radius);padding:18px;text-align:right;
+font-family:var(--font-mono);min-height:100px;
+display:flex;flex-direction:column;justify-content:flex-end}
+.calc-display .expr{font-size:12px;color:var(--fg-3);min-height:16px}
+.calc-display .res{font-size:38px;font-weight:300;color:var(--accent);
+letter-spacing:-1px;word-break:break-all}
+.calc-grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);
+gap:8px;min-height:320px}
+.calc-grid button{font-size:20px;background:rgba(255,255,255,.05);
+border:1px solid var(--border);border-radius:var(--radius);
+color:var(--fg-0);transition:var(--transition);font-family:var(--font-mono)}
+.calc-grid button:hover{background:rgba(255,255,255,.12)}
+.calc-grid button:active{transform:scale(.95)}
+.calc-grid button.op{color:#fbbf24;font-weight:600}
+.calc-grid button.eq{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent)}
+.calc-grid button.eq:hover{box-shadow:0 0 20px rgba(var(--accent-rgb),.6)}
+.calc-grid button.clr{color:#f43f5e;font-weight:600}
+
+/* Paint */
+.paint-app{display:flex;flex-direction:column;height:100%}
+.paint-toolbar{display:flex;gap:8px;padding:10px;
+border-bottom:1px solid var(--border);flex-wrap:wrap;
+align-items:center;background:rgba(0,0,0,.2)}
+.paint-toolbar button{padding:8px 12px;font-size:11px;font-weight:500;
+border:1px solid var(--border);border-radius:var(--radius-sm);
+color:var(--fg-1);background:rgba(255,255,255,.04);transition:var(--transition)}
+.paint-toolbar button:hover{background:rgba(255,255,255,.1)}
+.paint-toolbar button.active{background:var(--accent);color:#000;
+border-color:var(--accent);font-weight:600}
+.paint-canvas-wrap{flex:1;position:relative;overflow:hidden;background:#fff}
+.paint-canvas-wrap canvas{position:absolute;inset:0;cursor:crosshair;
+touch-action:none;width:100%;height:100%}
+
+/* Music */
+.music-app{padding:20px;display:flex;flex-direction:column;gap:16px;height:100%}
+.music-display{padding:24px;text-align:center;
+background:linear-gradient(135deg,rgba(var(--accent-rgb),.15),rgba(124,58,237,.15));
+border-radius:var(--radius-lg);border:1px solid rgba(var(--accent-rgb),.25)}
+.music-display .tt{font-size:20px;font-weight:600;color:var(--fg-0);
+letter-spacing:.5px;margin-bottom:6px}
+.music-display .ar{font-size:12px;color:var(--fg-2)}
+.music-progress{height:4px;background:rgba(0,0,0,.4);
+border-radius:2px;overflow:hidden;margin-top:16px}
+.music-progress>i{display:block;height:100%;width:0;
+background:var(--accent);transition:width .3s;box-shadow:0 0 12px var(--accent)}
+.music-controls{display:flex;gap:14px;justify-content:center}
+.music-controls button{width:52px;height:52px;border-radius:50%;
+background:rgba(255,255,255,.08);border:1px solid var(--border);
+color:var(--fg-0);font-size:20px;display:flex;
+align-items:center;justify-content:center;transition:var(--transition)}
+.music-controls button:hover{background:rgba(255,255,255,.15);transform:scale(1.05)}
+.music-playlist{flex:1;overflow-y:auto;border:1px solid var(--border);
+border-radius:var(--radius);background:rgba(0,0,0,.2)}
+.music-track{padding:12px 16px;border-bottom:1px solid var(--border);
+cursor:pointer;font-size:12px;display:flex;
+justify-content:space-between;align-items:center;transition:var(--transition)}
+.music-track:hover{background:rgba(255,255,255,.04)}
+.music-track.active{background:rgba(var(--accent-rgb),.15);color:var(--accent)}
+.music-track .dur{color:var(--fg-3);font-size:10px;font-family:var(--font-mono)}
+
+/* Settings */
+.settings-app{padding:16px;display:flex;flex-direction:column;gap:16px}
+.settings-group{border:1px solid var(--border);border-radius:var(--radius);
+padding:16px;background:rgba(0,0,0,.15)}
+.settings-group h3{font-size:11px;color:var(--accent);
+letter-spacing:2px;text-transform:uppercase;
+margin-bottom:14px;padding-bottom:8px;
+border-bottom:1px dashed var(--border);font-weight:600}
+.settings-item{display:flex;justify-content:space-between;align-items:center;
+padding:10px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03)}
+.settings-item:last-child{border-bottom:none}
+.settings-item .val{color:var(--fg-2);font-family:var(--font-mono);font-size:11px}
+.settings select{padding:8px 12px;background:rgba(0,0,0,.4);
+border:1px solid var(--border);border-radius:var(--radius-sm);
+color:var(--fg-0);font-size:12px}
+.theme-swatches{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.theme-swatch{width:36px;height:36px;border-radius:50%;cursor:pointer;
+border:3px solid transparent;transition:var(--transition)}
+.theme-swatch:hover{transform:scale(1.1)}
+.theme-swatch.active{border-color:#fff;box-shadow:0 0 16px currentColor}
+
+/* App Store */
+.store-app{padding:16px;display:flex;flex-direction:column;gap:14px;height:100%;overflow:hidden}
+.store-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.store-header h2{font-size:20px;font-weight:700;letter-spacing:1px;
+background:linear-gradient(135deg,var(--accent),var(--accent-2));
+-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.store-tabs{display:flex;gap:6px;border-bottom:1px solid var(--border);padding-bottom:2px}
+.store-tab{padding:8px 16px;font-size:12px;color:var(--fg-2);cursor:pointer;
+border-radius:var(--radius-sm) var(--radius-sm) 0 0;transition:var(--transition)}
+.store-tab:hover{background:rgba(255,255,255,.06);color:var(--fg-0)}
+.store-tab.active{color:var(--accent);border-bottom:2px solid var(--accent);font-weight:600}
+.store-list{flex:1;overflow-y:auto;display:grid;
+grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start}
+.store-card{
+padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+background:rgba(0,0,0,.2);display:flex;gap:14px;transition:var(--transition);
+}
+.store-card:hover{border-color:rgba(var(--accent-rgb),.4);background:rgba(var(--accent-rgb),.05)}
+.store-card-icon{font-size:44px;line-height:1;flex-shrink:0}
+.store-card-info{flex:1;min-width:0}
+.store-card-name{font-size:14px;font-weight:600;color:var(--fg-0);margin-bottom:4px}
+.store-card-desc{font-size:11px;color:var(--fg-2);line-height:1.5;margin-bottom:8px}
+.store-card-meta{display:flex;gap:12px;font-size:10px;color:var(--fg-3);font-family:var(--font-mono);margin-bottom:10px}
+.store-card-actions{display:flex;gap:8px}
+.store-card .install-btn{padding:6px 16px;font-size:11px;font-weight:600;
+background:var(--accent);color:#000;border:none;border-radius:100px;cursor:pointer;
+transition:var(--transition)}
+.store-card .install-btn:hover{box-shadow:0 0 16px rgba(var(--accent-rgb),.6)}
+.store-card .install-btn.installed{background:rgba(255,255,255,.08);
+color:var(--fg-2);cursor:default;box-shadow:none}
+.store-card .install-btn.installed:hover{box-shadow:none}
+.store-empty{padding:60px 20px;text-align:center;color:var(--fg-3);font-size:13px}
+
+/* Themes app */
+.themes-app{padding:16px;display:flex;flex-direction:column;gap:16px}
+.themes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.theme-card{
+padding:16px;border:1px solid var(--border);border-radius:var(--radius);
+background:rgba(0,0,0,.2);cursor:pointer;transition:var(--transition);
+text-align:center;
+}
+.theme-card:hover{border-color:rgba(var(--accent-rgb),.5);transform:translateY(-2px)}
+.theme-card.active{border-color:var(--accent);box-shadow:0 0 20px rgba(var(--accent-rgb),.3)}
+.theme-card .preview{
+height:60px;border-radius:var(--radius-sm);margin-bottom:10px;
+background:linear-gradient(135deg,var(--c1),var(--c2));
+}
+.theme-card .name{font-size:12px;font-weight:600;color:var(--fg-0)}
+.theme-card .sub{font-size:10px;color:var(--fg-3);margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- ============ SETUP WIZARD ============ -->
+<div id="setup">
+  <div class="setup-card">
+    <div class="setup-logo">AWEWEBOS</div>
+    <div class="setup-subtitle">Installation Wizard</div>
+
+    <div class="setup-info">
+      <b>AWEWEBOS</b>-ը իրական վեբ օպերացիոն համակարգ է։ Ամբողջ ֆայլային համակարգը կտեղադրվի ձեր ընտրած պանակում, և բոլոր փոփոխությունները իրականում կգրանցվեն այնտեղ։
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">1</div>
+      <div class="setup-step-content">
+        <div class="setup-step-title">Ընտրեք տեղադրման պանակ</div>
+        <div class="setup-step-desc">
+          Սեղմեք ներքևի կոճակը և ընտրեք դատարկ պանակ ձեր համակարգչում (օրինակ՝ Desktop/AWEWEBOS)։ Այստեղ կտեղադրվեն OS-ի բոլոր ֆայլերը։
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">2</div>
+      <div class="setup-step-content">
+        <div class="setup-step-title">Հաստատեք թույլտվությունը</div>
+        <div class="setup-step-desc">
+          Բրաուզերը կհարցնի թույլտվություն՝ կարդալու և գրելու այդ պանակում։ Սեղմեք <b>«Edit files»</b> կամ <b>«Խմբագրել ֆայլերը»</b>։
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-step">
+      <div class="setup-step-num">3</div>
+      <div class="setup-step-content">
+        <div class="setup-step-title">Տեղադրում</div>
+        <div class="setup-step-desc">
+          AWEWEBOS-ը կստեղծի հետևյալ կառուցվածքը․
+        </div>
+        <div class="setup-tree" style="margin-top:12px">
+<span class="dir">AWEWEBOS/</span>
+├── <span class="dir">System/</span>              <span class="comment">// Kernel & config</span>
+│   ├── <span class="file">kernel.json</span>
+│   ├── <span class="file">config.json</span>
+│   └── <span class="file">users.json</span>
+├── <span class="dir">Users/</span>
+│   └── <span class="dir">user/</span>
+│       ├── <span class="dir">Desktop/</span>
+│       ├── <span class="dir">Documents/</span>
+│       ├── <span class="dir">Pictures/</span>
+│       ├── <span class="dir">Music/</span>
+│       └── <span class="dir">Downloads/</span>
+├── <span class="dir">Apps/</span>                 <span class="comment">// Installed apps</span>
+├── <span class="dir">Themes/</span>               <span class="comment">// Theme files</span>
+└── <span class="dir">Settings/</span>
+    └── <span class="file">preferences.json</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="setup-progress"><i id="setupProgress"></i></div>
+    <div class="setup-log" id="setupLog"></div>
+
+    <div class="setup-warning hidden" id="setupWarning">
+      ⚠️ Ձեր բրաուզերը չի աջակցում File System Access API-ն։ Խնդրում ենք օգտագործել <b>Chrome</b>, <b>Edge</b> կամ <b>Opera</b> վերջին տարբերակը։
+    </div>
+
+    <button class="setup-btn" id="setupBtn">📁 Ընտրել պանակ և տեղադրել</button>
+    <button class="btn" id="setupRestoreBtn" style="width:100%;justify-content:center;padding:13px">↻ Վերամիացնել նախկին տեղադրումը</button>
+    <div class="setup-step-desc" id="restoreHint">Եթե արդեն ընտրել եք պանակ, այստեղից վերականգնեք կապը։ Բրաուզերը կարող է նոր թույլտվություն խնդրել։</div>
+  </div>
+</div>
+
+<!-- ============ OS ============ -->
+<div id="os">
+  <div id="menubar">
+    <div class="mb-logo" id="menubarLogo">◆ AWEWEBOS</div>
+    <div class="mb-item" data-menu="file">File</div>
+    <div class="mb-item" data-menu="view">View</div>
+    <div class="mb-item" data-menu="apps">Apps</div>
+    <div class="mb-item" data-menu="system">System</div>
+    <div class="mb-spacer"></div>
+    <div class="mb-status">
+      <span><span class="dot"></span>ONLINE</span>
+      <span id="mbCpu">CPU 0%</span>
+      <span id="mbMem">MEM 0%</span>
+      <span id="mbWin">WIN 0</span>
+      <span class="mb-clock" id="mbClock">00:00:00</span>
+    </div>
+  </div>
+  <div id="desktop">
+    <div class="desk-icons" id="deskIcons"></div>
+  </div>
+</div>
+
+<div id="dock"></div>
+
+<div id="startMenu">
+  <div class="sm-search">
+    <input id="smSearch" placeholder="Search apps and files..." autocomplete="off">
+  </div>
+  <div class="sm-apps" id="smApps"></div>
+  <div class="sm-footer">
+    <span id="smUptime">0s uptime</span>
+    <div class="sm-actions">
+      <div class="sm-btn" id="smLock">Lock</div>
+      <div class="sm-btn" id="smRestart">Restart</div>
+    </div>
+  </div>
+</div>
+
+<div id="notifications"></div>
+<div id="contextMenu"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   AWEWEBOS — File System Access API OS
+   ============================================================ */
+
+/* ============ FS API WRAPPER ============ */
+const FS = (() => {
+  let rootHandle = null;
+  let supported = 'showDirectoryPicker' in window;
+
+  async function pickFolder() {
+    if (!supported) throw new Error('File System Access API not supported');
+    rootHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    // Save to IndexedDB for persistence
+    try {
+      const db = await openPermDB();
+      await dbPut(db, 'handles', { key: 'root', handle: rootHandle });
+    } catch (e) {}
+    return rootHandle;
+  }
+
+  async function restoreHandle(requestPermission = false) {
+    try {
+      const db = await openPermDB();
+      const rec = await dbGet(db, 'handles', 'root');
+      if (!rec || !rec.handle) return null;
+      const perm = await rec.handle.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        rootHandle = rec.handle;
+        return rootHandle;
+      }
+      // Browsers may require a fresh user gesture to restore write permission.
+      if (requestPermission) {
+        const resp = await rec.handle.requestPermission({ mode: 'readwrite' });
+        if (resp === 'granted') { rootHandle = rec.handle; return rootHandle; }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function openPermDB() {
+    return new Promise((res, rej) => {
+      const req = indexedDB.open('awewebos-perms', 1);
+      req.onupgradeneeded = e => {
+        e.target.result.createObjectStore('handles', { keyPath: 'key' });
+      };
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+  function dbPut(db, store, val) {
+    return new Promise((res, rej) => {
+      const r = db.transaction(store, 'readwrite').objectStore(store).put(val);
+      r.onsuccess = () => res(); r.onerror = () => rej(r.error);
+    });
+  }
+  function dbGet(db, store, key) {
+    return new Promise((res, rej) => {
+      const r = db.transaction(store).objectStore(store).get(key);
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+  }
+
+  // ---------- Path helpers ----------
+  function splitPath(path) {
+    return path.split('/').filter(Boolean);
+  }
+
+  async function getDirHandle(path, create = false) {
+    if (!rootHandle) throw new Error('No root handle');
+    const parts = splitPath(path);
+    let dir = rootHandle;
+    for (const part of parts) {
+      dir = await dir.getDirectoryHandle(part, { create });
+    }
+    return dir;
+  }
+
+  async function getFileHandle(path, create = false) {
+    const parts = splitPath(path);
+    const fileName = parts.pop();
+    const dirPath = parts.join('/');
+    const dir = dirPath ? await getDirHandle(dirPath, create) : rootHandle;
+    return await dir.getFileHandle(fileName, { create });
+  }
+
+  // ---------- Operations ----------
+  async function mkdir(path) {
+    await getDirHandle(path, true);
+  }
+
+  async function writeFile(path, content) {
+    const fh = await getFileHandle(path, true);
+    const w = await fh.createWritable();
+    await w.write(content);
+    await w.close();
+  }
+
+  async function readFile(path) {
+    try {
+      const fh = await getFileHandle(path, false);
+      const file = await fh.getFile();
+      return await file.text();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function deletePath(path) {
+    const parts = splitPath(path);
+    const name = parts.pop();
+    const dirPath = parts.join('/');
+    const dir = dirPath ? await getDirHandle(dirPath, false) : rootHandle;
+    await dir.removeEntry(name, { recursive: true });
+  }
+
+  async function list(path) {
+    const dir = path ? await getDirHandle(path, false) : rootHandle;
+    const items = [];
+    for await (const [name, handle] of dir.entries()) {
+      items.push({
+        name,
+        type: handle.kind === 'directory' ? 'dir' : 'file',
+        handle,
+      });
+    }
+    return items.sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+  }
+
+  async function exists(path) {
+    try {
+      const parts = splitPath(path);
+      if (parts.length === 0) return true;
+      const name = parts.pop();
+      const dirPath = parts.join('/');
+      const dir = dirPath ? await getDirHandle(dirPath, false) : rootHandle;
+      await dir.getFileHandle(name, { create: false });
+      return true;
+    } catch (e) {
+      try {
+        const parts = splitPath(path);
+        const name = parts.pop();
+        const dirPath = parts.join('/');
+        const dir = dirPath ? await getDirHandle(dirPath, false) : rootHandle;
+        await dir.getDirectoryHandle(name, { create: false });
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
+  return {
+    get supported() { return supported; },
+    get root() { return rootHandle; },
+    pickFolder, restoreHandle,
+    mkdir, writeFile, readFile, deletePath, list, exists,
+    getDirHandle, getFileHandle,
+  };
+})();
+
+/* ============ UTILITIES ============ */
+const U = {
+  q: s => document.querySelector(s),
+  qa: s => [...document.querySelectorAll(s)],
+  mk(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const k in attrs) {
+      if (k === 'class') el.className = attrs[k];
+      else if (k === 'style' && typeof attrs[k] === 'object') Object.assign(el.style, attrs[k]);
+      else if (k === 'html') el.innerHTML = attrs[k];
+      else if (k === 'text') el.textContent = attrs[k];
+      else if (k.startsWith('on') && typeof attrs[k] === 'function')
+        el.addEventListener(k.slice(2), attrs[k]);
+      else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+    }
+    (Array.isArray(children) ? children : [children]).forEach(c => {
+      if (c == null) return;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    });
+    return el;
+  },
+  esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); },
+  pad: (n, l = 2) => String(n).padStart(l, '0'),
+  rnd: (a = 0, b = 1) => a + Math.random() * (b - a),
+  rint: (a, b) => Math.floor(Math.random() * (b - a + 1)) + a,
+  clamp: (v, a, b) => v < a ? a : v > b ? b : v,
+  now: () => performance.now(),
+  time() {
+    const d = new Date();
+    return U.pad(d.getHours()) + ':' + U.pad(d.getMinutes()) + ':' + U.pad(d.getSeconds());
+  },
+  date() {
+    return new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  },
+  fmtDate(ts) {
+    const d = new Date(ts);
+    return d.toLocaleDateString() + ' ' + U.pad(d.getHours()) + ':' + U.pad(d.getMinutes());
+  },
+  hm(sec) {
+    const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, s = Math.floor(sec % 60);
+    return U.pad(h) + ':' + U.pad(m) + ':' + U.pad(s);
+  },
+  bytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    if (n < 1073741824) return (n / 1048576).toFixed(1) + ' MB';
+    return (n / 1073741824).toFixed(2) + ' GB';
+  },
+  uid: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+  debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; },
+  isMobile: () => /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || innerWidth < 700,
+};
+
+/* ============ EVENT BUS ============ */
+const Bus = (() => {
+  const m = new Map();
+  return {
+    on(ev, fn) {
+      if (!m.has(ev)) m.set(ev, new Set());
+      m.get(ev).add(fn);
+      return () => m.get(ev).delete(fn);
+    },
+    emit(ev, data) { m.get(ev)?.forEach(fn => { try { fn(data); } catch (e) { console.error(e); } }); },
+  };
+})();
+
+/* ============ KERNEL DB (settings, users — stored inside folder) ============ */
+const Kernel = (() => {
+  const config = {
+    version: '2.0.0',
+    installDate: null,
+    user: null,
+    settings: {
+      theme: 'cyan',
+      wallpaper: 'aurora',
+      volume: 0.7,
+      notifSound: true,
+    },
+    installedApps: [],
+  };
+
+  async function init() {
+    // Read config from folder
+    const cfgStr = await FS.readFile('System/config.json');
+    if (cfgStr) {
+      try {
+        const parsed = JSON.parse(cfgStr);
+        Object.assign(config, parsed);
+      } catch (e) {}
+    }
+    if (!config.installDate) {
+      config.installDate = Date.now();
+      await save();
+    }
+    // Load user
+    const usersStr = await FS.readFile('System/users.json');
+    if (usersStr) {
+      try {
+        const users = JSON.parse(usersStr);
+        config.user = users.default || null;
+      } catch (e) {}
+    }
+    if (!config.user) {
+      config.user = { name: 'User', id: U.uid().slice(0, 8), avatar: 'U' };
+      await FS.writeFile('System/users.json', JSON.stringify({ default: config.user }, null, 2));
+    }
+  }
+
+  async function save() {
+    await FS.writeFile('System/config.json', JSON.stringify(config, null, 2));
+  }
+
+  async function setSetting(k, v) {
+    config.settings[k] = v;
+    await save();
+    applyTheme();
+    Bus.emit('settings.changed', { k, v });
+  }
+
+  async function addInstalledApp(appId) {
+    if (!config.installedApps.includes(appId)) {
+      config.installedApps.push(appId);
+      await save();
+    }
+  }
+
+  async function removeInstalledApp(appId) {
+    const i = config.installedApps.indexOf(appId);
+    if (i >= 0) {
+      config.installedApps.splice(i, 1);
+      await save();
+    }
+  }
+
+  function applyTheme() {
+    const themes = {
+      cyan: ['#00d4ff', '#7c3aed'],
+      purple: ['#a855f7', '#ec4899'],
+      green: ['#22c55e', '#06b6d4'],
+      orange: ['#fb923c', '#f43f5e'],
+      pink: ['#ec4899', '#8b5cf6'],
+      blue: ['#3b82f6', '#06b6d4'],
+      red: ['#ef4444', '#f97316'],
+      teal: ['#14b8a6', '#06b6d4'],
+      lime: ['#84cc16', '#22c55e'],
+      sunset: ['#f97316', '#ec4899'],
+    };
+    const t = themes[config.settings.theme] || themes.cyan;
+    document.documentElement.style.setProperty('--accent', t[0]);
+    document.documentElement.style.setProperty('--accent-2', t[1]);
+    const rgb = hexToRgb(t[0]);
+    document.documentElement.style.setProperty('--accent-rgb', rgb);
+  }
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`;
+  }
+
+  return {
+    get config() { return config; },
+    init, save, setSetting, addInstalledApp, removeInstalledApp, applyTheme,  };
+})();
+
+/* ============ VFS — Virtual path → real FS ============ */
+const VFS = (() => {
+  const USER_HOME = 'Users/' + 'user';
+
+  async function init() {
+    await FS.mkdir('System');
+    await FS.mkdir('Users');
+    await FS.mkdir(USER_HOME);
+    await FS.mkdir(USER_HOME + '/Desktop');
+    await FS.mkdir(USER_HOME + '/Documents');
+    await FS.mkdir(USER_HOME + '/Pictures');
+    await FS.mkdir(USER_HOME + '/Music');
+    await FS.mkdir(USER_HOME + '/Downloads');
+    await FS.mkdir('Apps');
+    await FS.mkdir('Themes');
+    await FS.mkdir('Settings');
+
+    await FS.writeFile('System/kernel.json', JSON.stringify({
+      name: 'AWEWEBOS',
+      version: '2.0.0',
+      kernel: 'browser-engine',
+      created: Date.now(),
+    }, null, 2));
+
+    // Welcome file
+    const readmeExists = await FS.exists(USER_HOME + '/Desktop/Welcome.txt');
+    if (!readmeExists) {
+      await FS.writeFile(USER_HOME + '/Desktop/Welcome.txt',
+`Welcome to AWEWEBOS!
+
+This file is REAL — it lives on your hard drive in the folder you chose.
+
+Try:
+• Terminal — type "help"
+• Files — browse your real folders
+• App Store — install additional apps
+• Themes — change colors
+• Settings
+
+All changes are saved to your chosen folder.`);
+    }
+  }
+
+  // Translate virtual /home/user path to real path
+  function resolve(path) {
+    if (path === '/' || path === '') return '';
+    if (path.startsWith('/home/user')) {
+      return USER_HOME + path.slice('/home/user'.length);
+    }
+    if (path.startsWith('/')) return path.slice(1);
+    return path;
+  }
+
+  const api = {
+    init, resolve,
+    mkdir: (p) => FS.mkdir(resolve(p)),
+    write: (p, c) => FS.writeFile(resolve(p), c),
+    read: (p) => FS.readFile(resolve(p)),
+    remove: (p) => FS.deletePath(resolve(p)),
+    exists: (p) => FS.exists(resolve(p)),
+    async list(path = '/') {
+      const r = resolve(path);
+      return await FS.list(r);
+    },
+  };
+  return api;
+})();
+
+/* ============ NOTIFICATIONS ============ */
+const Notif = (() => {
+  function push(title, msg, dur = 4000, icon = '◆') {
+    const host = U.q('#notifications');
+    if (!host) return;
+    const n = U.mk('div', { class: 'notif' }, [
+      U.mk('div', { class: 'notif-icon', text: icon }),
+      U.mk('div', { class: 'notif-content' }, [
+        U.mk('div', { class: 'notif-title', text: title }),
+        U.mk('div', { class: 'notif-msg', text: msg }),
+      ]),
+    ]);
+    host.appendChild(n);
+    setTimeout(() => {
+      n.classList.add('out');
+      setTimeout(() => n.remove(), 300);
+    }, dur);
+  }
+  return { push };
+})();
+
+/* ============ WINDOW MANAGER ============ */
+const WM = (() => {
+  const desktop = U.q('#desktop');
+  const wins = new Map();
+  let zTop = 10;
+  let cascade = 0;
+
+  function create(opts = {}) {
+    const id = opts.id || U.uid();
+    const w = Math.min(opts.width || 560, desktop.clientWidth - 32);
+    const h = Math.min(opts.height || 420, desktop.clientHeight - 32);
+    const off = (cascade++) % 8 * 24;
+    const x = opts.x ?? Math.max(16, Math.floor((desktop.clientWidth - w) / 2) + off - 96);
+    const y = opts.y ?? Math.max(16, Math.floor((desktop.clientHeight - h) / 2) + off - 48);
+    const win = U.mk('div', { class: 'win', id: 'w-' + id,
+      style: { left: x + 'px', top: y + 'px', width: w + 'px', height: h + 'px' } });
+
+    const tb = U.mk('div', { class: 'win-titlebar' });
+    const ic = U.mk('div', { class: 'win-icon', text: opts.icon || '◆' });
+    const nm = U.mk('div', { class: 'win-title', text: opts.title || 'Window' });
+    const btns = U.mk('div', { class: 'win-buttons' });
+    const bMin = U.mk('button', { class: 'win-btn', text: '−', title: 'Minimize' });
+    const bMax = U.mk('button', { class: 'win-btn', text: '□', title: 'Maximize' });
+    const bCls = U.mk('button', { class: 'win-btn close', text: '×', title: 'Close' });
+    btns.append(bMin, bMax, bCls);
+    tb.append(ic, nm, btns);
+
+    const bd = U.mk('div', { class: 'win-body' });
+    const rs = U.mk('div', { class: 'win-resize' });
+    win.append(tb, bd, rs);
+    desktop.appendChild(win);
+
+    const state = { id, win, body: bd, opts, minimized: false, maximized: false, prev: null };
+    wins.set(id, state);
+
+    updateDockIndicators();
+
+    bMin.onclick = e => { e.stopPropagation(); state.minimized = true; win.classList.add('minimized'); updateDockIndicators(); };
+    bMax.onclick = e => {
+      e.stopPropagation();
+      state.maximized = !state.maximized;
+      if (state.maximized) {
+        state.prev = { x: win.offsetLeft, y: win.offsetTop, w: win.offsetWidth, h: win.offsetHeight };
+        win.classList.add('maximized');
+      } else if (state.prev) {
+        win.classList.remove('maximized');
+        Object.assign(win.style, {
+          left: state.prev.x + 'px', top: state.prev.y + 'px',
+          width: state.prev.w + 'px', height: state.prev.h + 'px',
+        });
+      }
+    };
+    bCls.onclick = e => { e.stopPropagation(); close(id); };
+
+    let drag = null;
+    const startDrag = (cx, cy) => {
+      if (state.maximized) return;
+      drag = { x: cx - win.offsetLeft, y: cy - win.offsetTop };
+      tb.classList.add('dragging');
+      focus(id);
+    };
+    const moveDrag = (cx, cy) => {
+      if (!drag) return;
+      const r = desktop.getBoundingClientRect();
+      win.style.left = U.clamp(cx - r.left - drag.x, 0, r.width - 60) + 'px';
+      win.style.top = U.clamp(cy - r.top - drag.y, 0, r.height - 40) + 'px';
+    };
+    const endDrag = () => { drag = null; tb.classList.remove('dragging'); };
+    tb.addEventListener('mousedown', e => { if (!e.target.closest('button')) startDrag(e.clientX, e.clientY); });
+    tb.addEventListener('touchstart', e => {
+      if (e.target.closest('button')) return;
+      const t = e.touches[0]; startDrag(t.clientX, t.clientY);
+    }, { passive: true });
+    document.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
+    document.addEventListener('touchmove', e => { if (e.touches[0]) moveDrag(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    let rs_ = null;
+    rs.addEventListener('mousedown', e => {
+      if (state.maximized) return;
+      e.stopPropagation();
+      rs_ = { x: e.clientX, y: e.clientY, w: win.offsetWidth, h: win.offsetHeight };
+      focus(id);
+    });
+    document.addEventListener('mousemove', e => {
+      if (!rs_) return;
+      win.style.width = Math.max(280, rs_.w + (e.clientX - rs_.x)) + 'px';
+      win.style.height = Math.max(180, rs_.h + (e.clientY - rs_.y)) + 'px';
+    });
+    document.addEventListener('mouseup', () => { rs_ = null; });
+
+    win.addEventListener('mousedown', () => focus(id));
+    win.addEventListener('touchstart', () => focus(id), { passive: true });
+
+    focus(id);
+    if (U.isMobile() && opts.autoMax !== false) {
+      state.maximized = true;
+      win.classList.add('maximized');
+    }
+
+    state.close = () => close(id);
+    state.setTitle = t => { nm.textContent = t; };
+    Bus.emit('wm.open', state);
+    if (opts.onMount) setTimeout(() => { try { opts.onMount(bd, state); } catch (e) { console.error(e); } }, 10);
+    return state;
+  }
+
+  function focus(id) {
+    const s = wins.get(id);
+    if (!s) return;
+    zTop++;
+    s.win.style.zIndex = zTop;
+    wins.forEach(w => w.win.classList.remove('focused'));
+    s.win.classList.add('focused');
+  }
+  function close(id) {
+    const s = wins.get(id);
+    if (!s) return;
+    if (s.opts.onClose && s.opts.onClose() === false) return;
+    s.cleanup?.();
+    s.win.remove();
+    wins.delete(id);
+    updateDockIndicators();
+  }
+  function closeAll() { [...wins.keys()].forEach(k => close(k)); }
+  function list() { return [...wins.values()]; }
+  function updateDockIndicators() {
+    U.qa('.dock-item').forEach(d => {
+      const appId = d.dataset.app;
+      if (!appId) return;
+      const running = list().some(w => w.opts.appId === appId);
+      d.classList.toggle('running', running);
+    });
+  }
+  return { create, close, focus, closeAll, list, updateDockIndicators };
+})();
+
+/* ============ CONTEXT MENU ============ */
+const Ctx = (() => {
+  const el = U.q('#contextMenu');
+  function show(x, y, items) {
+    el.innerHTML = '';
+    items.forEach(it => {
+      if (it.sep) { el.appendChild(U.mk('div', { class: 'ctx-sep' })); return; }
+      const d = U.mk('div', { class: 'ctx-item' }, [
+        U.mk('span', { class: 'ci', text: it.icon || '' }),
+        U.mk('span', { text: it.label }),
+      ]);
+      d.onclick = () => { hide(); it.action?.(); };
+      el.appendChild(d);
+    });
+    el.classList.add('open');
+    const r = el.getBoundingClientRect();
+    el.style.left = Math.min(x, innerWidth - r.width - 8) + 'px';
+    el.style.top = Math.min(y, innerHeight - r.height - 8) + 'px';
+  }
+  function hide() { el.classList.remove('open'); }
+  document.addEventListener('click', hide);
+  document.addEventListener('contextmenu', e => {
+    if (e.target.closest('.win') || e.target.closest('.desk-icon') || e.target.closest('input,textarea')) return;
+    e.preventDefault();
+    show(e.clientX, e.clientY, [
+      { label: 'Terminal', icon: '▶', action: () => Apps.launch('terminal') },
+      { label: 'Files', icon: '▣', action: () => Apps.launch('files') },
+      { label: 'App Store', icon: '⛬', action: () => Apps.launch('store') },
+      { sep: true },
+      { label: 'New File', icon: '+', action: async () => {
+        const n = prompt('File name:', 'untitled.txt');
+        if (n) { await VFS.write('/home/user/Desktop/' + n, ''); Notif.push('Files', 'Created ' + n); Bus.emit('fs.change'); }
+      } },
+      { label: 'New Folder', icon: '+', action: async () => {
+        const n = prompt('Folder name:', 'New Folder');
+        if (n) { await VFS.mkdir('/home/user/Desktop/' + n); Notif.push('Files', 'Created ' + n); Bus.emit('fs.change'); }
+      } },
+      { sep: true },
+      { label: 'Change Wallpaper', icon: '◨', action: () => cycleWallpaper() },
+      { label: 'Close All Windows', icon: '✕', action: () => WM.closeAll() },
+      { label: 'Refresh Desktop', icon: '⟳', action: () => Desktop.render() },
+    ]);
+  });
+  return { show, hide };
+})();
+
+/* ============ WALLPAPERS ============ */
+const wallpapers = ['aurora', 'sunset', 'ocean', 'gradient', 'mono'];
+const wallpaperStyles = {
+  aurora: `radial-gradient(circle at 20% 30%,rgba(0,212,255,.18),transparent 45%),
+radial-gradient(circle at 80% 70%,rgba(124,58,237,.2),transparent 45%),
+linear-gradient(135deg,#050a15,#0a0520)`,
+  sunset: `radial-gradient(circle at 30% 80%,rgba(251,146,60,.25),transparent 55%),
+radial-gradient(circle at 70% 20%,rgba(244,63,94,.2),transparent 55%),
+linear-gradient(160deg,#1a0a1e,#2a0a10)`,
+  ocean: `radial-gradient(circle at 25% 25%,rgba(0,212,255,.2),transparent 55%),
+radial-gradient(circle at 75% 75%,rgba(20,184,166,.18),transparent 55%),
+linear-gradient(135deg,#031525,#001a2e)`,
+  gradient: `linear-gradient(135deg,#1e1b4b,#4c1d95,#831843)`,
+  mono: `linear-gradient(135deg,#0a0a0a,#1a1a1a)`,
+};
+async function cycleWallpaper() {
+  const cur = Kernel.config.settings.wallpaper || 'aurora';
+  const idx = wallpapers.indexOf(cur);
+  const next = wallpapers[(idx + 1) % wallpapers.length];
+  await Kernel.setSetting('wallpaper', next);
+  Desktop.applyWallpaper();
+  Notif.push('Wallpaper', next, 2000, '◨');
+}
+
+/* ============ APPS REGISTRY ============ */
+const Apps = (() => {
+  const builtin = {};
+  const installed = {}; // from App Store
+
+  function registerBuiltin(name, def) { builtin[name] = def; }
+  function registerInstalled(name, def) { installed[name] = def; }
+
+  function get(name) {
+    return builtin[name] || installed[name] || null;
+  }
+
+  function launch(name, opts = {}) {
+    const def = get(name);
+    if (!def) return Notif.push('Error', 'App not found: ' + name);
+    return WM.create({
+      title: def.title,
+      icon: def.icon,
+      width: def.width,
+      height: def.height,
+      autoMax: def.autoMax,
+      appId: name,
+      onMount: (body, st) => def.mount(body, st, opts),
+      onClose: def.onClose,
+    });
+  }
+
+  function list() {
+    const all = {};
+    for (const k in builtin) all[k] = { id: k, title: builtin[k].title, icon: builtin[k].icon, source: 'system' };
+    for (const k in installed) all[k] = { id: k, title: installed[k].title, icon: installed[k].icon, source: 'installed' };
+    return Object.values(all);
+  }
+
+  function isInstalled(id) {
+    return id in installed || id in builtin;
+  }
+
+  function isBuiltin(id) { return id in builtin; }
+  function isFromStore(id) { return id in installed; }
+
+  return { registerBuiltin, registerInstalled, get, launch, list, isInstalled, isBuiltin, isFromStore };
+})();
+
+/* ============ DESKTOP ============ */
+const Desktop = (() => {
+  const host = U.q('#deskIcons');
+  const desktop = U.q('#desktop');
+  let icons = [];
+
+  function setIconList(list) { icons = list; render(); }
+
+  function render() {
+    host.innerHTML = '';
+    icons.forEach(ic => {
+      const d = U.mk('div', { class: 'desk-icon' }, [
+        U.mk('div', { class: 'di', text: ic.ic }),
+        U.mk('div', { class: 'dn', text: ic.name }),
+      ]);
+      d.ondblclick = () => Apps.launch(ic.app);
+      host.appendChild(d);
+    });
+  }
+
+  function applyWallpaper() {
+    const w = Kernel.config.settings.wallpaper || 'aurora';
+    desktop.style.background = wallpaperStyles[w] || wallpaperStyles.aurora;
+  }
+
+  return { render, applyWallpaper, setIconList };
+})();
+
+/* ============ DOCK ============ */
+const Dock = (() => {
+  const dock = U.q('#dock');
+
+  function render() {
+    dock.innerHTML = '';
+    const startBtn = U.mk('div', { class: 'dock-item', 'data-app': 'start' }, '◆');
+    startBtn.appendChild(U.mk('div', { class: 'dock-tooltip', text: 'Start' }));
+    startBtn.onclick = () => Start.toggle();
+    dock.appendChild(startBtn);
+
+    const pinned = [
+      { app: 'terminal', icon: '▶' },
+      { app: 'files', icon: '▣' },
+      { app: 'messenger', icon: '✉' },
+      { app: 'notes', icon: '✎' },
+      { app: 'paint', icon: '◈' },
+      { app: 'music', icon: '♪' },
+      { app: 'store', icon: '⛬' },
+      { app: 'themes', icon: '◨' },
+      { app: 'settings', icon: '⚙' },
+    ];
+    pinned.forEach(it => {
+      const d = U.mk('div', { class: 'dock-item', 'data-app': it.app, text: it.icon });
+      const def = Apps.get(it.app);
+      const name = def ? def.title : it.app;
+      d.appendChild(U.mk('div', { class: 'dock-tooltip', text: name }));
+      d.onclick = () => Apps.launch(it.app);
+      dock.appendChild(d);
+    });
+  }
+  return { render };
+})();
+
+/* ============ START MENU ============ */
+const Start = (() => {
+  const menu = U.q('#startMenu');
+  const appsEl = U.q('#smApps');
+  const search = U.q('#smSearch');
+
+  function render(filter = '') {
+    const apps = Apps.list()
+      .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
+      .sort((a, b) => a.title.localeCompare(b.title));
+    appsEl.innerHTML = '';
+    apps.forEach(a => {
+      const el = U.mk('div', { class: 'sm-app' }, [
+        U.mk('div', { class: 'ai', text: a.icon || '◆' }),
+        U.mk('div', { text: a.title }),
+      ]);
+      el.onclick = () => { toggle(false); Apps.launch(a.id); };
+      appsEl.appendChild(el);
+    });
+  }
+  function toggle(force) {
+    const open = force !== undefined ? force : !menu.classList.contains('open');
+    if (open) {
+      menu.classList.add('open');
+      render('');
+      search.value = '';
+      setTimeout(() => search.focus(), 100);
+    } else menu.classList.remove('open');
+  }
+  document.addEventListener('click', e => {
+    if (!menu.contains(e.target) && !e.target.closest('[data-app="start"]')) toggle(false);
+  });
+  search.oninput = () => render(search.value);
+  U.q('#smLock').onclick = () => { toggle(false); Lock.lock(); };
+  U.q('#smRestart').onclick = () => {
+    if (!confirm('Restart AWEWEBOS?')) return;
+    location.reload();
+  };
+  const t0 = Date.now();
+  setInterval(() => { U.q('#smUptime').textContent = U.hm((Date.now() - t0) / 1000) + ' uptime'; }, 1000);
+  return { toggle, render };
+})();
+
+/* ============ LOCK SCREEN ============ */
+const Lock = (() => {
+  function lock() {
+    if (!confirm('Lock AWEWEBOS?')) return;
+    WM.closeAll();
+    document.body.innerHTML = '<div style="position:fixed;inset:0;background:#050608;color:#00d4ff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;font-family:monospace"><div style="font-size:64px;font-weight:200">' + U.time().slice(0, 5) + '</div><div>SYSTEM LOCKED</div><button onclick="location.reload()" style="padding:12px 40px;background:rgba(0,212,255,.15);border:1px solid #00d4ff;color:#00d4ff;border-radius:100px;cursor:pointer;letter-spacing:3px">UNLOCK</button></div>';
+  }
+  return { lock };
+})();
+
+/* ============ STATUS LOOP ============ */
+(function statusLoop() {
+  const stCpu = U.q('#mbCpu');
+  const stMem = U.q('#mbMem');
+  const stWin = U.q('#mbWin');
+  const stClock = U.q('#mbClock');
+  setInterval(() => {
+    stCpu.textContent = 'CPU N/A';
+    stMem.textContent = 'MEM N/A';
+    stWin.textContent = 'WIN ' + WM.list().length;
+    stClock.textContent = U.time();
+  }, 1000);
+})();
+
+/* ============ MENUBAR MENUS ============ */
+U.qa('.mb-item').forEach(b => {
+  b.onclick = e => {
+    e.stopPropagation();
+    const r = b.getBoundingClientRect();
+    const which = b.dataset.menu;
+    const items = {
+      file: [
+        { label: 'Terminal', action: () => Apps.launch('terminal') },
+        { label: 'Files', action: () => Apps.launch('files') },
+        { label: 'Editor', action: () => Apps.launch('editor') },
+        { sep: true },
+        { label: 'Close All', action: () => WM.closeAll() },
+        { label: 'Restart', action: () => location.reload() },
+      ],
+      view: [
+        { label: 'Refresh Desktop', action: () => Desktop.render() },
+        { label: 'Toggle Fullscreen', action: () => {
+          if (document.fullscreenElement) document.exitFullscreen();
+          else document.documentElement.requestFullscreen();
+        } },
+        { sep: true },
+        { label: 'Theme: Cyan', action: () => Kernel.setSetting('theme', 'cyan') },
+        { label: 'Theme: Purple', action: () => Kernel.setSetting('theme', 'purple') },
+        { label: 'Theme: Green', action: () => Kernel.setSetting('theme', 'green') },
+        { label: 'Theme: Orange', action: () => Kernel.setSetting('theme', 'orange') },
+        { label: 'Theme: Pink', action: () => Kernel.setSetting('theme', 'pink') },
+        { label: 'Theme: Blue', action: () => Kernel.setSetting('theme', 'blue') },
+      ],
+      apps: Apps.list().map(a => ({ label: a.title + (a.source === 'installed' ? ' ★' : ''), action: () => Apps.launch(a.id) })),
+      system: [
+        { label: 'App Store', action: () => Apps.launch('store') },
+        { label: 'Themes', action: () => Apps.launch('themes') },
+        { label: 'Settings', action: () => Apps.launch('settings') },
+        { label: 'System Info', action: () => {
+          Notif.push('AWEWEBOS',
+            'Version: ' + Kernel.config.version + '\n' +
+            'Installed: ' + Kernel.config.installDate +
+            '\nWindows: ' + WM.list().length);
+        } },
+      ],
+    }[which] || [];
+    Ctx.show(r.left, r.bottom, items);
+  };
+});
+
+/* ============================================================
+   BUILT-IN APPLICATIONS
+   ============================================================ */
+
+/* ---------- TERMINAL ---------- */
+Apps.registerBuiltin('terminal', {
+  title: 'Terminal', icon: '▶', width: 720, height: 480, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    body.classList.add('term-app');
+    let cwd = '/home/user';
+    const history = [];
+    let hi = -1;
+    function out(txt, cls = '') {
+      const d = U.mk('div');
+      if (cls) d.className = cls;
+      d.textContent = txt;
+      body.appendChild(d);
+      body.scrollTop = body.scrollHeight;
+    }
+    const cmds = {
+      help: () => [
+        'AWEWEBOS Shell — commands:',
+        '  help, clear, date, whoami, uname, uptime',
+        '  ls [path], cd <path>, pwd, cat <file>',
+        '  mkdir <dir>, touch <file>, rm <path>',
+        '  write <file> <text>, edit <file>',
+        '  echo <text>, notify <text>',
+        '  theme <name>, wall <name>, matrix',
+        '  open <app>, reboot, exit',
+        '  install <appId>  — install from store',
+        '  apps             — list installed apps',
+      ],
+      clear: () => { body.innerHTML = ''; return []; },
+      date: () => [new Date().toString()],
+      whoami: () => [Kernel.config.user.name],
+      uname: () => ['AWEWEBOS 2.0 (Browser) · ' + navigator.platform],
+      uptime: () => ['up ' + U.hm((Date.now() - Kernel.config.installDate) / 1000)],
+      ls: async (args) => {
+        const p = args[0] || cwd;
+        const full = p.startsWith('/') ? p : (cwd === '/' ? '/' + p : cwd + '/' + p);
+        const items = await VFS.list(full);
+        if (!items.length) return ['(empty)'];
+        return items.map(x => x.type === 'dir' ? '📁 ' + x.name + '/' : '📄 ' + x.name);
+      },
+      cd: async (args) => {
+        const t = args[0] || '/';
+        if (t === '..') {
+          const parts = cwd.split('/').filter(Boolean);
+          parts.pop();
+          cwd = '/' + parts.join('/') || '/';
+          return [];
+        }
+        const full = t.startsWith('/') ? t : (cwd === '/' ? '/' + t : cwd + '/' + t);
+        if (!await VFS.exists(full)) return ['cd: not found: ' + t];
+        cwd = full;
+        return [];
+      },
+      pwd: () => [cwd],
+      cat: async (args) => {
+        if (!args[0]) return ['usage: cat <file>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        const c = await VFS.read(full);
+        return c === null ? ['cat: not found'] : c.split('\n');
+      },
+      mkdir: async (args) => {
+        if (!args[0]) return ['usage: mkdir <dir>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        await VFS.mkdir(full);
+        return ['created ' + full];
+      },
+      touch: async (args) => {
+        if (!args[0]) return ['usage: touch <file>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        await VFS.write(full, '');
+        return ['touched ' + full];
+      },
+      rm: async (args) => {
+        if (!args[0]) return ['usage: rm <path>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        await VFS.remove(full);
+        return ['removed ' + full];
+      },
+      write: async (args) => {
+        if (!args[0]) return ['usage: write <file> <text>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        await VFS.write(full, args.slice(1).join(' '));
+        return ['wrote ' + full];
+      },
+      edit: async (args) => {
+        if (!args[0]) return ['usage: edit <file>'];
+        const full = args[0].startsWith('/') ? args[0] : (cwd === '/' ? '/' + args[0] : cwd + '/' + args[0]);
+        Apps.launch('editor', { path: full });
+        return ['opening ' + full];
+      },
+      echo: (args) => [args.join(' ')],
+      notify: (args) => { Notif.push('Terminal', args.join(' ') || 'hi'); return ['sent']; },
+      theme: async (args) => {
+        const t = args[0];
+        const ok = ['cyan', 'purple', 'green', 'orange', 'pink', 'blue', 'red', 'teal', 'lime', 'sunset'];
+        if (!t || !ok.includes(t)) return ['themes: ' + ok.join(', ')];
+        await Kernel.setSetting('theme', t);
+        return ['theme: ' + t];
+      },
+      wall: async (args) => {
+        if (!args[0] || !wallpapers.includes(args[0])) return ['wallpapers: ' + wallpapers.join(', ')];
+        await Kernel.setSetting('wallpaper', args[0]);
+        Desktop.applyWallpaper();
+        return ['wallpaper set: ' + args[0]];
+      },
+      matrix: () => {
+        let i = 0;
+        const id = setInterval(() => {
+          const line = Array(60).fill(0).map(() => String.fromCharCode(0x30 + Math.random() * 0x40 | 0)).join('');
+          out(line, 'i');
+          if (++i > 15) clearInterval(id);
+        }, 70);
+        return ['matrix cascade...'];
+      },
+      reboot: () => { setTimeout(() => location.reload(), 400); return ['rebooting...']; },
+      exit: () => { state.close(); return []; },
+      open: (args) => {
+        if (!args[0]) return ['usage: open <app>'];
+        const app = Apps.list().find(a => a.id === args[0]);
+        if (!app) return ['app not found: ' + args[0]];
+        Apps.launch(app.id);
+        return ['opened ' + app.title];
+      },
+      apps: () => {
+        const list = Apps.list();
+        return ['Installed apps (' + list.length + '):', ...list.map(a => '  ' + a.icon + '  ' + a.id + (a.source === 'installed' ? ' (store)' : ''))];
+      },
+      install: async (args) => {
+        const id = args[0];
+        if (!id) return ['usage: install <appId>'];
+        const store = Store.getApp(id);
+        if (!store) return ['not found in store: ' + id];
+        await Store.install(id);
+        return ['installed ' + id];
+      },
+    };
+    async function prompt_() {
+      const wrap = U.mk('div');
+      const p = U.mk('span', { class: 'p', text: Kernel.config.user.name + '@awewebos:' + cwd + '$ ' });
+      const inp = U.mk('input', { class: 'term-input', spellcheck: 'false' });
+      wrap.append(p, inp);
+      body.appendChild(wrap);
+      body.scrollTop = body.scrollHeight;
+      inp.focus();
+      inp.onkeydown = async e => {
+        if (e.key === 'Enter') {
+          const cmd = inp.value;
+          const txt = document.createTextNode(cmd);
+          inp.replaceWith(txt);
+          if (cmd.trim()) {
+            history.unshift(cmd);
+            const [name, ...args] = cmd.trim().split(/\s+/);
+            const fn = cmds[name];
+            if (!fn) out(name + ': command not found', 'e');
+            else {
+              try {
+                const result = await fn(args);
+                if (result) result.forEach(r => out(r));
+              } catch (err) { out('error: ' + err.message, 'e'); }
+            }
+          }
+          prompt_();
+        } else if (e.key === 'ArrowUp') {
+          if (hi < history.length - 1) hi++;
+          inp.value = history[hi] || '';
+          e.preventDefault();
+        } else if (e.key === 'ArrowDown') {
+          if (hi > 0) hi--; else hi = -1;
+          inp.value = history[hi] || '';
+          e.preventDefault();
+        }
+      };
+    }
+    out('AWEWEBOS Terminal v2.0', '');
+    out('Files stored in: ' + (FS.root?.name || 'unknown'), 'i');
+    out('Type "help" for commands.', 'i');
+    out('', '');
+    prompt_();
+    body.onclick = () => {
+      const inp = body.querySelector('.term-input:not([disabled])');
+      inp?.focus();
+    };
+  },
+});
+
+/* ---------- FILES ---------- */
+Apps.registerBuiltin('files', {
+  title: 'Files', icon: '▣', width: 800, height: 540, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    let cur = '/home/user';
+
+    const tb = U.mk('div', { class: 'files-toolbar' });
+    const up = U.mk('button', { class: 'btn', text: '↑' });
+    const home = U.mk('button', { class: 'btn', text: '⌂' });
+    const root = U.mk('button', { class: 'btn', text: '/' });
+    const path = U.mk('div', { class: 'files-path', text: cur });
+    const nFile = U.mk('button', { class: 'btn primary', text: '+ File' });
+    const nDir = U.mk('button', { class: 'btn', text: '+ Dir' });
+    tb.append(up, home, root, path, nFile, nDir);
+
+    const list = U.mk('div', { class: 'files-list' });
+    body.append(tb, list);
+
+    async function nav(p) { cur = p; path.textContent = cur; await render(); }
+    async function render() {
+      list.innerHTML = '';
+      if (cur !== '/') {
+        const par = U.mk('div', { class: 'file-item' }, [
+          U.mk('div', { class: 'fi', text: '📁' }),
+          U.mk('div', { class: 'fn', text: '..' }),
+        ]);
+        par.ondblclick = () => {
+          const parts = cur.split('/').filter(Boolean);
+          parts.pop();
+          nav('/' + parts.join('/') || '/');
+        };
+        list.appendChild(par);
+      }
+      try {
+        const items = await VFS.list(cur);
+        items.forEach(it => {
+          const icon = it.type === 'dir' ? '📁' :
+            it.name.endsWith('.txt') ? '📄' :
+            it.name.endsWith('.png') || it.name.endsWith('.jpg') ? '🖼' :
+            it.name.endsWith('.json') ? '📋' :
+            it.name.endsWith('.js') ? '📜' : '📄';
+          const el = U.mk('div', { class: 'file-item' }, [
+            U.mk('div', { class: 'fi', text: icon }),
+            U.mk('div', { class: 'fn', text: it.name }),
+          ]);
+          el.ondblclick = async () => {
+            if (it.type === 'dir') nav(cur === '/' ? '/' + it.name : cur + '/' + it.name);
+            else {
+              const full = cur === '/' ? '/' + it.name : cur + '/' + it.name;
+              if (/\.(txt|md|json|log|js|html|css)$/.test(it.name)) {
+                Apps.launch('editor', { path: full });
+              } else if (it.name.endsWith('.png') || it.name.endsWith('.jpg')) {
+                Apps.launch('viewer', { path: full });
+              } else Notif.push('Files', 'No default app for ' + it.name);
+            }
+          };
+          el.oncontextmenu = e => {
+            e.preventDefault(); e.stopPropagation();
+            Ctx.show(e.clientX, e.clientY, [
+              { label: 'Open', action: () => el.ondblclick() },
+              { label: 'Delete', action: async () => {
+                if (!confirm('Delete ' + it.name + '?')) return;
+                const full = cur === '/' ? '/' + it.name : cur + '/' + it.name;
+                await VFS.remove(full);
+                render();
+              } },
+            ]);
+          };
+          list.appendChild(el);
+        });
+        if (items.length === 0) {
+          list.appendChild(U.mk('div', { style: { gridColumn: '1/-1', padding: '40px', textAlign: 'center', color: 'var(--fg-3)' } }, 'Folder is empty'));
+        }
+      } catch (e) {
+        list.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--fg-3)">Cannot read folder: ' + U.esc(e.message) + '</div>';
+      }
+    }
+    up.onclick = () => {
+      if (cur === '/') return;
+      const parts = cur.split('/').filter(Boolean);
+      parts.pop();
+      nav('/' + parts.join('/') || '/');
+    };
+    home.onclick = () => nav('/home/user');
+    root.onclick = () => nav('/');
+    nFile.onclick = async () => {
+      const n = prompt('File name:', 'untitled.txt');
+      if (!n) return;
+      const full = cur === '/' ? '/' + n : cur + '/' + n;
+      await VFS.write(full, '');
+      render();
+    };
+    nDir.onclick = async () => {
+      const n = prompt('Folder name:', 'New Folder');
+      if (!n) return;
+      const full = cur === '/' ? '/' + n : cur + '/' + n;
+      await VFS.mkdir(full);
+      render();
+    };
+    Bus.on('fs.change', () => render());
+    render();
+  },
+});
+
+/* ---------- EDITOR ---------- */
+Apps.registerBuiltin('editor', {
+  title: 'Editor', icon: '✐', width: 700, height: 520, autoMax: true,
+  mount(body, state, opts) {
+    body.style.padding = '0';
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    let path = opts.path;
+    if (!path) path = prompt('Open file path:', '/home/user/Desktop/untitled.txt');
+    if (!path) path = '/home/user/Desktop/untitled.txt';
+
+    const tb = U.mk('div', { class: 'files-toolbar' });
+    const fileLabel = U.mk('div', { class: 'files-path', text: path });
+    const bSave = U.mk('button', { class: 'btn primary', text: 'SAVE' });
+    const bClose = U.mk('button', { class: 'btn', text: 'Close' });
+    tb.append(fileLabel, bSave, bClose);
+
+    const ta = U.mk('textarea', { spellcheck: 'false', style: {
+      flex: '1', padding: '14px', background: '#0a0e17', color: '#e0f7ff',
+      fontFamily: 'var(--font-mono)', fontSize: '13px', border: 'none',
+      outline: 'none', resize: 'none', lineHeight: '1.6', width: '100%',
+    } });
+    body.append(tb, ta);
+
+    (async () => {
+      const c = await VFS.read(path);
+      if (c !== null) ta.value = c;
+      state.setTitle('Editor · ' + path.split('/').pop());
+    })();
+
+    async function save() {
+      await VFS.write(path, ta.value);
+      Notif.push('Editor', 'Saved ' + path.split('/').pop(), 2000, '✐');
+    }
+    bSave.onclick = save;
+    bClose.onclick = () => state.close();
+    ta.onkeydown = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); save(); }
+    };
+    const auto = setInterval(() => { if (ta.value) VFS.write(path, ta.value); }, 10000);
+    state.cleanup = () => { clearInterval(auto); if (ta.value) VFS.write(path, ta.value); };
+  },
+});
+
+/* ---------- NOTES ---------- */
+Apps.registerBuiltin('notes', {
+  title: 'Notes', icon: '✎', width: 700, height: 500, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    body.style.display = 'flex';
+    body.style.flexDirection = 'column';
+    let curFile = null;
+
+    const tb = U.mk('div', { class: 'files-toolbar' });
+    const title = U.mk('div', { class: 'grow', style: { fontSize: '13px', color: 'var(--fg-0)', fontWeight: '600' }, text: 'Notes' });
+    const bNew = U.mk('button', { class: 'btn primary', text: '+ New' });
+    const bDel = U.mk('button', { class: 'btn danger hidden', text: 'Delete' });
+    const bBack = U.mk('button', { class: 'btn hidden', text: '← Back' });
+    tb.append(bBack, title, bNew, bDel);
+
+    const grid = U.mk('div', { class: 'notes-grid' });
+    const editWrap = U.mk('div', { class: 'hidden', style: { flex: '1', display: 'flex', flexDirection: 'column' } });
+    const eTitle = U.mk('input', { class: 'input', placeholder: 'Title', style: { margin: '12px 12px 0', width: 'calc(100% - 24px)' } });
+    const eBody = U.mk('textarea', { class: 'input', placeholder: 'Write your note...', style: { margin: '12px', flex: '1', resize: 'none', fontFamily: 'var(--font)', lineHeight: '1.6' } });
+    editWrap.append(eTitle, eBody);
+
+    body.append(tb, grid, editWrap);
+
+    async function renderList() {
+      grid.innerHTML = '';
+      const items = await VFS.list('/home/user/Documents');
+      const notes = items.filter(i => i.type === 'file' && i.name.endsWith('.note'));
+      if (!notes.length) {
+        grid.appendChild(U.mk('div', { style: { gridColumn: '1/-1', padding: '40px 20px', textAlign: 'center', color: 'var(--fg-3)' } },
+          'No notes yet. Click + New to start.'));
+      }
+      for (const n of notes) {
+        const content = await VFS.read('/home/user/Documents/' + n.name) || '';
+        const lines = content.split('\n');
+        const nt = lines[0] || 'Untitled';
+        const nb = lines.slice(1).join('\n').slice(0, 140);
+        const el = U.mk('div', { class: 'note-card' }, [
+          U.mk('div', { class: 'nt', text: nt }),
+          U.mk('div', { class: 'nb', text: nb }),
+          U.mk('div', { class: 'nd', text: n.name }),
+        ]);
+        el.onclick = async () => {
+          curFile = n.name;
+          eTitle.value = nt;
+          eBody.value = lines.slice(1).join('\n');
+          grid.classList.add('hidden');
+          editWrap.classList.remove('hidden');
+          editWrap.style.display = 'flex';
+          bBack.classList.remove('hidden');
+          bDel.classList.remove('hidden');
+        };
+        grid.appendChild(el);
+      }
+    }
+    async function saveNote() {
+      if (!curFile) return;
+      const content = eTitle.value + '\n' + eBody.value;
+      await VFS.write('/home/user/Documents/' + curFile, content);
+    }
+    async function closeNote() {
+      await saveNote();
+      curFile = null;
+      grid.classList.remove('hidden');
+      editWrap.classList.add('hidden');
+      bBack.classList.add('hidden');
+      bDel.classList.add('hidden');
+      renderList();
+    }
+    bNew.onclick = async () => {
+      const name = 'note-' + Date.now() + '.note';
+      await VFS.write('/home/user/Documents/' + name, 'Untitled\n');
+      curFile = name;
+      eTitle.value = 'Untitled';
+      eBody.value = '';
+      grid.classList.add('hidden');
+      editWrap.classList.remove('hidden');
+      editWrap.style.display = 'flex';
+      bBack.classList.remove('hidden');
+      bDel.classList.remove('hidden');
+    };
+    bDel.onclick = async () => {
+      if (!curFile || !confirm('Delete this note?')) return;
+      await VFS.remove('/home/user/Documents/' + curFile);
+      curFile = null;
+      await closeNote();
+    };
+    bBack.onclick = closeNote;
+    eTitle.oninput = U.debounce(saveNote, 800);
+    eBody.oninput = U.debounce(saveNote, 800);
+    renderList();
+  },
+});
+
+/* ---------- CALCULATOR ---------- */
+Apps.registerBuiltin('calc', {
+  title: 'Calculator', icon: '⊞', width: 340, height: 520,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { class: 'calc' });
+    const dp = U.mk('div', { class: 'calc-display' });
+    const ex = U.mk('div', { class: 'expr' });
+    const rs = U.mk('div', { class: 'res', text: '0' });
+    dp.append(ex, rs);
+    const grid = U.mk('div', { class: 'calc-grid' });
+    let cur = '0', prev = null, op = null, fresh = false;
+    function upd() { rs.textContent = cur; ex.textContent = prev !== null ? prev + ' ' + op + ' ' : ''; }
+    function press(k) {
+      if (k >= '0' && k <= '9') { if (fresh) { cur = k; fresh = false; } else cur = cur === '0' ? k : cur + k; }
+      else if (k === '.') { if (fresh) { cur = '0.'; fresh = false; } else if (!cur.includes('.')) cur += '.'; }
+      else if (k === 'C') { cur = '0'; prev = null; op = null; fresh = false; }
+      else if (k === '←') { cur = cur.length > 1 ? cur.slice(0, -1) : '0'; }
+      else if (k === '±') { cur = cur.startsWith('-') ? cur.slice(1) : (cur === '0' ? cur : '-' + cur); }
+      else if (k === '%') { cur = String(parseFloat(cur) / 100); }
+      else if (['+', '−', '×', '÷'].includes(k)) {
+        if (op && !fresh) compute();
+        prev = parseFloat(cur); op = k; fresh = true;
+      } else if (k === '=') { if (op) compute(); }
+      upd();
+    }
+    function compute() {
+      const a = prev, b = parseFloat(cur); let r = 0;
+      if (op === '+') r = a + b; else if (op === '−') r = a - b; else if (op === '×') r = a * b;
+      else if (op === '÷') r = b === 0 ? NaN : a / b;
+      cur = String(r); prev = null; op = null; fresh = true;
+    }
+    [['C', 'clr'], ['±', ''], ['%', 'op'], ['÷', 'op'],
+     ['7', ''], ['8', ''], ['9', ''], ['×', 'op'],
+     ['4', ''], ['5', ''], ['6', ''], ['−', 'op'],
+     ['1', ''], ['2', ''], ['3', ''], ['+', 'op'],
+     ['0', ''], ['.', ''], ['←', ''], ['=', 'eq']].forEach(([k, cls]) => {
+      const b = U.mk('button', { class: cls, text: k });
+      b.onclick = () => press(k);
+      grid.appendChild(b);
+    });
+    wrap.append(dp, grid);
+    body.appendChild(wrap);
+    const kd = e => {
+      if (document.activeElement.tagName === 'INPUT') return;
+      const map = { 'Enter': '=', 'Escape': 'C', 'Backspace': '←', '*': '×', '/': '÷', '-': '−' };      const k = map[e.key] || e.key;
+      if ('0123456789.+-−×÷=C%←'.includes(k)) { press(k); e.preventDefault(); }
+    };
+    addEventListener('keydown', kd);
+    state.cleanup = () => removeEventListener('keydown', kd);
+  },
+});
+
+/* ---------- PAINT ---------- */
+Apps.registerBuiltin('paint', {
+  title: 'Paint', icon: '◈', width: 900, height: 640, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { class: 'paint-app' });
+    const tb = U.mk('div', { class: 'paint-toolbar' });
+    const cvw = U.mk('div', { class: 'paint-canvas-wrap' });
+    const cvs = document.createElement('canvas');
+    cvs.width = 1600; cvs.height = 1000;
+    cvs.style.width = '100%'; cvs.style.height = '100%';
+    cvw.appendChild(cvs);
+    wrap.append(tb, cvw);
+    body.appendChild(wrap);
+
+    const ctx = cvs.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+
+    let color = '#00d4ff', size = 4, mode = 'brush', drawing = false;
+    let start = null, snapshot = null;
+
+    ['#00d4ff', '#f43f5e', '#fbbf24', '#22c55e', '#a855f7', '#ec4899', '#ffffff', '#000000'].forEach(c => {
+      const b = U.mk('button', { style: { background: c, width: '32px', height: '32px', padding: '0', border: '2px solid rgba(255,255,255,.2)' } });
+      b.onclick = () => color = c;
+      tb.appendChild(b);
+    });
+    const cInp = U.mk('input', { type: 'color', value: color, style: { width: '40px', height: '32px', border: '1px solid var(--border)', borderRadius: '6px', background: 'transparent' } });
+    cInp.oninput = () => color = cInp.value;
+    tb.appendChild(cInp);
+    const sInp = U.mk('input', { type: 'range', min: '1', max: '60', value: size, style: { width: '100px' } });
+    sInp.oninput = () => size = +sInp.value;
+    tb.appendChild(sInp);
+    ['brush', 'line', 'rect', 'circle', 'eraser'].forEach(m => {
+      const b = U.mk('button', { text: m.charAt(0).toUpperCase() + m.slice(1) });
+      if (m === 'brush') b.classList.add('active');
+      b.onclick = () => {
+        mode = m;
+        tb.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+      };
+      tb.appendChild(b);
+    });
+    const save = U.mk('button', { text: 'Save to Pictures' });
+    save.onclick = async () => {
+      const data = cvs.toDataURL('image/png');
+      const name = 'paint-' + Date.now() + '.png';
+      await VFS.write('/home/user/Pictures/' + name, data);
+      Notif.push('Paint', 'Saved as /Pictures/' + name, 3000, '◈');
+    };
+    tb.appendChild(save);
+
+    function pos(e) {
+      const r = cvs.getBoundingClientRect();
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (cx - r.left) * (cvs.width / r.width), y: (cy - r.top) * (cvs.height / r.height) };
+    }
+    function startStroke(e) {
+      e.preventDefault();
+      drawing = true;
+      start = pos(e);
+      snapshot = ctx.getImageData(0, 0, cvs.width, cvs.height);
+      if (mode === 'brush' || mode === 'eraser') { ctx.beginPath(); ctx.moveTo(start.x, start.y); }
+    }
+    function moveStroke(e) {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = pos(e);
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = size;
+      if (mode === 'brush') { ctx.strokeStyle = color; ctx.lineTo(p.x, p.y); ctx.stroke(); }
+      else if (mode === 'eraser') { ctx.strokeStyle = '#fff'; ctx.lineTo(p.x, p.y); ctx.stroke(); }
+      else if (mode === 'line') {
+        ctx.putImageData(snapshot, 0, 0);
+        ctx.strokeStyle = color;
+        ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+      }
+      else if (mode === 'rect') {
+        ctx.putImageData(snapshot, 0, 0);
+        ctx.strokeStyle = color;
+        ctx.strokeRect(start.x, start.y, p.x - start.x, p.y - start.y);
+      }
+      else if (mode === 'circle') {
+        ctx.putImageData(snapshot, 0, 0);
+        ctx.strokeStyle = color;
+        const r = Math.hypot(p.x - start.x, p.y - start.y);
+        ctx.beginPath(); ctx.arc(start.x, start.y, r, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+    function endStroke() { drawing = false; }
+    cvs.addEventListener('mousedown', startStroke);
+    cvs.addEventListener('mousemove', moveStroke);
+    cvs.addEventListener('mouseup', endStroke);
+    cvs.addEventListener('mouseleave', endStroke);
+    cvs.addEventListener('touchstart', startStroke, { passive: false });
+    cvs.addEventListener('touchmove', moveStroke, { passive: false });
+    cvs.addEventListener('touchend', endStroke);
+  },
+});
+
+/* ---------- IMAGE VIEWER ---------- */
+Apps.registerBuiltin('viewer', {
+  title: 'Image Viewer', icon: '🖼', width: 700, height: 560, autoMax: true,
+  mount(body, state, opts) {
+    body.style.padding = '0';
+    body.style.background = '#000';
+    const img = U.mk('img', { style: { maxWidth: '100%', maxHeight: '100%', display: 'block', margin: 'auto' } });
+    body.appendChild(img);
+    (async () => {
+      const p = opts.path || '/home/user/Pictures';
+      if (p && p.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
+        const data = await VFS.read(p);
+        if (data) img.src = data.startsWith('data:') ? data : 'data:image/png;base64,' + data;
+      } else {
+        body.innerHTML = '<div style="color:#888;padding:40px;text-align:center">No image</div>';
+      }
+    })();
+  },
+});
+
+/* ---------- MESSENGER ---------- */
+Apps.registerBuiltin('messenger', {
+  title: 'Messenger', icon: '✉', width: 780, height: 540, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { style: { display: 'grid', gridTemplateColumns: '260px 1fr', height: '100%' } });
+    wrap.innerHTML = `
+      <div style="border-right:1px solid var(--border);display:flex;flex-direction:column;background:rgba(0,0,0,.15)">
+        <div style="padding:14px;border-bottom:1px solid var(--border);font-size:11px;color:var(--accent);letter-spacing:2px;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+          <span>CONTACTS</span>
+          <span id="meLabel" style="font-size:10px;color:var(--fg-3);font-family:var(--font-mono)"></span>
+        </div>
+        <div id="contacts" style="flex:1;overflow-y:auto"></div>
+        <div style="padding:10px;border-top:1px solid var(--border)">
+          <input class="input" id="nameInput" placeholder="Your name" maxlength="20">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;background:rgba(0,0,0,.08)">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);font-weight:500" id="chatTitle">Select a contact</div>
+        <div id="messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>
+        <div style="padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;background:rgba(0,0,0,.2)">
+          <input class="input" id="msgInput" placeholder="Type a message..." disabled style="flex:1">
+          <button class="btn primary" id="sendBtn" disabled>Send</button>
+        </div>
+      </div>
+    `;
+    body.appendChild(wrap);
+
+    const contactsEl = U.q('#contacts');
+    const msgsEl = U.q('#messages');
+    const inputEl = U.q('#msgInput');
+    const sendEl = U.q('#sendBtn');
+    const titleEl = U.q('#chatTitle');
+    const meLabel = U.q('#meLabel');
+    const nameInput = U.q('#nameInput');
+
+    let me = Kernel.config.user;
+    let active = null;
+    meLabel.textContent = '#' + me.id;
+    nameInput.value = me.name;
+
+    const BC = new BroadcastChannel('awewebos-msgr');
+    const onlinePeers = new Map();
+
+    function convKey(a, b) { return [a, b].sort().join('|'); }
+
+    async function loadMsgs() {
+      if (!active) return [];
+      const convo = convKey(me.id, active.id);
+      const file = await VFS.read('/home/user/Documents/.msgs-' + convo + '.json');
+      if (!file) return [];
+      try { return JSON.parse(file); } catch (e) { return []; }
+    }
+    async function saveMsgs(msgs) {
+      const convo = convKey(me.id, active.id);
+      await VFS.write('/home/user/Documents/.msgs-' + convo + '.json', JSON.stringify(msgs));
+    }
+
+    async function loadContacts() {
+      contactsEl.innerHTML = '';
+      // List msg files
+      const files = (await VFS.list('/home/user/Documents')).filter(f => f.name.startsWith('.msgs-') && f.name.endsWith('.json'));
+      const peers = new Map();
+      for (const f of files) {
+        const key = f.name.slice(6, -5);
+        const parts = key.split('|');
+        const otherId = parts.find(p => p !== me.id);
+        if (otherId) peers.set(otherId, { id: otherId, name: 'Contact #' + otherId });
+      }
+      onlinePeers.forEach((p, k) => peers.set(k, { ...p, online: true }));
+
+      if (!peers.size) {
+        contactsEl.innerHTML = '<div style="padding:24px 16px;color:var(--fg-3);text-align:center;font-size:12px;line-height:1.7">No contacts yet.<br>Open Messenger in another tab!</div>';
+      }
+      for (const c of peers.values()) {
+        const el = U.mk('div', {
+          style: {
+            padding: '12px 14px', display: 'flex', gap: '12px', alignItems: 'center',
+            cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,.03)',
+            background: active && active.id === c.id ? 'rgba(0,212,255,.12)' : 'transparent',
+          },
+        }, [
+          U.mk('div', { style: {
+            width: '40px', height: '40px', borderRadius: '50%',
+            background: 'linear-gradient(135deg,var(--accent),var(--accent-2))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: '700', color: '#000', flexShrink: '0',
+          }, text: (c.name || '?')[0].toUpperCase() }),
+          U.mk('div', {}, [
+            U.mk('div', { style: { fontSize: '12px', fontWeight: '500' }, text: c.name + (c.online ? ' ●' : '') }),
+            U.mk('div', { style: { fontSize: '10px', color: 'var(--fg-3)', fontFamily: 'var(--font-mono)' }, text: '#' + c.id }),
+          ]),
+        ]);
+        el.onclick = () => selectContact(c.id, c.name);
+        contactsEl.appendChild(el);
+      }
+    }
+
+    async function selectContact(id, name) {
+      active = { id, name };
+      titleEl.textContent = name;
+      inputEl.disabled = false;
+      sendEl.disabled = false;
+      await renderMsgs();
+      inputEl.focus();
+      loadContacts();
+    }
+
+    async function renderMsgs() {
+      if (!active) return;
+      const msgs = await loadMsgs();
+      msgsEl.innerHTML = '';
+      if (!msgs.length) {
+        msgsEl.innerHTML = '<div style="text-align:center;color:var(--fg-3);padding:40px;font-size:12px">No messages yet. Say hi!</div>';
+        return;
+      }
+      msgs.forEach(m => {
+        const mine = m.from === me.id;
+        const el = U.mk('div', { style: {
+          maxWidth: '70%', padding: '10px 14px',
+          borderRadius: mine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          alignSelf: mine ? 'flex-end' : 'flex-start',
+          background: mine ? 'linear-gradient(135deg,var(--accent),#00a0cc)' : 'rgba(255,255,255,.08)',
+          color: mine ? '#000' : 'var(--fg-0)',
+          fontSize: '13px', lineHeight: '1.5', wordBreak: 'break-word',
+        } }, [
+          U.mk('div', { text: m.text }),
+          U.mk('div', { style: { fontSize: '9px', opacity: '.6', marginTop: '4px', textAlign: 'right' },
+            text: new Date(m.time).toLocaleTimeString().slice(0, 5) }),
+        ]);
+        msgsEl.appendChild(el);
+      });
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    }
+
+    async function send() {
+      const text = inputEl.value.trim();
+      if (!text || !active) return;
+      const msgs = await loadMsgs();
+      const msg = {
+        id: U.uid(),
+        from: me.id, fromName: me.name,
+        to: active.id, toName: active.name,
+        text,
+        time: Date.now(),
+      };
+      msgs.push(msg);
+      await saveMsgs(msgs);
+      BC.postMessage({ type: 'msg', from: me, to: active.id, msg });
+      inputEl.value = '';
+      await renderMsgs();
+    }
+    sendEl.onclick = send;
+    inputEl.onkeydown = e => { if (e.key === 'Enter') send(); };
+
+    function announce() { BC.postMessage({ type: 'hello', user: { id: me.id, name: me.name } }); }
+    BC.onmessage = async e => {
+      const m = e.data;
+      if (m.type === 'hello' && m.user && m.user.id !== me.id) {
+        onlinePeers.set(m.user.id, m.user);
+        BC.postMessage({ type: 'hello-ack', user: { id: me.id, name: me.name } });
+        loadContacts();
+      } else if (m.type === 'hello-ack' && m.user && m.user.id !== me.id) {
+        onlinePeers.set(m.user.id, m.user);
+        loadContacts();
+      } else if (m.type === 'msg' && m.msg) {
+        const relevant = (m.msg.to === me.id && m.msg.from === active?.id) ||
+                         (m.msg.from === me.id && m.msg.to === active?.id);
+        if (relevant) await renderMsgs();
+        loadContacts();
+      }
+    };
+    nameInput.onchange = async () => {
+      const n = nameInput.value.trim() || 'User';
+      Kernel.config.user.name = n;
+      await Kernel.save();
+      me = Kernel.config.user;
+      announce();
+    };
+    announce();
+    const announceTimer = setInterval(announce, 5000);
+    const contactsTimer = setInterval(loadContacts, 3000);
+    loadContacts();
+    state.cleanup = () => { clearInterval(announceTimer); clearInterval(contactsTimer); BC.close(); };
+  },
+});
+
+/* ============================================================
+   APP STORE (real install to /Apps/)
+   ============================================================ */
+
+const STORE_APPS = [
+  {
+    id: 'weather', name: 'Weather', icon: '☀', category: 'Utilities',
+    desc: 'Check weather for cities around the world (simulated).',
+    version: '1.0.0', size: '12 KB',
+    mount(body, state) {
+      body.style.padding = '0';
+      const wrap = U.mk('div', { style: { padding: '20px', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', gap: '14px', overflow: 'auto' } });
+      body.appendChild(wrap);
+      const cities = ['Yerevan', 'Moscow', 'Tokyo', 'New York', 'Berlin', 'Paris', 'London', 'Dubai'];
+      const conds = [{ i: '☀', n: 'Clear' }, { i: '⛅', n: 'Partly Cloudy' }, { i: '☁', n: 'Cloudy' }, { i: '🌧', n: 'Rain' }, { i: '⛈', n: 'Storm' }, { i: '❄', n: 'Snow' }];
+      let city = 'Yerevan';
+      async function render() {
+        const c = conds[U.rint(0, conds.length - 1)];
+        const temp = U.rint(-5, 35);
+        wrap.innerHTML = `
+          <div style="font-size:13px;color:var(--fg-2);letter-spacing:3px;text-transform:uppercase;font-weight:500">${city}</div>
+          <div style="font-size:90px;line-height:1">${c.i}</div>
+          <div style="font-size:96px;font-weight:200;color:var(--accent);line-height:1;letter-spacing:-4px">${temp}°</div>
+          <div style="font-size:14px;color:var(--fg-1);letter-spacing:2px;margin-bottom:20px;font-weight:500">${c.n}</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            ${cities.map(cc => '<button class="btn" data-city="' + cc + '" style="padding:6px 14px;font-size:11px">' + cc + '</button>').join('')}
+          </div>
+        `;
+        wrap.querySelectorAll('[data-city]').forEach(b => {
+          b.onclick = () => { city = b.dataset.city; render(); };
+        });
+      }
+      render();
+    },
+  },
+  {
+    id: 'clock', name: 'Clock', icon: '◷', category: 'Utilities',
+    desc: 'Digital clock with timer and stopwatch.',
+    version: '1.0.0', size: '8 KB',
+    mount(body, state) {
+      body.style.padding = '0';
+      const wrap = U.mk('div', { style: { padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', height: '100%', justifyContent: 'center' } });
+      const big = U.mk('div', { style: { fontFamily: 'var(--font-mono)', fontSize: '72px', fontWeight: '200', color: 'var(--accent)', letterSpacing: '-2px' }, text: '00:00:00' });
+      const dt = U.mk('div', { style: { color: 'var(--fg-2)', letterSpacing: '3px', textTransform: 'uppercase', fontSize: '12px' } });
+      wrap.append(big, dt);
+      body.appendChild(wrap);
+      const int = setInterval(() => {
+        const d = new Date();
+        big.textContent = U.pad(d.getHours()) + ':' + U.pad(d.getMinutes()) + ':' + U.pad(d.getSeconds());
+        dt.textContent = U.date();
+      }, 500);
+      state.cleanup = () => clearInterval(int);
+    },
+  },
+  {
+    id: 'calendar', name: 'Calendar', icon: '▤', category: 'Utilities',
+    desc: 'Monthly calendar with events.',
+    version: '1.0.0', size: '10 KB',
+    mount(body, state) {
+      body.style.padding = '16px';
+      const wrap = U.mk('div');
+      let cur = new Date();
+      cur.setDate(1);
+      function render() {
+        const dayOfWeek = (cur.getDay() + 6) % 7;
+        const daysInMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 0).getDate();
+        const prevMonthDays = new Date(cur.getFullYear(), cur.getMonth(), 0).getDate();
+        const today = new Date();
+        let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><button class="btn" id="prev">‹</button><div style="font-size:16px;font-weight:600;color:var(--accent);letter-spacing:2px">' + cur.toLocaleDateString('en', { month: 'long', year: 'numeric' }).toUpperCase() + '</div><button class="btn" id="next">›</button></div>';
+        html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">';
+        ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(d => {
+          html += '<div style="padding:8px;text-align:center;font-size:10px;color:var(--fg-2);text-transform:uppercase;font-weight:600">' + d + '</div>';
+        });
+        for (let i = dayOfWeek - 1; i >= 0; i--) {
+          html += '<div style="padding:10px;text-align:center;color:var(--fg-3)">' + (prevMonthDays - i) + '</div>';
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+          const isToday = today.getFullYear() === cur.getFullYear() && today.getMonth() === cur.getMonth() && today.getDate() === i;
+          const style = isToday ? 'background:var(--accent);color:#000;font-weight:700' : 'background:rgba(255,255,255,.02)';
+          html += '<div style="padding:10px;text-align:center;border-radius:6px;' + style + '">' + i + '</div>';
+        }
+        html += '</div>';
+        wrap.innerHTML = html;
+        wrap.querySelector('#prev').onclick = () => { cur.setMonth(cur.getMonth() - 1); render(); };
+        wrap.querySelector('#next').onclick = () => { cur.setMonth(cur.getMonth() + 1); render(); };
+      }
+      render();
+      body.appendChild(wrap);
+    },
+  },
+  {
+    id: 'snake', name: 'Snake Game', icon: '§', category: 'Games',
+    desc: 'Classic snake game. Arrows/WASD to move.',
+    version: '1.0.0', size: '6 KB',
+    mount(body, state) {
+      body.style.padding = '0';
+      const wrap = U.mk('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', padding: '12px', gap: '8px' } });
+      const score = U.mk('div', { style: { fontFamily: 'var(--font-mono)', color: 'var(--accent)', letterSpacing: '2px', fontSize: '13px', fontWeight: '600' }, text: 'SCORE: 0' });
+      const cvs = document.createElement('canvas');
+      const size = 20;
+      cvs.width = size * 20; cvs.height = size * 20;
+      cvs.style.width = '400px'; cvs.style.height = '400px';
+      cvs.style.background = '#000';
+      cvs.style.border = '1px solid var(--accent)';
+      cvs.style.maxWidth = '100%'; cvs.style.maxHeight = '100%';
+      wrap.append(score, cvs);
+      body.appendChild(wrap);
+      const ctx = cvs.getContext('2d');
+      let snake = [{ x: 10, y: 10 }], dir = { x: 1, y: 0 }, food = { x: 15, y: 10 };
+      let scoreVal = 0, dead = false, paused = false;
+      function spawn() { let ok = false; while (!ok) { food = { x: U.rint(0, 19), y: U.rint(0, 19) }; ok = !snake.some(s => s.x === food.x && s.y === food.y); } }
+      function step() {
+        if (dead || paused) return;
+        const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+        if (head.x < 0 || head.x >= 20 || head.y < 0 || head.y >= 20 || snake.some(s => s.x === head.x && s.y === head.y)) { dead = true; return; }
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) { scoreVal += 10; score.textContent = 'SCORE: ' + scoreVal; spawn(); }
+        else snake.pop();
+      }
+      function render() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+        snake.forEach((s, i) => {
+          const g = Math.max(0.4, 1 - i / snake.length);
+          ctx.fillStyle = `rgba(0,${Math.floor(200 + 55 * g)},${Math.floor(150 * g + 105)},1)`;
+          ctx.fillRect(s.x * size + 1, s.y * size + 1, size - 2, size - 2);
+        });
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(food.x * size + 2, food.y * size + 2, size - 4, size - 4);
+        if (dead) {
+          ctx.fillStyle = 'rgba(0,0,0,.75)'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+          ctx.fillStyle = '#f43f5e'; ctx.font = '24px monospace'; ctx.textAlign = 'center';
+          ctx.fillText('GAME OVER', cvs.width / 2, cvs.height / 2);
+        }
+      }
+      const kd = e => {
+        if (document.activeElement.tagName === 'INPUT') return;
+        const k = e.key.toLowerCase();
+        if (dead && k === ' ') { snake = [{ x: 10, y: 10 }]; dir = { x: 1, y: 0 }; scoreVal = 0; dead = false; score.textContent = 'SCORE: 0'; spawn(); return; }
+        if (dead) return;
+        if ((k === 'arrowup' || k === 'w') && dir.y === 0) dir = { x: 0, y: -1 };
+        else if ((k === 'arrowdown' || k === 's') && dir.y === 0) dir = { x: 0, y: 1 };
+        else if ((k === 'arrowleft' || k === 'a') && dir.x === 0) dir = { x: -1, y: 0 };
+        else if ((k === 'arrowright' || k === 'd') && dir.x === 0) dir = { x: 1, y: 0 };
+      };
+      addEventListener('keydown', kd);
+      state.cleanup = () => removeEventListener('keydown', kd);
+      let acc = 0, last = performance.now();
+      const loop = () => {
+        const t = performance.now();
+        acc += t - last; last = t;
+        if (acc > 100) { step(); acc = 0; }
+        render();
+        if (cvs.isConnected) requestAnimationFrame(loop);
+      };
+      loop();
+      spawn();
+    },
+  },
+  {
+    id: 'tetris', name: 'Tetris', icon: '▦', category: 'Games',
+    desc: 'Classic block-stacking puzzle game.',
+    version: '1.0.0', size: '8 KB',
+    mount(body, state) {
+      body.style.padding = '0';
+      const wrap = U.mk('div', { style: { display: 'flex', gap: '14px', height: '100%', padding: '12px' } });
+      const cvs = document.createElement('canvas');
+      cvs.width = 200; cvs.height = 400;
+      cvs.style.background = '#000';
+      cvs.style.border = '1px solid var(--accent)';
+      const side = U.mk('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '11px' } });
+      const scoreBox = U.mk('div', { style: { border: '1px solid var(--border)', padding: '10px', borderRadius: '6px' } });
+      scoreBox.innerHTML = '<div style="font-size:9px;color:var(--fg-2);text-transform:uppercase;letter-spacing:1px;font-weight:600">SCORE</div><div style="color:var(--accent);font-family:var(--font-mono);font-size:18px;font-weight:600;margin-top:2px" id="tscore">0</div>';
+      side.appendChild(scoreBox);
+      wrap.append(cvs, side);
+      body.appendChild(wrap);
+      const ctx = cvs.getContext('2d');
+      const COLS = 10, ROWS = 20, CELL = 20;
+      const shapes = [
+        { v: [[1, 1, 1, 1]], c: '#00d4ff' }, { v: [[1, 1], [1, 1]], c: '#fbbf24' },
+        { v: [[0, 1, 0], [1, 1, 1]], c: '#ec4899' }, { v: [[0, 1, 1], [1, 1, 0]], c: '#22c55e' },
+        { v: [[1, 1, 0], [0, 1, 1]], c: '#fb923c' }, { v: [[1, 0, 0], [1, 1, 1]], c: '#3b82f6' },
+        { v: [[0, 0, 1], [1, 1, 1]], c: '#a855f7' },
+      ];
+      const grid = Array(ROWS).fill(0).map(() => Array(COLS).fill(null));
+      function randPiece() { const s = shapes[U.rint(0, shapes.length - 1)]; return { v: s.v.map(r => [...r]), c: s.c, x: 3, y: 0 }; }
+      let piece = randPiece(), next = randPiece();
+      let score = 0, dead = false;
+      function collide(p, ox = 0, oy = 0, v = p.v) {
+        for (let y = 0; y < v.length; y++) for (let x = 0; x < v[y].length; x++) {
+          if (!v[y][x]) continue;
+          const nx = p.x + x + ox, ny = p.y + y + oy;
+          if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+          if (ny >= 0 && grid[ny][nx]) return true;
+        }
+        return false;
+      }
+      function rotate(v) {
+        const R = v.length, C = v[0].length;
+        const out = Array(C).fill(0).map(() => Array(R).fill(0));
+        for (let y = 0; y < R; y++) for (let x = 0; x < C; x++) out[x][R - 1 - y] = v[y][x];
+        return out;
+      }
+      function lock() {
+        piece.v.forEach((row, y) => row.forEach((v, x) => { if (v && piece.y + y >= 0) grid[piece.y + y][piece.x + x] = piece.c; }));
+        let cleared = 0;
+        for (let y = ROWS - 1; y >= 0; y--) { if (grid[y].every(c => c)) { grid.splice(y, 1); grid.unshift(Array(COLS).fill(null)); cleared++; y++; } }
+        if (cleared) { score += [0, 100, 300, 500, 800][cleared] || 0; document.getElementById('tscore').textContent = score; }
+        piece = next; next = randPiece(); piece.x = 3; piece.y = 0;
+        if (collide(piece)) dead = true;
+      }
+      const kd = e => {
+        if (document.activeElement.tagName === 'INPUT') return;
+        if (dead) { if (e.key === ' ') location.reload(); return; }
+        if (e.key === 'ArrowLeft' && !collide(piece, -1, 0)) { piece.x--; e.preventDefault(); }
+        else if (e.key === 'ArrowRight' && !collide(piece, 1, 0)) { piece.x++; e.preventDefault(); }
+        else if (e.key === 'ArrowDown') { if (!collide(piece, 0, 1)) piece.y++; else lock(); e.preventDefault(); }
+        else if (e.key === 'ArrowUp') { const r = rotate(piece.v); if (!collide(piece, 0, 0, r)) piece.v = r; e.preventDefault(); }
+        else if (e.key === ' ') { while (!collide(piece, 0, 1)) piece.y++; lock(); e.preventDefault(); }
+      };
+      addEventListener('keydown', kd);
+      state.cleanup = () => removeEventListener('keydown', kd);
+      function draw() {
+        ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cvs.width, cvs.height);
+        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (grid[y][x]) {
+          ctx.fillStyle = grid[y][x]; ctx.fillRect(x * CELL + 1, y * CELL + 1, CELL - 2, CELL - 2);
+        }
+        piece.v.forEach((row, y) => row.forEach((v, x) => {
+          if (v && piece.y + y >= 0) { ctx.fillStyle = piece.c; ctx.fillRect((piece.x + x) * CELL + 1, (piece.y + y) * CELL + 1, CELL - 2, CELL - 2); }
+        }));
+        if (dead) { ctx.fillStyle = 'rgba(0,0,0,.75)'; ctx.fillRect(0, 0, cvs.width, cvs.height); ctx.fillStyle = '#f43f5e'; ctx.font = '16px monospace'; ctx.textAlign = 'center'; ctx.fillText('GAME OVER', cvs.width / 2, cvs.height / 2); }
+      }
+      let acc = 0, last = performance.now();
+      const loop = () => {
+        const t = performance.now();
+        acc += t - last; last = t;
+        if (!dead && acc > 500) { if (!collide(piece, 0, 1)) piece.y++; else lock(); acc = 0; }
+        draw();
+        if (cvs.isConnected) requestAnimationFrame(loop);
+      };
+      loop();
+    },
+  },
+  {
+    id: 'mines', name: 'Minesweeper', icon: '✹', category: 'Games',
+    desc: 'Classic mine-hunting puzzle.',
+    version: '1.0.0', size: '7 KB',
+    mount(body, state) {
+      body.style.padding = '12px';
+      const wrap = U.mk('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', gap: '10px', alignItems: 'center' } });
+      const size = 10, bombs = 15;
+      const grid = Array(size).fill(0).map(() => Array(size).fill(0));
+      const rev = Array(size).fill(0).map(() => Array(size).fill(0));
+      const flag = Array(size).fill(0).map(() => Array(size).fill(0));
+      let placed = false, dead = false, won = false;
+      const head = U.mk('div', { style: { display: 'flex', justifyContent: 'space-between', width: '100%', fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontSize: '13px', letterSpacing: '2px', alignItems: 'center' } });
+      const stateTxt = U.mk('span', { text: '😊' });
+      const resetBtn = U.mk('button', { class: 'btn', text: 'RESET' });
+      head.append(U.mk('span', { text: '💣 ' + bombs }), stateTxt, resetBtn);
+      const gridEl = U.mk('div', { style: { display: 'grid', gap: '1px', background: 'var(--border)', border: '1px solid var(--accent)', borderRadius: '6px', overflow: 'hidden', gridTemplateColumns: 'repeat(' + size + ',26px)' } });
+      function place(sx, sy) {
+        let n = 0;
+        while (n < bombs) {
+          const x = U.rint(0, size - 1), y = U.rint(0, size - 1);
+          if (grid[y][x] === -1) continue;
+          if (Math.abs(x - sx) <= 1 && Math.abs(y - sy) <= 1) continue;
+          grid[y][x] = -1; n++;
+        }
+        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+          if (grid[y][x] === -1) continue;
+          let c = 0;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < size && ny >= 0 && ny < size && grid[ny][nx] === -1) c++;
+          }
+          grid[y][x] = c;
+        }
+        placed = true;
+      }
+      function reveal(x, y) {
+        if (rev[y][x] || flag[y][x]) return;
+        rev[y][x] = 1;
+        if (grid[y][x] === 0) {
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            if (!dx && !dy) continue;
+            const nx = x + dx, ny = y + dy;
+            if (nx >= 0 && nx < size && ny >= 0 && ny < size) reveal(nx, ny);
+          }
+        }
+        if (grid[y][x] === -1) dead = true;
+      }
+      function checkWin() {
+        let c = 0;
+        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (rev[y][x]) c++;
+        if (c === size * size - bombs) won = true;
+      }
+      function render() {
+        gridEl.innerHTML = '';
+        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+          const cell = U.mk('div', { style: { width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700', cursor: 'pointer', background: 'linear-gradient(135deg,#1e2a3a,#0f1a28)' } });
+          if (rev[y][x]) {
+            cell.style.background = '#0a121e';
+            if (grid[y][x] === -1) { cell.style.background = '#f43f5e'; cell.style.color = '#fff'; cell.textContent = '✹'; }
+            else if (grid[y][x] > 0) {
+              cell.textContent = grid[y][x];
+              const colors = { 1: '#60a5fa', 2: '#34d399', 3: '#fbbf24', 4: '#fb923c', 5: '#f43f5e' };
+              cell.style.color = colors[grid[y][x]] || '#fff';
+            }
+          } else if (flag[y][x]) {
+            cell.textContent = '⚑'; cell.style.color = '#f43f5e';
+          }
+          cell.onclick = () => {
+            if (dead || won) return;
+            if (!placed) place(x, y);
+            if (flag[y][x]) return;
+            reveal(x, y); checkWin(); render();
+            if (dead) stateTxt.textContent = '💀';
+            else if (won) stateTxt.textContent = '🏆';
+          };
+          cell.oncontextmenu = e => {
+            e.preventDefault();
+            if (dead || won || rev[y][x]) return;
+            flag[y][x] = flag[y][x] ? 0 : 1; render();
+          };
+          gridEl.appendChild(cell);
+        }
+      }
+      resetBtn.onclick = () => {
+        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) { grid[y][x] = 0; rev[y][x] = 0; flag[y][x] = 0; }
+        placed = false; dead = false; won = false; stateTxt.textContent = '😊'; render();
+      };
+      wrap.append(head, gridEl);
+      body.appendChild(wrap);
+      render();
+    },
+  },
+  {
+    id: 'sysmon', name: 'System Monitor', icon: '⚡', category: 'System',
+    desc: 'Browser storage usage and AWEWEBOS runtime status. Host CPU/RAM are not exposed by browsers.',
+    version: '1.0.0', size: '5 KB',
+    mount(body, state) {
+      body.style.padding = '12px';
+      const wrap = U.mk('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', height: '100%' } });
+      const c1 = document.createElement('canvas');
+      const c2 = document.createElement('canvas');
+      [c1, c2].forEach(c => { c.style.width = '100%'; c.style.flex = '1'; c.style.background = '#000'; c.style.border = '1px solid var(--border)'; });
+      wrap.append(c1, c2);
+      body.appendChild(wrap);
+      const status = document.createElement('div');
+      status.style.cssText='padding:14px;color:var(--fg-1);font:12px var(--font-mono);line-height:1.9;overflow:auto';
+      status.innerHTML='<h3 style="color:var(--accent);margin-bottom:12px">AWEWEBOS Runtime Monitor</h3><p>Host CPU and RAM: <b>not exposed by the browser security model</b>.</p><p id="smStorage">Checking browser storage…</p><p id="smWindows">Open windows: —</p><p id="smApps">Installed applications: —</p><p class="small" style="color:var(--fg-3);margin-top:14px">This panel reports real browser storage estimates and actual AWEWEBOS window/app counts; it does not fabricate hardware metrics.</p>';
+      wrap.appendChild(status);
+      const refresh = async () => {
+        if (!wrap.isConnected) return;
+        const storage = status.querySelector('#smStorage');
+        const windows = status.querySelector('#smWindows');
+        const apps = status.querySelector('#smApps');
+        if (navigator.storage && navigator.storage.estimate) {
+          try { const e=await navigator.storage.estimate(); storage.textContent='Browser origin storage: '+((e.usage||0)/1048576).toFixed(2)+' MB used / '+((e.quota||0)/1048576).toFixed(0)+' MB quota'; }
+          catch { storage.textContent='Browser storage estimate unavailable'; }
+        } else storage.textContent='Browser storage estimate unsupported';
+        windows.textContent='Open windows: '+WM.list().length;
+        apps.textContent='Available applications: '+Apps.list().length+' (built-in + installed)';
+        setTimeout(refresh, 2000);
+      };
+      refresh();
+    },
+  },
+];
+
+const Store = (() => {
+  function getApp(id) { return STORE_APPS.find(a => a.id === id); }
+
+  async function install(id) {
+    const app = getApp(id);
+    if (!app) return false;
+    if (Apps.isInstalled(id)) return false;
+
+    // Write app manifest to real folder
+    await VFS.mkdir('/Apps/' + id);
+    await VFS.write('/Apps/' + id + '/manifest.json', JSON.stringify({
+      id: app.id, name: app.name, version: app.version,
+      category: app.category, icon: app.icon, desc: app.desc,
+      installed: Date.now(),
+    }, null, 2));
+
+    // Register app
+    Apps.registerInstalled(id, {
+      title: app.name,
+      icon: app.icon,
+      width: 700,
+      height: 540,
+      autoMax: true,
+      mount: app.mount,
+    });
+
+    await Kernel.addInstalledApp(id);
+    Bus.emit('apps.changed');
+    Notif.push('App Store', 'Installed: ' + app.name, 3000, '⛬');
+    return true;
+  }
+
+  async function uninstall(id) {
+    if (Apps.isBuiltin(id)) return false;
+    try { await VFS.remove('/Apps/' + id); } catch (e) {}
+    await Kernel.removeInstalledApp(id);
+    Notif.push('App Store', 'Uninstalled: ' + id, 3000, '⛬');
+    return true;
+  }
+
+  async function restoreInstalled() {
+    for (const appId of Kernel.config.installedApps) {
+      const app = getApp(appId);
+      if (app && !Apps.isInstalled(appId)) {
+        Apps.registerInstalled(appId, {
+          title: app.name,
+          icon: app.icon,
+          width: 700,
+          height: 540,
+          autoMax: true,
+          mount: app.mount,
+        });
+      }
+    }
+  }
+
+  return { getApp, install, uninstall, restoreInstalled, list: () => STORE_APPS };
+})();
+
+Apps.registerBuiltin('store', {
+  title: 'App Store', icon: '⛬', width: 820, height: 620, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { class: 'store-app' });
+    let activeTab = 'All';
+    const categories = ['All', ...new Set(STORE_APPS.map(a => a.category))];
+
+    const header = U.mk('div', { class: 'store-header' });
+    header.appendChild(U.mk('h2', { text: 'App Store' }));
+
+    const tabs = U.mk('div', { class: 'store-tabs' });
+    categories.forEach(cat => {
+      const t = U.mk('div', { class: 'store-tab' + (cat === activeTab ? ' active' : ''), text: cat });
+      t.onclick = () => {
+        activeTab = cat;
+        tabs.querySelectorAll('.store-tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        renderList();
+      };
+      tabs.appendChild(t);
+    });
+
+    const list = U.mk('div', { class: 'store-list' });
+
+    wrap.append(header, tabs, list);
+    body.appendChild(wrap);
+
+    function renderList() {
+      list.innerHTML = '';
+      const apps = STORE_APPS.filter(a => activeTab === 'All' || a.category === activeTab);
+      apps.forEach(app => {
+        const installed = Apps.isInstalled(app.id) && !Apps.isBuiltin(app.id);
+        const isBuiltin = Apps.isBuiltin(app.id);
+        const card = U.mk('div', { class: 'store-card' });
+        card.innerHTML = `
+          <div class="store-card-icon">${app.icon}</div>
+          <div class="store-card-info">
+            <div class="store-card-name">${app.name}</div>
+            <div class="store-card-desc">${app.desc}</div>
+            <div class="store-card-meta">
+              <span>v${app.version}</span>
+              <span>${app.size}</span>
+              <span>${app.category}</span>
+            </div>
+            <div class="store-card-actions"></div>
+          </div>
+        `;
+        const actions = card.querySelector('.store-card-actions');
+        if (isBuiltin) {
+          const btn = U.mk('button', { class: 'install-btn installed', text: 'Built-in' });
+          actions.appendChild(btn);
+        } else if (installed) {
+          const btn = U.mk('button', { class: 'install-btn installed', text: '✓ Installed' });
+          actions.appendChild(btn);
+          const un = U.mk('button', { class: 'btn danger', text: 'Uninstall', style: { padding: '6px 12px', fontSize: '11px' } });
+          un.onclick = async () => {
+            if (!confirm('Uninstall ' + app.name + '?')) return;
+            await Store.uninstall(app.id);
+            renderList();
+            Start.render();
+          };
+          actions.appendChild(un);
+          const open = U.mk('button', { class: 'btn', text: 'Open', style: { padding: '6px 12px', fontSize: '11px' } });
+          open.onclick = () => Apps.launch(app.id);
+          actions.appendChild(open);
+        } else {
+          const btn = U.mk('button', { class: 'install-btn', text: 'Install' });
+          const restoreBtn = U.q('#setupRestoreBtn');
+  if (restoreBtn) restoreBtn.onclick = async () => {
+    restoreBtn.disabled = true;
+    try {
+      logAdd('Looking for previous installation...');
+      const handle = await FS.restoreHandle(true);
+      if (!handle) { logAdd('No saved folder permission. Choose the folder again to install or reconnect.'); return; }
+      if (!(await FS.exists('System/config.json'))) { logAdd('Selected folder does not contain a valid AWEWEBOS installation.'); return; }
+      await Kernel.init();
+      await Store.restoreInstalled();
+      logAdd('Existing installation restored: ' + handle.name);
+      hide();
+      await launchOS();
+    } catch (e) { logAdd('Restore error: ' + e.message); }
+    finally { restoreBtn.disabled = false; }
+  };
+
+  btn.onclick = async () => {
+            btn.textContent = 'Installing...';
+            btn.disabled = true;
+            await Store.install(app.id);
+            renderList();
+            Start.render();
+          };
+          actions.appendChild(btn);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    renderList();
+    Bus.on('apps.changed', () => renderList());
+  },
+});
+
+/* ============================================================
+   THEMES APP
+   ============================================================ */
+const THEMES_LIST = [
+  { id: 'cyan', name: 'Cyan Wave', c1: '#00d4ff', c2: '#7c3aed' },
+  { id: 'purple', name: 'Purple Dream', c1: '#a855f7', c2: '#ec4899' },
+  { id: 'green', name: 'Emerald', c1: '#22c55e', c2: '#06b6d4' },
+  { id: 'orange', name: 'Sunset', c1: '#fb923c', c2: '#f43f5e' },
+  { id: 'pink', name: 'Rose', c1: '#ec4899', c2: '#8b5cf6' },
+  { id: 'blue', name: 'Ocean', c1: '#3b82f6', c2: '#06b6d4' },
+  { id: 'red', name: 'Crimson', c1: '#ef4444', c2: '#f97316' },
+  { id: 'teal', name: 'Teal', c1: '#14b8a6', c2: '#06b6d4' },
+  { id: 'lime', name: 'Lime', c1: '#84cc16', c2: '#22c55e' },
+  { id: 'sunset', name: 'Golden', c1: '#f97316', c2: '#ec4899' },
+];
+
+Apps.registerBuiltin('themes', {
+  title: 'Themes', icon: '◨', width: 700, height: 560, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { class: 'themes-app' });
+
+    const g1 = U.mk('div', { class: 'settings-group' });
+    g1.appendChild(U.mk('h3', { text: 'Color Themes' }));
+    const grid = U.mk('div', { class: 'themes-grid' });
+    THEMES_LIST.forEach(t => {
+      const active = Kernel.config.settings.theme === t.id;
+      const card = U.mk('div', { class: 'theme-card' + (active ? ' active' : '') });
+      card.innerHTML = `
+        <div class="preview" style="--c1:${t.c1};--c2:${t.c2}"></div>
+        <div class="name">${t.name}</div>
+        <div class="sub">${t.id}</div>
+      `;
+      card.onclick = async () => {
+        await Kernel.setSetting('theme', t.id);
+        grid.querySelectorAll('.theme-card').forEach(x => x.classList.remove('active'));
+        card.classList.add('active');
+        // Save theme to /Themes folder
+        await VFS.write('/Themes/' + t.id + '.json', JSON.stringify({
+          id: t.id, name: t.name, c1: t.c1, c2: t.c2,
+        }, null, 2));
+        Notif.push('Themes', 'Applied: ' + t.name, 2000, '◨');
+      };
+      grid.appendChild(card);
+    });
+    g1.appendChild(grid);
+
+    const g2 = U.mk('div', { class: 'settings-group' });
+    g2.appendChild(U.mk('h3', { text: 'Wallpapers' }));
+    const wallGrid = U.mk('div', { class: 'themes-grid' });
+    wallpapers.forEach(w => {
+      const active = Kernel.config.settings.wallpaper === w;
+      const card = U.mk('div', { class: 'theme-card' + (active ? ' active' : '') });
+      card.innerHTML = `
+        <div class="preview" style="background:${wallpaperStyles[w]}"></div>
+        <div class="name">${w.charAt(0).toUpperCase() + w.slice(1)}</div>
+        <div class="sub">wallpaper</div>
+      `;
+      card.onclick = async () => {
+        await Kernel.setSetting('wallpaper', w);
+        Desktop.applyWallpaper();
+        wallGrid.querySelectorAll('.theme-card').forEach(x => x.classList.remove('active'));
+        card.classList.add('active');
+      };
+      wallGrid.appendChild(card);
+    });
+    g2.appendChild(wallGrid);
+
+    wrap.append(g1, g2);
+    body.appendChild(wrap);
+  },
+});
+
+/* ============================================================
+   SETTINGS APP
+   ============================================================ */
+Apps.registerBuiltin('settings', {
+  title: 'Settings', icon: '⚙', width: 640, height: 620, autoMax: true,
+  mount(body, state) {
+    body.style.padding = '0';
+    const wrap = U.mk('div', { class: 'settings-app' });
+    body.appendChild(wrap);
+
+    function grp(title) {
+      const g = U.mk('div', { class: 'settings-group' });
+      g.appendChild(U.mk('h3', { text: title }));
+      wrap.appendChild(g);
+      return g;
+    }
+
+    const g1 = grp('Theme');
+    const themeRow = U.mk('div', { class: 'settings-item' });
+    const tSel = U.mk('select');
+    THEMES_LIST.forEach(t => {
+      const o = U.mk('option', { value: t.id, text: t.name });
+      if (Kernel.config.settings.theme === t.id) o.selected = true;
+      tSel.appendChild(o);
+    });
+    tSel.onchange = () => Kernel.setSetting('theme', tSel.value);
+    themeRow.append(U.mk('div', { text: 'Color theme' }), tSel);
+    g1.appendChild(themeRow);
+
+    const wallRow = U.mk('div', { class: 'settings-item' });
+    const wSel = U.mk('select');
+    wallpapers.forEach(w => {
+      const o = U.mk('option', { value: w, text: w });
+      if (Kernel.config.settings.wallpaper === w) o.selected = true;
+      wSel.appendChild(o);
+    });
+    wSel.onchange = () => { Kernel.setSetting('wallpaper', wSel.value); Desktop.applyWallpaper(); };
+    wallRow.append(U.mk('div', { text: 'Wallpaper' }), wSel);
+    g1.appendChild(wallRow);
+
+    const g2 = grp('Volume');
+    const volRow = U.mk('div', { class: 'settings-item' });
+    const vol = U.mk('input', { type: 'range', min: '0', max: '1', step: '0.05', value: Kernel.config.settings.volume });
+    vol.style.width = '200px';
+    vol.oninput = () => Kernel.setSetting('volume', +vol.value);
+    volRow.append(U.mk('div', { text: 'System volume' }), vol);
+    g2.appendChild(volRow);
+
+    const g3 = grp('Account');
+    const nameRow = U.mk('div', { class: 'settings-item' });
+    const nameInp = U.mk('input', { class: 'input', value: Kernel.config.user.name, style: { width: '200px' } });
+    nameInp.onchange = async () => {
+      Kernel.config.user.name = nameInp.value;
+      await Kernel.save();
+      Notif.push('Settings', 'Name updated', 2000, '⚙');
+    };
+    nameRow.append(U.mk('div', { text: 'Display name' }), nameInp);
+    g3.appendChild(nameRow);
+
+    const idRow = U.mk('div', { class: 'settings-item' });
+    idRow.append(U.mk('div', { text: 'User ID' }), U.mk('div', { class: 'val', text: '#' + Kernel.config.user.id }));
+    g3.appendChild(idRow);
+
+    const g4 = grp('Storage');
+    (async () => {
+      const root = FS.root;
+      const installedAppsCount = Kernel.config.installedApps.length;
+      const rows = [
+        ['Install folder', root ? root.name : 'unknown'],
+        ['Version', Kernel.config.version],
+        ['Installed', new Date(Kernel.config.installDate).toLocaleString()],
+        ['Store apps', installedAppsCount + ' installed'],
+      ];
+      rows.forEach(([k, v]) => {
+        const r = U.mk('div', { class: 'settings-item' });
+        r.append(U.mk('div', { text: k }), U.mk('div', { class: 'val', text: String(v) }));
+        g4.appendChild(r);
+      });
+    })();
+
+    const g5 = grp('Danger Zone');
+    const rRow = U.mk('div', { class: 'settings-item' });
+    const clearBtn = U.mk('button', { class: 'btn danger', text: '⚠ Reset OS (delete files)' });
+    clearBtn.onclick = async () => {
+      if (!confirm('This will DELETE all files in your AWEWEBOS folder!')) return;
+      if (!confirm('Are you absolutely sure?')) return;
+      try {
+        for (const top of ['System', 'Users', 'Apps', 'Themes', 'Settings']) {
+          try { await FS.deletePath(top); } catch (e) {}
+        }        Notif.push('Settings', 'Reset complete. Reloading...', 2000, '⚠');
+        setTimeout(() => location.reload(), 1200);
+      } catch (e) {
+        Notif.push('Error', e.message, 4000, '⚠');
+      }
+    };
+    rRow.append(U.mk('div', { text: 'Delete all OS files' }), clearBtn);
+    g5.appendChild(rRow);
+  },
+});
+
+/* ============================================================
+   SETUP WIZARD
+   ============================================================ */
+const Setup = (() => {
+  const setupEl = U.q('#setup');
+  const btn = U.q('#setupBtn');
+  const progress = U.q('#setupProgress');
+  const logEl = U.q('#setupLog');
+  const warning = U.q('#setupWarning');
+  const logs = [];
+  function logAdd(t) {
+    logs.push('> ' + t);
+    if (logs.length > 6) logs.shift();
+    logEl.innerHTML = logs.join('<br>');
+  }
+  function setProgress(p) { progress.style.width = p + '%'; }
+
+  function show() {
+    setupEl.style.display = 'flex';
+    U.q('#os').classList.remove('on');
+  }
+  function hide() {
+    setupEl.style.display = 'none';
+  }
+
+  if (!FS.supported) {
+    warning.classList.remove('hidden');
+    btn.disabled = true;
+    btn.textContent = '❌ Browser not supported';
+  }
+
+  btn.onclick = async () => {
+    if (!FS.supported) return;
+    btn.disabled = true;
+    btn.textContent = '📁 Waiting for folder selection...';
+    try {
+      setProgress(5);
+      logAdd('Opening folder picker...');
+      await FS.pickFolder();
+      logAdd('Folder selected: ' + FS.root.name);
+      setProgress(15);
+
+      logAdd('Creating System/ folder...');
+      await FS.mkdir('System');
+      await FS.mkdir('System/Runtime');
+      await FS.writeFile('System/Runtime/index.html', '<!DOCTYPE html>\\n' + document.documentElement.outerHTML);
+      await FS.writeFile('System/Runtime/manifest.webmanifest', JSON.stringify({name:'AWEWEBOS',short_name:'AWEWEBOS',start_url:'./index.html',display:'standalone',description:'Installed AWEWEBOS web operating environment'},null,2));
+      setProgress(25);
+
+      logAdd('Initializing kernel config...');
+      await Kernel.init();
+      setProgress(35);
+
+      logAdd('Creating Users/user/ home folder...');
+      await FS.mkdir('Users');
+      await FS.mkdir('Users/user');
+      await FS.mkdir('Users/user/Desktop');
+      await FS.mkdir('Users/user/Documents');
+      await FS.mkdir('Users/user/Pictures');
+      await FS.mkdir('Users/user/Music');
+      await FS.mkdir('Users/user/Downloads');
+      setProgress(50);
+
+      logAdd('Creating Apps/ folder...');
+      await FS.mkdir('Apps');
+      await FS.writeFile('Apps/catalog.json', JSON.stringify(STORE_APPS.map(a=>({id:a.id,name:a.name,version:a.version,category:a.category,icon:a.icon,description:a.desc,packageType:'bundled-web-app'})),null,2));
+      setProgress(60);
+
+      logAdd('Creating Themes/ folder...');
+      await FS.mkdir('Themes');
+      for (const t of THEMES_LIST) {
+        await FS.writeFile('Themes/' + t.id + '.json', JSON.stringify(t, null, 2));
+      }
+      setProgress(70);
+
+      logAdd('Creating Settings/ folder...');
+      await FS.mkdir('Settings');
+      await FS.writeFile('Settings/preferences.json', JSON.stringify(Kernel.config.settings, null, 2));
+      setProgress(80);
+
+      logAdd('Creating welcome files...');
+      await VFS.init();
+      setProgress(90);
+
+      logAdd('Restoring installed apps...');
+      await Store.restoreInstalled();
+      setProgress(95);
+
+      logAdd('Installation complete!');
+      setProgress(100);
+      btn.textContent = '✓ Installed! Launching...';
+
+      setTimeout(async () => {
+        hide();
+        await launchOS();
+      }, 900);
+    } catch (e) {
+      console.error(e);
+      logAdd('ERROR: ' + e.message);
+      btn.disabled = false;
+      btn.textContent = '📁 Retry';
+      if (e.name === 'AbortError') {
+        logAdd('Cancelled by user.');
+      }
+    }
+  };
+
+  async function tryRestore() {
+    // If we have a saved handle, try to restore silently
+    if (!FS.supported) return false;
+    try {
+      const handle = await FS.restoreHandle();
+      if (handle) {
+        // Verify the folder looks like an AWEWEBOS install
+        const hasConfig = await FS.exists('System/config.json');
+        if (hasConfig) {
+          await Kernel.init();
+          await Store.restoreInstalled();
+          hide();
+          await launchOS();
+          return true;
+        }
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  return { show, hide, tryRestore };
+})();
+
+/* ============================================================
+   LAUNCH OS
+   ============================================================ */
+async function launchOS() {
+  // Apply config
+  Kernel.applyTheme();
+  Desktop.applyWallpaper();
+
+  // Setup apps
+  Desktop.setIconList([
+    { app: 'terminal', name: 'Terminal', ic: '▶' },
+    { app: 'files', name: 'Files', ic: '▣' },
+    { app: 'messenger', name: 'Messenger', ic: '✉' },
+    { app: 'notes', name: 'Notes', ic: '✎' },
+    { app: 'paint', name: 'Paint', ic: '◈' },
+    { app: 'store', name: 'App Store', ic: '⛬' },
+    { app: 'themes', name: 'Themes', ic: '◨' },
+    { app: 'settings', name: 'Settings', ic: '⚙' },
+  ]);
+
+  Dock.render();
+  Start.render();
+
+  // Show OS
+  U.q('#os').classList.add('on');
+
+  // Welcome notification
+  setTimeout(() => {
+    Notif.push('Welcome to AWEWEBOS',
+      'Your OS is installed in: ' + (FS.root?.name || 'unknown'),
+      5000, '◆');
+  }, 800);
+
+  // Auto launch terminal + files
+  setTimeout(() => Apps.launch('terminal', { x: 60, y: 50 }), 1000);
+  setTimeout(() => Apps.launch('files', { x: 600, y: 80 }), 1200);
+}
+
+/* ============================================================
+   GLOBAL SHORTCUTS
+   ============================================================ */
+addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 't') { e.preventDefault(); Apps.launch('terminal'); }
+    else if (e.key === 'e') { e.preventDefault(); Apps.launch('editor'); }
+    else if (e.key === 'f') { e.preventDefault(); Apps.launch('files'); }
+    else if (e.key === 'k') { e.preventDefault(); Start.toggle(true); }
+    else if (e.key === 'w') {
+      e.preventDefault();
+      const top = WM.list().sort((a, b) => (+b.win.style.zIndex || 0) - (+a.win.style.zIndex || 0))[0];
+      if (top) WM.close(top.id);
+    }
+  }
+  if (e.key === 'Escape') { Ctx.hide(); Start.toggle(false); }
+});
+
+/* ============================================================
+   STARTUP
+   ============================================================ */
+(async function() {
+  // Try to restore previous installation
+  const restored = await Setup.tryRestore();
+  if (!restored) {
+    Setup.show();
+  }
+})();
+
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(error => console.warn('AWEWEBOS offline mode unavailable:', error)));
+}
+</script>
+</body>
+</html>
