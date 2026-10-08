@@ -20,8 +20,11 @@ Built-in applications:
 - **Calculator:** local calculations.
 - **Paint:** draw on a canvas.
 - **Image Viewer:** view supported image files.
-- **Messenger:** experimental local messaging between AWEWEBOS tabs on the same browser origin. It is not a production internet messenger and has no server, account discovery, voice calls, or push notifications.
-- **App Store:** install/uninstall bundled mini-apps into the workspace.
+- **Messenger:** experimental same-origin tab messaging only; it is not a production internet messenger and has no remote account discovery or voice/video calls.
+- **Contacts:** save names and stable UIDs locally.
+- **Media Studio:** play local audio/video files and record microphone audio where supported.
+- **Browser:** restricted in-app browser; some sites block iframe embedding.
+- **App Hub:** browse bundled mini-apps and create/import portable sandboxed HTML mini-app packages by AppID. Packages are local-first and not listed in a global server registry.
 - **Themes and Settings:** change appearance and manage system preferences.
 
 Bundled Store apps include live weather via Open-Meteo (internet required), clock, calendar, Snake, Tetris, Minesweeper, and a runtime monitor. The runtime monitor reports actual AWEWEBOS window/app counts and browser storage estimates; browser security prevents this web app from reading host CPU/RAM utilization reliably, so those metrics are marked unavailable rather than fabricated.
@@ -64,7 +67,7 @@ The folder handle is stored in IndexedDB when the browser supports it. On later 
 - The selected folder uses the browser File System Access API and requires explicit user selection and read/write permission. Support varies by browser and platform.
 - Browser-local state and selected-folder files are different storage layers; back up important files separately.
 - Imported or third-party app code should be treated as untrusted. This Store currently installs bundled apps; it is not yet a global signed package registry.
-- Weather requires internet access. Messenger currently works only between tabs sharing the same browser origin and channel; it is not a remote multi-user service.
+- Weather requires internet access. Messenger currently works only between tabs sharing the same browser origin and channel; it is not a remote multi-user service. Contacts are local-only. Portable FIDs embed files (maximum 1.2 MB) and portable AppIDs embed self-contained HTML (maximum 180 KB); these do not provide global online discovery or a live-host peer transfer.
 - A browser app cannot boot a computer, format a disk, control unrestricted hardware, run native background services, or guarantee access after permissions are revoked.
 - AWENET transport, production AWEID resolution, a real ONECOIN ledger, global store payments, and production voice/video messaging are not implemented by this Web OS shell.
 
