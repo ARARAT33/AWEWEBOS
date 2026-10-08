@@ -9,6 +9,9 @@ on:
       - 'package.json'
       - 'src-tauri/**'
       - '.github/workflows/native-build.yml'
+concurrency:
+  group: native-build-${{ github.workflow }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -35,6 +38,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install frontend tools
         run: npm install
+      - name: Validate setup module
+        run: node --check setup.js
       - name: Prepare web assets and icons
         shell: bash
         run: |
