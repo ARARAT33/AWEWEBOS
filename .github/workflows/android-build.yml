@@ -11,6 +11,9 @@ on:
       - 'package.json'
       - 'src-tauri/**'
       - '.github/workflows/android-build.yml'
+concurrency:
+  group: android-build-${{ github.workflow }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -38,6 +41,8 @@ jobs:
         run: |
           npm install
           cargo install cargo-ndk --locked
+      - name: Validate setup module
+        run: node --check setup.js
       - name: Prepare web assets and icons
         shell: bash
         run: |
