@@ -1836,7 +1836,7 @@ Apps.registerBuiltin('files', {
     const root = U.mk('button', { class: 'btn', text: '/' });
     const path = U.mk('div', { class: 'files-path', text: cur });
     const search = U.mk('input', { class: 'input', placeholder: 'Search this folder…', style: { width: '150px', padding: '7px' } });
-    const fidBtn = U.mk('button', { class: 'btn primary', text: '⇧ FID' });
+    const fidBtn = U.mk('button', { class: 'btn primary', text: '⇩ FID' });
     const importFidBtn = U.mk('button', { class: 'btn', text: '⇩ Import FID' });
     const nFile = U.mk('button', { class: 'btn primary', text: '+ File' });
     const nDir = U.mk('button', { class: 'btn', text: '+ Folder' });
@@ -2294,7 +2294,7 @@ Apps.registerBuiltin('viewer', {
 /* ---------- MESSENGER ---------- */
 Apps.registerBuiltin('messenger', {
   title: 'Messenger', icon: '✉', width: 780, height: 540, autoMax: true,
-  mount(body, state) {
+  mount(body, state, opts = {}) {
     body.style.padding = '0';
     const wrap = U.mk('div', { style: { display: 'grid', gridTemplateColumns: '260px 1fr', height: '100%' } });
     wrap.innerHTML = `
@@ -2351,9 +2351,13 @@ Apps.registerBuiltin('messenger', {
 
     async function loadContacts() {
       contactsEl.innerHTML = '';
-      // List msg files
-      const files = (await VFS.list('/home/user/Documents')).filter(f => f.name.startsWith('.msgs-') && f.name.endsWith('.json'));
+      // Merge locally saved contacts with existing conversations and live same-origin tabs.
       const peers = new Map();
+      try {
+        const saved = JSON.parse((await VFS.read('/home/user/Documents/contacts.json')) || '[]');
+        if (Array.isArray(saved)) saved.forEach(c => { if (c && c.uid) peers.set(c.uid, { id: c.uid, name: c.name || 'Contact' }); });
+      } catch (e) {}
+      const files = (await VFS.list('/home/user/Documents')).filter(f => f.name.startsWith('.msgs-') && f.name.endsWith('.json'));
       for (const f of files) {
         const key = f.name.slice(6, -5);
         const parts = key.split('|');
@@ -2471,6 +2475,7 @@ Apps.registerBuiltin('messenger', {
       announce();
     };
     announce();
+    if (opts.contact && opts.contact.id) selectContact(opts.contact.id, opts.contact.name || 'Contact');
     const announceTimer = setInterval(announce, 5000);
     const contactsTimer = setInterval(loadContacts, 3000);
     loadContacts();
