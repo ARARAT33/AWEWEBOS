@@ -21,6 +21,9 @@ jobs:
           test -f manifest.webmanifest
           test -f sw.js
           test -f icon.svg
+          test -f setup.js
+          test -f setup.css
+          node --check setup.js
           python -c "import json; m=json.load(open('manifest.webmanifest')); assert m['name'].startswith('AWEWEBOS'); print('PWA manifest validated')"
           python - <<'PY'
           import re
