@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'setup.js'
+      - 'setup.css'
       - 'icon.svg'
       - 'package.json'
       - 'src-tauri/**'
