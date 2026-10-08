@@ -2716,10 +2716,10 @@ const Store = (() => {
       installedAt: new Date().toISOString()
     }, null, 2));
     await VFS.write('/Apps/' + id + '/app.js',
-      '/* AWEWEBOS app package. Runs inside the bundled AWEWEBOS runtime; it is not a native executable. */\\n' +
-      'export default {' + app.mount.toString() + '};\\n');
+      '/* AWEWEBOS app package. Runs inside the bundled AWEWEBOS runtime; it is not a native executable. */\n' +
+      'export default {' + app.mount.toString() + '};\n');
     await VFS.write('/Apps/' + id + '/README.txt',
-      app.name + '\\nInstalled by AWEWEBOS App Store.\\nEntrypoint: app.js\\nRuntime: AWEWEBOS Web Runtime\\nThis package uses the built-in AWEWEBOS APIs and does not run as a standalone OS-native program.\\n');
+      app.name + '\nInstalled by AWEWEBOS App Store.\nEntrypoint: app.js\nRuntime: AWEWEBOS Web Runtime\nThis package uses the built-in AWEWEBOS APIs and does not run as a standalone OS-native program.\n');
 
     // Register app
     Apps.registerInstalled(id, {
@@ -3085,7 +3085,7 @@ const Setup = (() => {
       logAdd('Creating System/ folder...');
       await FS.mkdir('System');
       await FS.mkdir('System/Runtime');
-      await FS.writeFile('System/Runtime/index.html', '<!DOCTYPE html>\\n' + document.documentElement.outerHTML);
+      await FS.writeFile('System/Runtime/index.html', '<!DOCTYPE html>\n' + document.documentElement.outerHTML);
       await FS.writeFile('System/Runtime/manifest.webmanifest', JSON.stringify({name:'AWEWEBOS',short_name:'AWEWEBOS',start_url:'./index.html',display:'standalone',description:'Installed AWEWEBOS web operating environment'},null,2));
       setProgress(25);
 
