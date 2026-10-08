@@ -346,6 +346,12 @@ text-align:center;transition:var(--transition);border:1px solid transparent;
 }
 .sm-app:hover{background:rgba(var(--accent-rgb),.12);border-color:rgba(var(--accent-rgb),.3);
 color:var(--fg-0);transform:translateY(-2px)}
+.sm-category{grid-column:1/-1;min-width:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:rgba(0,0,0,.12)}
+.sm-category>summary{list-style:none;cursor:pointer;padding:10px 12px;background:rgba(255,255,255,.035);color:var(--fg-1);font-weight:600;font-size:11px;letter-spacing:.4px}
+.sm-category>summary::-webkit-details-marker{display:none}
+.sm-category>summary::after{content:'＋';float:right;color:var(--fg-3)}
+.sm-category[open]>summary::after{content:'−'}
+.sm-subapps{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;padding:6px}
 .sm-app .ai{font-size:28px;line-height:1}
 .sm-footer{padding:12px 16px;border-top:1px solid var(--border);
 display:flex;justify-content:space-between;align-items:center;
@@ -1416,15 +1422,36 @@ const Start = (() => {
     const apps = Apps.list()
       .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
       .sort((a, b) => a.title.localeCompare(b.title));
+    const groups = [
+      ['System & tools', ['terminal','files','settings','themes','store','sysmon']],
+      ['Productivity', ['editor','notes','calc','calendar','clock']],
+      ['Creative', ['paint','viewer']],
+      ['Communication', ['messenger']],
+      ['Games', ['snake','tetris','mines']],
+      ['Other apps', []],
+    ];
+    const known = new Set(groups.flatMap(g => g[1]));
+    groups[5][1] = apps.filter(a => !known.has(a.id)).map(a => a.id);
     appsEl.innerHTML = '';
-    apps.forEach(a => {
-      const el = U.mk('div', { class: 'sm-app' }, [
-        U.mk('div', { class: 'ai', text: a.icon || '◆' }),
-        U.mk('div', { text: a.title }),
-      ]);
-      el.onclick = () => { toggle(false); Apps.launch(a.id); };
-      appsEl.appendChild(el);
+    groups.forEach(([name, ids], index) => {
+      const members = apps.filter(a => ids.includes(a.id));
+      if (!members.length) return;
+      const section = U.mk('details', { class: 'sm-category' });
+      section.open = Boolean(filter) || index === 0;
+      const summary = U.mk('summary', { text: name + ' (' + members.length + ')' });
+      const grid = U.mk('div', { class: 'sm-subapps' });
+      members.forEach(a => {
+        const el = U.mk('div', { class: 'sm-app' }, [
+          U.mk('div', { class: 'ai', text: a.icon || '◆' }),
+          U.mk('div', { text: a.title }),
+        ]);
+        el.onclick = () => { toggle(false); Apps.launch(a.id); };
+        grid.appendChild(el);
+      });
+      section.append(summary, grid);
+      appsEl.appendChild(section);
     });
+    if (!apps.length) appsEl.innerHTML = '<div class="small" style="padding:18px;color:var(--fg-2)">No applications found.</div>';
   }
   function toggle(force) {
     const open = force !== undefined ? force : !menu.classList.contains('open');
