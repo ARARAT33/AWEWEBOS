@@ -1,0 +1,12 @@
+{
+  "name": "awewebos",
+  "private": true,
+  "version": "0.2.0",
+  "description": "AWEWEBOS web and native desktop environment",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.4"
+  }
+}
