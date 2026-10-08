@@ -7,6 +7,7 @@ on:
       - 'index.html'
       - 'setup.js'
       - 'setup.css'
+      - 'webos-fs.js'
       - 'manifest.webmanifest'
       - 'sw.js'
       - 'icon.svg'
@@ -45,11 +46,12 @@ jobs:
           cargo install cargo-ndk --locked
       - name: Validate setup module
         run: node --check setup.js
+          node --check webos-fs.js
       - name: Prepare web assets and icons
         shell: bash
         run: |
           mkdir -p dist
-          cp index.html manifest.webmanifest sw.js icon.svg setup.js setup.css dist/
+          cp index.html manifest.webmanifest sw.js icon.svg setup.js setup.css webos-fs.js dist/
           npx tauri icon icon.svg
       - name: Initialize Android project
         run: npx tauri android init
