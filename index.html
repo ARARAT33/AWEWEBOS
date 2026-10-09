@@ -1511,7 +1511,7 @@ const Start = (() => {
       .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
       .sort((a, b) => a.title.localeCompare(b.title));
     const groups = [
-      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser','storage','publish']],
+      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser','storage','publish','runtime']],
       ['Productivity', ['editor','notes','calc','calendar','clock','contacts']],
       ['Creative', ['paint','viewer','media']],
       ['Communication', ['messenger']],
@@ -1539,6 +1539,11 @@ const Start = (() => {
       section.append(summary, grid);
       appsEl.appendChild(section);
     });
+    if (filter && Apps.isInstalled('publish')) {
+      const networkSearch=U.mk('button',{class:'btn',text:'⌕ Search published files/apps for: '+filter,style:{margin:'8px 12px',textAlign:'left',whiteSpace:'normal'}});
+      networkSearch.onclick=()=>{toggle(false);Apps.launch('publish',{query:filter});};
+      appsEl.appendChild(networkSearch);
+    }
     if (!apps.length) appsEl.innerHTML = '<div class="small" style="padding:18px;color:var(--fg-2)">No applications found.</div>';
   }
   function toggle(force) {
@@ -1554,6 +1559,12 @@ const Start = (() => {
     if (!menu.contains(e.target) && !e.target.closest('[data-app="start"]')) toggle(false);
   });
   search.oninput = () => render(search.value);
+  search.onkeydown = e => {
+    if(e.key==='Enter'&&search.value.trim()){
+      const q=search.value.trim();
+      if(Apps.isInstalled('publish')){toggle(false);Apps.launch('publish',{query:q});}
+    }
+  };
   U.q('#smLock').onclick = () => { toggle(false); Lock.lock(); };
   U.q('#smRestart').onclick = () => {
     if (!confirm('Restart AWEWEBOS?')) return;
@@ -2660,6 +2671,43 @@ Apps.registerBuiltin('storage', {
   }
 });
 
+/* ---------- WEB RUNTIME / PROCESS MONITOR ---------- */
+Apps.registerBuiltin('runtime', {
+  title:'Kernel & Processes',icon:'⌘',width:760,height:560,autoMax:true,
+  mount(body,state){
+    body.style.padding='0';
+    const wrap=U.mk('div',{style:{padding:'16px',display:'flex',flexDirection:'column',gap:'12px',height:'100%',overflow:'auto'}});
+    const head=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}});
+    head.append(U.mk('h2',{text:'AWEWEBOS Web Runtime',style:{fontSize:'19px',flex:'1'} }));
+    const refresh=U.mk('button',{class:'btn primary',text:'Refresh'});head.appendChild(refresh);
+    const note=U.mk('div',{text:'This is the Web OS runtime and process monitor, not a privileged operating-system kernel. It runs inside the browser sandbox; hardware access is mediated by browser permissions.',style:{padding:'10px',border:'1px solid var(--border)',borderRadius:'8px',fontSize:'11px',lineHeight:'1.55',color:'var(--fg-2)'}});
+    const cards=U.mk('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px'}});
+    const processes=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}});
+    const caps=U.mk('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'6px'}});
+    wrap.append(head,note,cards,U.mk('h3',{text:'Running windows / processes',style:{fontSize:'13px'}}),processes,U.mk('h3',{text:'Browser capabilities',style:{fontSize:'13px'}}),caps);
+    body.appendChild(wrap);
+    function card(label,value,sub){return U.mk('div',{style:{padding:'12px',border:'1px solid var(--border)',borderRadius:'8px'}},[U.mk('div',{text:label,style:{fontSize:'10px',color:'var(--fg-2)'}}),U.mk('div',{text:value,style:{fontSize:'17px',fontWeight:'700',margin:'4px 0',overflowWrap:'anywhere'}}),U.mk('div',{text:sub||'',style:{fontSize:'10px',color:'var(--fg-3)' }})]);}
+    function capability(name,ok,detail){return U.mk('div',{style:{padding:'8px',border:'1px solid var(--border)',borderRadius:'7px',fontSize:'11px'}},[U.mk('div',{text:(ok?'● ':'○ ')+name,style:{fontWeight:'600',color:ok?'#22c55e':'var(--fg-2)'}}),U.mk('div',{text:detail,style:{fontSize:'10px',color:'var(--fg-2)',marginTop:'3px'}})]);}
+    async function render(){
+      cards.innerHTML='';processes.innerHTML='';caps.innerHTML='';
+      const wins=WM.list(),apps=Apps.list();
+      cards.append(card('Open windows',String(wins.length),'Live window manager count'),card('Available apps',String(apps.length),'Built-in and installed'),card('Runtime',navigator.userAgentData?.platform||navigator.platform||'Browser','Sandboxed web runtime'),card('Workspace',FS.root?.name||'Not connected','User-selected folder'));
+      for(const w of wins){
+        const appId=w.opts?.appId||'window',title=w.opts?.title||w.title||appId;
+        const row=U.mk('div',{style:{display:'flex',gap:'8px',alignItems:'center',padding:'9px',border:'1px solid var(--border)',borderRadius:'7px',flexWrap:'wrap'}});
+        row.append(U.mk('div',{text:w.opts?.icon||'▣'}),U.mk('div',{text:title+' · '+appId,style:{flex:'1',minWidth:'120px',overflowWrap:'anywhere'}}));
+        const focus=U.mk('button',{class:'btn',text:'Focus'});focus.onclick=()=>WM.focus(w.id);
+        const close=U.mk('button',{class:'btn danger',text:'Close'});close.onclick=()=>{WM.close(w.id);render();};
+        row.append(focus,close);processes.appendChild(row);
+      }
+      if(!wins.length)processes.appendChild(U.mk('div',{text:'No running application windows.',style:{padding:'10px',color:'var(--fg-2)'}}));
+      let estimate=null;try{estimate=await navigator.storage?.estimate?.();}catch(e){}
+      caps.append(capability('Local folder access',Boolean(FS.root),'Requires user-granted File System Access API permission.'),capability('Persistent browser storage',Boolean(navigator.storage?.persist),'Browser may still manage storage; filesystem workspace is separate.'),capability('Service worker',Boolean(navigator.serviceWorker),'Offline shell support, not a privileged background daemon.'),capability('WebRTC',Boolean(window.RTCPeerConnection),'Available for peer transport; peer discovery/signaling must be configured.'),capability('Microphone',Boolean(navigator.mediaDevices?.getUserMedia),'Requires HTTPS or localhost and user permission.'),capability('Storage estimate',Boolean(estimate),estimate?Math.round((estimate.usage||0)/1048576)+' MB used of about '+Math.round((estimate.quota||0)/1048576)+' MB browser quota':'Not exposed by this browser.'));
+    }
+    refresh.onclick=render;render();
+  }
+});
+
 /* ---------- PUBLISH & SEARCH ---------- */
 Apps.registerBuiltin('publish', {
   title: 'Publish & Search', icon: '⇧', width: 860, height: 680, autoMax: true,
@@ -2677,7 +2725,7 @@ Apps.registerBuiltin('publish', {
     const explain=U.mk('div',{text:'Your own computer stores publications. Search checks this node and the peer nodes you add. Keep the node running and reachable for other people to find your files/apps.',style:{padding:'10px',border:'1px solid var(--border)',borderRadius:'8px',fontSize:'11px',lineHeight:'1.5',color:'var(--fg-2)'}});
     const connection=U.mk('div',{style:{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:'8px'}});
     const baseInput=U.mk('input',{class:'input',value:Kernel.config.settings.publishNodeUrl||'http://127.0.0.1:41801',placeholder:'Node URL'});
-    const tokenInput=U.mk('input',{class:'input',inputType:'password',placeholder:'Private publish token (never share)'});
+    const tokenInput=U.mk('input',{class:'input',type:'password',placeholder:'Private publish token (never share)'});
     tokenInput.value=sessionStorage.getItem('awewebos-publish-token')||'';
     connection.append(baseInput,tokenInput);
     const nodeInfo=U.mk('div',{style:{fontSize:'11px',color:'var(--fg-2)',padding:'4px 0'}});
@@ -3846,6 +3894,7 @@ async function launchOS() {
     { app: 'browser', name: 'Browser', ic: '◎' },
     { app: 'storage', name: 'Storage', ic: '▤' },
     { app: 'publish', name: 'Publish & Search', ic: '⇧' },
+    { app: 'runtime', name: 'Kernel & Processes', ic: '⌘' },
     { app: 'themes', name: 'Themes', ic: '◨' },
     { app: 'settings', name: 'Settings', ic: '⚙' },
   ]);
