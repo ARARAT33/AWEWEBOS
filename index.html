@@ -2981,7 +2981,9 @@ Apps.registerBuiltin('browser', {
     function persist(){try{localStorage.setItem(key,JSON.stringify(data));}catch(e){}}
     function normalize(raw){
       let v=String(raw||'').trim();if(!v)throw new Error('Enter a search phrase or website address.');
-      if(/\s/.test(v)&&!/^https?:\/\//i.test(v))return 'https://www.google.com/search?q='+encodeURIComponent(v);
+      if(!/^https?:\/\//i.test(v)&&!(/^[^\s]+\.[^\s]+(?:\/|$)/.test(v)||/^(localhost|127\.0\.0\.1)(:\d+)?(?:\/|$)/i.test(v))){
+        return 'https://www.google.com/search?q='+encodeURIComponent(v);
+      }
       if(!/^[a-z][a-z0-9+.-]*:/i.test(v))v='https://'+v;
       let u;try{u=new URL(v);}catch(e){throw new Error('That address is not valid. Try example.com or a search phrase.');}
       if(u.protocol!=='http:'&&u.protocol!=='https:')throw new Error('Only HTTP and HTTPS websites are supported.');
@@ -3027,8 +3029,9 @@ Apps.registerBuiltin('browser', {
       }else{
         status.textContent='This web/PWA version cannot host unrestricted websites inside its own page. Opening the real site in a separate browser tab.';
       }
-      const w=window.open(url,'_blank','noopener,noreferrer');
+      const w=window.open(url,'_blank');
       if(!w)status.textContent='Pop-up blocked. Allow pop-ups for AWEWEBOS, then retry.';
+      else try{w.opener=null;}catch(e){}
     }
     function searchGoogle(){
       const q=address.value.trim();if(!q){address.focus();return;}
