@@ -9,7 +9,6 @@ if errorlevel 1 (
   exit /b 1
 )
 for /f "tokens=1 delims=v." %%V in ('node --version') do set NODE_MAJOR=%%V
-set NODE_MAJOR=%NODE_MAJOR:~1%
 if not defined NODE_MAJOR (
   echo Could not detect Node.js version.
   pause
