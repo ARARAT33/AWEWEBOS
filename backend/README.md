@@ -37,7 +37,7 @@ For internet access, use a trusted HTTPS reverse proxy or VPN/overlay network. D
 - POST/DELETE /api/peers: token-protected peer management.
 - GET /api/peers: configured peer URLs.
 
-Publication IDs have the form AWE-PUB- plus 24 hexadecimal characters. Files remain on disk until deleted. Peers can search/download only while the host is online and reachable. If it is off, asleep, offline, behind an unreachable NAT, or its address is not reachable, the item cannot be fetched from that node. Discovery is federated only across peers you add; this is not automatic worldwide discovery.
+File publication IDs have the form AWE-FID- plus 24 hexadecimal characters; HTML app IDs use AWE-APP-. Each ID has 24 hexadecimal characters after its prefix. Files remain on disk until deleted. Peers can search/download only while the host is online and reachable. If it is off, asleep, offline, behind an unreachable NAT, or its address is not reachable, the item cannot be fetched from that node. Discovery is federated only across peers you add; this is not automatic worldwide discovery.
 
 ## Security
 
