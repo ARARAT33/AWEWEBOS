@@ -3066,9 +3066,9 @@ Apps.registerBuiltin('browser', {
     go.onclick=()=>openSite(address.value);
     google.onclick=searchGoogle;
     address.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();openSite(address.value);}};
-    back.onclick=()=>{status.textContent='Back navigation is available in the native site view where supported; use the website controls or re-open a history entry.';};
-    forward.onclick=()=>{status.textContent='Forward navigation is available in the native site view where supported.';};
-    reload.onclick=()=>{if(currentUrl)openSite(currentUrl);};
+    back.onclick=async()=>{if(isNative&&nativeActive){try{await tauriInvoke('control_browser_site',{action:'back'});}catch(e){status.textContent=String(e);}}else status.textContent='Open a website first to use browser navigation.';};
+    forward.onclick=async()=>{if(isNative&&nativeActive){try{await tauriInvoke('control_browser_site',{action:'forward'});}catch(e){status.textContent=String(e);}}else status.textContent='Open a website first to use browser navigation.';};
+    reload.onclick=async()=>{if(isNative&&nativeActive){try{await tauriInvoke('control_browser_site',{action:'reload'});}catch(e){status.textContent=String(e);}}else if(currentUrl)openSite(currentUrl);};
     historyBtn.onclick=showHistory;
     bookmark.onclick=()=>{
       let url;try{url=normalize(address.value);}catch(e){status.textContent=e.message;return;}
