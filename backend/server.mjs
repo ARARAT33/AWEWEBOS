@@ -4,6 +4,8 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
 
 const HOST=process.env.AWE_BIND||'127.0.0.1';
 const PORT=Number(process.env.AWE_PORT||41801);
@@ -45,7 +47,7 @@ async function route(req,res){
  const im=p.match(/^\/api\/item\/([^/]+)$/);
  if(req.method==='GET'&&im){const item=await getItem(decodeURIComponent(im[1]));if(!item)return json(res,404,{error:'Publication not found on this node'});return json(res,200,{...item.meta,id:item.meta.id||im[1],nodeId:config.nodeId,nodeName:config.name});}
  const cm=p.match(/^\/api\/content\/([^/]+)$/);
- if(req.method==='GET'&&cm){const item=await getItem(decodeURIComponent(cm[1]));if(!item)return json(res,404,{error:'Publication not found on this node'});const file=path.join(item.dir,'content.bin'),stat=await fs.stat(file);res.writeHead(200,{'content-type':item.meta.mime||'application/octet-stream','content-length':stat.size,'content-disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(safeFilename(item.meta.filename)),'cache-control':'no-store','x-content-type-options':'nosniff'});return fs.createReadStream(file).pipe(res);}
+ if(req.method==='GET'&&cm){const item=await getItem(decodeURIComponent(cm[1]));if(!item)return json(res,404,{error:'Publication not found on this node'});const file=path.join(item.dir,'content.bin'),stat=await fs.stat(file);res.writeHead(200,{'content-type':item.meta.mime||'application/octet-stream','content-length':stat.size,'content-disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(safeFilename(item.meta.filename)),'cache-control':'no-store','x-content-type-options':'nosniff'});await pipeline(createReadStream(file),res);return;}
  if(req.method==='POST'&&p==='/api/publish'){
   if(!authorized(req))return json(res,401,{error:'Missing or invalid bearer token'});const input=await bodyJson(req);
   const title=cleanText(input.title,120),description=cleanText(input.description,500),filename=safeFilename(input.filename),kind=['file','app'].includes(input.kind)?input.kind:null;
