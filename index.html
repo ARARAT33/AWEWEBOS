@@ -2947,24 +2947,96 @@ Apps.registerBuiltin('media', {
 
 /* ---------- LOCAL BROWSER ---------- */
 Apps.registerBuiltin('browser', {
-  title: 'Browser', icon: '◎', width: 900, height: 620, autoMax: true,
-  mount(body) {
-    body.style.padding='0';body.style.display='flex';body.style.flexDirection='column';
-    const bar=U.mk('div',{class:'files-toolbar'});
-    const address=U.mk('input',{class:'input',placeholder:'https://example.com or search terms',style:{flex:'1',minWidth:'180px'}});
+  title: 'Browser', icon: '◎', width: 980, height: 680, autoMax: true,
+  mount(body, state) {
+    body.style.padding='0';body.style.display='flex';body.style.flexDirection='column';body.style.minHeight='0';
+    const bar=U.mk('div',{class:'files-toolbar',style:{flexWrap:'wrap',gap:'6px'}});
+    const address=U.mk('input',{class:'input',placeholder:'Search Google or enter https://example.com',style:{flex:'1',minWidth:'220px'}});
     const go=U.mk('button',{class:'btn primary',text:'Go'});
-    const back=U.mk('button',{class:'btn',text:'Back to start'});
-    const frame=U.mk('iframe',{title:'Browser content',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',background:'#fff'},sandbox:'allow-forms allow-scripts allow-popups'});
-    const info=U.mk('div',{text:'Web pages can block embedding. For safety, this in-app browser uses a restricted iframe; use Open externally when a site refuses to load.',style:{padding:'6px 10px',fontSize:'10px',color:'var(--fg-2)',borderTop:'1px solid var(--border)'}});
-    bar.append(back,address,go);body.append(bar,frame,info);
-    function navigate(){let value=address.value.trim();if(!value)return;if(!/^[a-z]+:\/\//i.test(value)){value=/\s/.test(value)?'https://www.google.com/search?q='+encodeURIComponent(value):'https://'+value;}try{const u=new URL(value);if(!['http:','https:'].includes(u.protocol))throw new Error('Only HTTP and HTTPS URLs are allowed.');frame.src=u.href;address.value=u.href;}catch(e){Notif.push('Browser',e.message);}}
-    go.onclick=navigate;address.onkeydown=e=>{if(e.key==='Enter')navigate();};
-    back.onclick=()=>{address.value='';frame.removeAttribute('src');frame.srcdoc='<html><body style="font-family:system-ui;background:#0b0f19;color:#eef;padding:30px"><h1>AWEWEBOS Browser</h1><p>Enter a URL or search above.</p><p>Some websites block embedded browsing for security reasons.</p></body></html>';};
-    back.click();
-    const external=U.mk('button',{class:'btn',text:'Open externally'});external.onclick=()=>{const v=address.value.trim();if(v&&/^https?:\/\//i.test(v))window.open(v,'_blank','noopener,noreferrer');};bar.appendChild(external);
+    const google=U.mk('button',{class:'btn',text:'Google'});
+    const external=U.mk('button',{class:'btn',text:'Open website'});
+    const bookmark=U.mk('button',{class:'btn',text:'☆ Save'});
+    const back=U.mk('button',{class:'btn',text:'Home'});
+    const frame=U.mk('iframe',{title:'Browser page preview',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',minHeight:'220px',background:'#fff'},sandbox:'allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox'});
+    const tools=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'8px',padding:'10px 12px',borderBottom:'1px solid var(--border)'}});
+    const quick=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
+    const saved=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
+    const status=U.mk('div',{text:'Ready · Search with Google or open a website.',style:{fontSize:'11px',color:'var(--fg-2)',padding:'7px 12px',borderTop:'1px solid var(--border)'}});
+    bar.append(back,address,go,google,external,bookmark);
+    tools.append(quick,saved);
+    body.append(bar,tools,frame,status);
+    const links=[
+      {name:'Google',url:'https://www.google.com/'},
+      {name:'YouTube',url:'https://www.youtube.com/'},
+      {name:'Wikipedia',url:'https://www.wikipedia.org/'},
+      {name:'GitHub',url:'https://github.com/'},
+      {name:'Gmail',url:'https://mail.google.com/'},
+      {name:'AWEWEBOS',url:'https://github.com/ARARAT33/AWEWEBOS'}
+    ];
+    const key='awewebos.browser.v2';
+    let data={bookmarks:[],history:[]};
+    try{const raw=localStorage.getItem(key);if(raw){const parsed=JSON.parse(raw);data={bookmarks:Array.isArray(parsed.bookmarks)?parsed.bookmarks:[],history:Array.isArray(parsed.history)?parsed.history:[]};}}catch(e){}
+    function persist(){try{localStorage.setItem(key,JSON.stringify(data));}catch(e){status.textContent='Browser storage is unavailable in this session.';}}
+    function normalized(value){
+      value=String(value||'').trim();if(!value)return '';
+      if(/\s/.test(value)&&!/^https?:\/\//i.test(value))return 'https://www.google.com/search?q='+encodeURIComponent(value);
+      if(!/^[a-z][a-z0-9+.-]*:/i.test(value))value='https://'+value;
+      try{const u=new URL(value);if(!['http:','https:'].includes(u.protocol))throw new Error('Only HTTP and HTTPS websites are supported.');return u.href;}catch(e){throw new Error('Enter a valid website address or search phrase.');}
+    }
+    function openExternal(url){const w=window.open(url,'_blank','noopener,noreferrer');if(!w){status.textContent='Popup blocked. Allow popups for AWEWEBOS, then try again.';return false;}return true;}
+    function renderSaved(){
+      quick.innerHTML='';links.forEach(item=>{const b=U.mk('button',{class:'btn',text:item.name});b.style.cssText='font-size:11px;padding:6px 10px';b.onclick=()=>{address.value=item.url;visit(item.url,true);};quick.appendChild(b);});
+      saved.innerHTML='';
+      const heading=U.mk('span',{text:'Bookmarks:',style:{fontSize:'11px',color:'var(--fg-2)',alignSelf:'center',marginRight:'3px'}});
+      saved.appendChild(heading);
+      if(!data.bookmarks.length)saved.appendChild(U.mk('span',{text:'None saved yet',style:{fontSize:'11px',color:'var(--fg-3)',alignSelf:'center'}}));
+      data.bookmarks.slice(-12).reverse().forEach(item=>{const b=U.mk('button',{class:'btn',text:'★ '+item.title});b.style.cssText='font-size:11px;padding:5px 8px';b.title=item.url;b.onclick=()=>{address.value=item.url;visit(item.url,true);};saved.appendChild(b);});
+    }
+    function visit(raw,quickOpen){
+      let url;try{url=normalized(raw);}catch(e){status.textContent=e.message;return;}
+      if(!url)return;
+      address.value=url;
+      data.history.push({url:url,title:(()=>{try{return new URL(url).hostname;}catch(e){return url;}})(),time:Date.now()});
+      data.history=data.history.slice(-80);persist();
+      const isSearch=/^https:\/\/www\.google\.com\/search\?q=/i.test(url);
+      if(isSearch){
+        status.textContent='Google search opens in a real browser tab because Google blocks embedded search pages.';
+        openExternal(url);return;
+      }
+      frame.src=url;
+      status.textContent='Trying in-app preview: '+url+' · If the site blocks embedding, choose Open website.';
+      if(quickOpen) status.textContent='Opened '+url+' in the in-app preview when permitted. Use Open website if it refuses to load.';
+    }
+    function searchGoogle(){
+      const q=address.value.trim();if(!q){address.focus();status.textContent='Type a search phrase first.';return;}
+      let url;
+      try{url=/^https?:\/\//i.test(q)?normalized(q):'https://www.google.com/search?q='+encodeURIComponent(q);}catch(e){status.textContent=e.message;return;}
+      if(!/^https:\/\/www\.google\.com\/search\?q=/i.test(url)){visit(url,false);return;}
+      address.value=q;data.history.push({url:url,title:'Google: '+q,time:Date.now()});data.history=data.history.slice(-80);persist();
+      status.textContent='Opening Google results in a real browser tab…';openExternal(url);
+    }
+    function openWebsite(){let url;try{url=normalized(address.value);}catch(e){status.textContent=e.message;return;}if(!url)return;data.history.push({url:url,title:(()=>{try{return new URL(url).hostname;}catch(e){return url;}})(),time:Date.now()});data.history=data.history.slice(-80);persist();status.textContent='Opening website in your default browser…';openExternal(url);}
+    go.onclick=()=>{const v=address.value.trim();if(!v)return;if(/\s/.test(v)&&!/^https?:\/\//i.test(v)){searchGoogle();return;}visit(v,false);};
+    google.onclick=searchGoogle;
+    external.onclick=openWebsite;
+    address.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click();}};
+    bookmark.onclick=()=>{
+      let url;try{url=normalized(address.value);}catch(e){status.textContent=e.message;return;}
+      if(!url){status.textContent='Open a website or enter an address before saving it.';return;}
+      const existing=data.bookmarks.findIndex(x=>x.url===url);
+      if(existing>=0){data.bookmarks.splice(existing,1);bookmark.textContent='☆ Save';status.textContent='Bookmark removed.';}
+      else{let title;try{title=new URL(url).hostname;}catch(e){title=url;}data.bookmarks.push({url:url,title:title});data.bookmarks=data.bookmarks.slice(-50);bookmark.textContent='★ Saved';status.textContent='Saved bookmark: '+title;}
+      persist();renderSaved();
+    };
+    back.onclick=()=>{
+      address.value='';
+      frame.removeAttribute('src');
+      frame.srcdoc='<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;background:#0b0f19;color:#eef;padding:clamp(20px,5vw,48px);line-height:1.6"><div style="max-width:820px;margin:auto"><div style="color:#7dd3fc;font-size:12px;letter-spacing:3px">AWEWEBOS</div><h1 style="font-size:clamp(30px,5vw,52px);margin:10px 0">Browser</h1><p>Search the web with Google, visit a URL, or choose a quick link.</p><p style="color:#aab8ca;margin-top:14px">Some websites prohibit being displayed inside another page. Use <b>Open website</b> to launch the full site in your default browser.</p><p style="color:#64748b;margin-top:22px;font-size:12px">Your bookmarks and recent history are stored in this browser profile.</p></div></body></html>';
+      status.textContent='Home · Choose a site or search with Google.';
+    };
+    renderSaved();
   }
 });
-
 /* ============================================================
    APP STORE (real install to /Apps/)
    ============================================================ */
