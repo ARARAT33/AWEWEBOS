@@ -562,6 +562,62 @@ background:linear-gradient(135deg,var(--c1),var(--c2));
 }
 .theme-card .name{font-size:12px;font-weight:600;color:var(--fg-0)}
 .theme-card .sub{font-size:10px;color:var(--fg-3);margin-top:4px}
+
+/* Mobile-first touch layout for the Web OS shell */
+@media(max-width:640px){
+  :root{--menubar-h:42px;--dock-h:58px}
+  html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+  #os{grid-template-rows:var(--menubar-h) minmax(0,1fr)}
+  #menubar{padding:0 8px;gap:7px;min-width:0}
+  .mb-logo{font-size:10px;letter-spacing:.4px;padding:2px}
+  .mb-status{gap:6px;font-size:10px;min-width:0}
+  .mb-status>span{white-space:nowrap}
+  #desktop{min-height:0;touch-action:pan-y}
+  .desk-icons{padding:10px;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));grid-auto-rows:80px;gap:2px;overflow:auto}
+  .desk-icon{font-size:10px;padding:8px 2px;gap:5px}
+  .desk-icon .di{font-size:28px}
+  #dock{height:var(--dock-h);padding:5px 8px;gap:6px;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+  .dock-item{width:42px;height:42px;font-size:21px}
+  #startMenu{left:8px;right:8px;bottom:calc(var(--dock-h) + env(safe-area-inset-bottom) + 8px);width:auto;max-height:min(76dvh,720px);transform:translateY(8px) scale(.98);border-radius:14px}
+  #startMenu.open{transform:none}
+  .sm-search{padding:10px}
+  .sm-search input{font-size:16px;min-height:42px}
+  .sm-apps{overflow:auto;overscroll-behavior:contain}
+  .win{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;border-radius:0!important;border:0!important;transform:none!important;animation:none!important}
+  .win-titlebar{height:44px;min-height:44px;padding:0 8px;cursor:default;touch-action:pan-y}
+  .win-icon{margin-right:6px}
+  .win-title{font-size:13px}
+  .win-btn{width:36px;height:34px;font-size:17px}
+  .win-content{min-height:0;overflow:auto;overscroll-behavior:contain}
+  .files-toolbar{flex-wrap:wrap;gap:5px;padding:6px}
+  .files-toolbar .input{min-width:0!important;max-width:100%;flex:1}
+  .files-path{max-width:100%;overflow-wrap:anywhere}
+  .settings-app{padding:10px}
+  .settings-item{gap:8px;flex-wrap:wrap}
+  .settings-item>div:first-child{min-width:110px}
+  .store-app{min-width:0}
+  .store-header{padding:10px}
+  .store-tabs{overflow-x:auto;flex-wrap:nowrap}
+  button,.btn,.input,select,textarea{font-size:14px}
+  .input,select,textarea{max-width:100%;min-width:0}
+  input,textarea,select{font-size:16px!important}
+  #notifications{left:8px;right:8px;top:calc(var(--menubar-h) + env(safe-area-inset-top));width:auto}
+  .notif{max-width:100%}
+  .setup-card{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:auto;padding:20px}
+  .setup-step{gap:8px}
+  .setup-actions{flex-wrap:wrap}
+  .sm-footer{gap:8px;padding:8px}
+  .sm-actions{gap:4px}
+  .sm-btn{padding:7px 8px}
+}
+@media(max-width:380px){
+  .mb-status>span:not(.mb-clock){display:none}
+  .desk-icons{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .win-titlebar{padding:0 5px}
+  .win-buttons{gap:0}
+  .win-btn{width:31px}
+}
+
 </style>
 </head>
 <body>
@@ -1455,7 +1511,7 @@ const Start = (() => {
       .filter(a => a.title.toLowerCase().includes(filter.toLowerCase()))
       .sort((a, b) => a.title.localeCompare(b.title));
     const groups = [
-      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser','storage']],
+      ['System & tools', ['terminal','files','settings','themes','store','sysmon','browser','storage','publish']],
       ['Productivity', ['editor','notes','calc','calendar','clock','contacts']],
       ['Creative', ['paint','viewer','media']],
       ['Communication', ['messenger']],
@@ -2604,6 +2660,141 @@ Apps.registerBuiltin('storage', {
   }
 });
 
+/* ---------- PUBLISH & SEARCH ---------- */
+Apps.registerBuiltin('publish', {
+  title: 'Publish & Search', icon: '⇧', width: 860, height: 680, autoMax: true,
+  mount(body, state, opts = {}) {
+    body.style.padding='0';
+    body.style.display='flex';
+    body.style.flexDirection='column';
+    body.style.overflow='hidden';
+    const scroll=U.mk('div',{style:{padding:'14px',display:'flex',flexDirection:'column',gap:'12px',overflow:'auto',height:'100%'}});
+    const heading=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',flexWrap:'wrap'}});
+    heading.append(U.mk('h2',{text:'Publish & Search',style:{fontSize:'19px',flex:'1'} }));
+    const status=U.mk('span',{text:'Not connected',style:{fontSize:'10px',color:'var(--fg-2)'}});
+    const connect=U.mk('button',{class:'btn primary',text:'Connect node'});
+    heading.append(status,connect);
+    const explain=U.mk('div',{text:'Your own computer stores publications. Search checks this node and the peer nodes you add. Keep the node running and reachable for other people to find your files/apps.',style:{padding:'10px',border:'1px solid var(--border)',borderRadius:'8px',fontSize:'11px',lineHeight:'1.5',color:'var(--fg-2)'}});
+    const connection=U.mk('div',{style:{display:'grid',gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)',gap:'8px'}});
+    const baseInput=U.mk('input',{class:'input',value:Kernel.config.settings.publishNodeUrl||'http://127.0.0.1:41801',placeholder:'Node URL'});
+    const tokenInput=U.mk('input',{class:'input',inputType:'password',placeholder:'Private publish token (never share)'});
+    tokenInput.value=sessionStorage.getItem('awewebos-publish-token')||'';
+    connection.append(baseInput,tokenInput);
+    const nodeInfo=U.mk('div',{style:{fontSize:'11px',color:'var(--fg-2)',padding:'4px 0'}});
+    const hr=()=>U.mk('div',{style:{height:'1px',background:'var(--border)',margin:'3px 0'}});
+    const publishTitle=U.mk('input',{class:'input',placeholder:'Publication title'});
+    const publishDesc=U.mk('input',{class:'input',placeholder:'Description / keywords (helps search)'});
+    const kind=U.mk('select',{class:'input'});
+    [['file','File'],['app','HTML app']].forEach(([v,l])=>kind.appendChild(U.mk('option',{value:v,text:l})));
+    const fileInput=U.mk('input',{class:'input',type:'file',style:{minWidth:'0',maxWidth:'100%'}});
+    const appCode=U.mk('textarea',{class:'input',placeholder:'For HTML app: paste complete self-contained HTML here. JavaScript runs only in a sandbox when previewed.',rows:5,style:{width:'100%',resize:'vertical',fontFamily:'var(--font-mono)',fontSize:'11px'}});
+    appCode.value='<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;padding:24px"><h1>My AWE app</h1><p>Edit this HTML, then publish it.</p></body></html>';
+    const typeRow=U.mk('div',{style:{display:'grid',gridTemplateColumns:'150px minmax(0,1fr)',gap:'8px',alignItems:'center'}});
+    typeRow.append(kind,fileInput);
+    const publishButton=U.mk('button',{class:'btn primary',text:'Publish on my node'});
+    const publishNote=U.mk('div',{style:{fontSize:'10px',color:'var(--fg-2)'}});
+    const publishBox=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'8px',padding:'12px',border:'1px solid var(--border)',borderRadius:'10px'}});
+    publishBox.append(U.mk('h3',{text:'Publish a file or app',style:{fontSize:'13px'}}),publishTitle,publishDesc,typeRow,appCode,publishButton,publishNote);
+    const peerRow=U.mk('div',{style:{display:'grid',gridTemplateColumns:'minmax(0,1fr) auto',gap:'8px'}});
+    const peerInput=U.mk('input',{class:'input',placeholder:'Peer URL, e.g. https://my-node.example'});
+    const addPeer=U.mk('button',{class:'btn',text:'Add peer'});
+    peerRow.append(peerInput,addPeer);
+    const peerStatus=U.mk('div',{style:{fontSize:'10px',color:'var(--fg-2)'}});
+    const searchRow=U.mk('div',{style:{display:'grid',gridTemplateColumns:'minmax(0,1fr) 120px auto',gap:'8px'}});
+    const query=U.mk('input',{class:'input',placeholder:'Search published files and apps…',value:opts.query||''});
+    const filter=U.mk('select',{class:'input'});
+    [['all','All'],['file','Files'],['app','Apps']].forEach(([v,l])=>filter.appendChild(U.mk('option',{value:v,text:l})));
+    const searchBtn=U.mk('button',{class:'btn primary',text:'Search'});
+    searchRow.append(query,filter,searchBtn);
+    const results=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'7px'}});
+    scroll.append(heading,explain,connection,nodeInfo,hr(),publishBox,hr(),U.mk('h3',{text:'Peer nodes',style:{fontSize:'13px'}}),peerRow,peerStatus,hr(),U.mk('h3',{text:'Search the network',style:{fontSize:'13px'}}),searchRow,results);
+    body.appendChild(scroll);
+    function base(){return baseInput.value.trim().replace(/\/+$/,'');}
+    function headers(){const t=tokenInput.value.trim();return t?{Authorization:'Bearer '+t,'Content-Type':'application/json'}:{'Content-Type':'application/json'};}
+    async function api(path,options={}){const res=await fetch(base()+path,{...options,headers:{...headers(),...(options.headers||{})},signal:AbortSignal.timeout(8000)});let data;try{data=await res.json();}catch{data={error:'Invalid response from local node'};}if(!res.ok)throw new Error(data.error||('HTTP '+res.status));return data;}
+    function fmt(n){if(!Number.isFinite(n))return '';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(2)+' GB';}
+    async function connectNode(){
+      try{
+        const info=await api('/api/info',{headers:{}});status.textContent='Connected · '+info.nodeId;status.style.color='#22c55e';
+        nodeInfo.textContent='Node: '+info.name+' · '+info.nodeId+' · Max item '+fmt(info.maxBytes)+' · Peers: '+info.peers;
+        Kernel.config.settings.publishNodeUrl=base();await Kernel.save();
+        if(tokenInput.value.trim())sessionStorage.setItem('awewebos-publish-token',tokenInput.value.trim());
+        await refreshPeers();publishNote.textContent='Connected to your own node. Published data is stored on its disk.';
+        return info;
+      }catch(e){status.textContent='Offline';status.style.color='#f59e0b';nodeInfo.textContent='Cannot connect: '+e.message+' Start backend/server.mjs on this computer first.';throw e;}
+    }
+    connect.onclick=()=>connectNode().catch(()=>{});
+    kind.onchange=()=>{const isApp=kind.value==='app';fileInput.style.display=isApp?'none':'block';appCode.style.display=isApp?'block':'none';fileInput.required=!isApp;};
+    kind.dispatchEvent(new Event('change'));
+    async function publish(){
+      let file,bytes,name,mime;
+      if(kind.value==='app'){
+        const html=appCode.value.trim();if(!html)return Notif.push('Publish','Add your HTML app first.');
+        file=new Blob([html],{type:'text/html;charset=utf-8'});name=(publishTitle.value.trim()||'my-app').replace(/[^\p{L}\p{N}._ -]/gu,'_')+'.html';mime='text/html';
+      }else{
+        file=fileInput.files&&fileInput.files[0];if(!file)return Notif.push('Publish','Choose a file first.');
+        name=file.name;mime=file.type||'application/octet-stream';
+      }
+      if(file.size>32*1024*1024)return Notif.push('Publish','Maximum publication size is 32 MiB.');
+      try{
+        if(!status.textContent.startsWith('Connected'))await connectNode();
+        bytes=new Uint8Array(await file.arrayBuffer());let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+        const payload={title:publishTitle.value.trim()||name,description:publishDesc.value.trim(),kind:kind.value,filename:name,mime,dataBase64:btoa(binary),author:Kernel.config.user.id};
+        const out=await api('/api/publish',{method:'POST',body:JSON.stringify(payload)});
+        publishNote.textContent='Published: '+out.publication.id+' · '+fmt(out.publication.size)+' · saved on '+(nodeInfo.textContent.split(' · ')[0]||'your node');
+        query.value=out.publication.title;await searchItems();
+        Notif.push('Published',out.publication.id+' is saved on your node.');
+      }catch(e){publishNote.textContent='Publish failed: '+e.message;Notif.push('Publish failed',e.message,4000);}
+    }
+    publishButton.onclick=publish;
+    async function refreshPeers(){
+      const data=await api('/api/peers',{headers:{}});peerStatus.innerHTML='';
+      if(!data.peers.length){peerStatus.textContent='No peers configured. This node search currently returns your own publications.';return;}
+      data.peers.forEach(p=>{const row=U.mk('div',{style:{display:'flex',gap:'8px',alignItems:'center',padding:'4px 0'}},[U.mk('span',{text:p.url,style:{flex:'1',overflowWrap:'anywhere'}})]);const remove=U.mk('button',{class:'btn danger',text:'Remove'});remove.onclick=async()=>{try{await api('/api/peers',{method:'DELETE',body:JSON.stringify({url:p.url})});await refreshPeers();}catch(e){peerStatus.textContent=e.message;}};row.appendChild(remove);peerStatus.appendChild(row);});
+    }
+    addPeer.onclick=async()=>{const url=peerInput.value.trim();if(!url)return;try{await api('/api/peers',{method:'POST',body:JSON.stringify({url})});peerInput.value='';await refreshPeers();Notif.push('Peer added','Search will include this peer.');}catch(e){peerStatus.textContent='Could not add peer: '+e.message;}};
+    async function searchItems(){
+      results.innerHTML='';const q=query.value.trim();
+      try{
+        const data=await api('/api/search?q='+encodeURIComponent(q)+'&kind='+encodeURIComponent(filter.value),{headers:{}});
+        if(!data.results.length){results.appendChild(U.mk('div',{text:'No published items found. Add peers or try another query.',style:{padding:'14px',color:'var(--fg-2)',fontSize:'11px'}}));return;}
+        data.results.forEach(item=>{
+          const card=U.mk('div',{style:{padding:'10px',border:'1px solid var(--border)',borderRadius:'9px',display:'flex',flexDirection:'column',gap:'7px'}});
+          const top=U.mk('div',{style:{display:'flex',gap:'8px',alignItems:'start',flexWrap:'wrap'}});
+          const details=U.mk('div',{style:{flex:'1',minWidth:'160px'}},[U.mk('div',{text:(item.kind==='app'?'🧩 ':'📄 ')+item.title,style:{fontWeight:'650',fontSize:'12px'}}),U.mk('div',{text:(item.description||'No description'),style:{fontSize:'10px',color:'var(--fg-2)',marginTop:'3px'}}),U.mk('div',{text:item.id+' · '+fmt(item.size)+' · '+(item.local?'This node':(item.nodeName||item.peer||'Peer node')),style:{fontSize:'10px',color:'var(--fg-3)',marginTop:'4px',overflowWrap:'anywhere'}})]);
+          top.appendChild(details);
+          const copy=U.mk('button',{class:'btn',text:'Copy ID'});copy.onclick=async()=>{try{await navigator.clipboard.writeText(item.id);}catch(e){prompt('Publication ID',item.id);}};
+          const download=U.mk('button',{class:'btn primary',text:item.kind==='app'?'Open / Download':'Download'});
+          download.onclick=async()=>{
+            const origin=item.local?base():(item.peer||base());
+            try{
+              if(item.kind==='app'){
+                const response=await fetch(origin+'/api/content/'+encodeURIComponent(item.id),{signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Download failed: HTTP '+response.status);
+                const html=await response.text();
+                const modal=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.8)',display:'grid',placeItems:'center',padding:'10px'}});
+                const panel=U.mk('div',{style:{width:'min(960px,100%)',height:'min(760px,95%)',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'10px',display:'flex',flexDirection:'column',overflow:'hidden'}});
+                const bar=U.mk('div',{style:{padding:'8px',display:'flex',alignItems:'center',gap:'8px'}},[U.mk('strong',{text:item.title,style:{flex:'1'}})]);
+                const save=U.mk('button',{class:'btn',text:'Save HTML'});save.onclick=()=>{const blob=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=item.filename||'app.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);};
+                const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>modal.remove();bar.append(save,close);
+                const frame=U.mk('iframe',{title:'Untrusted published app preview',sandbox:'allow-scripts allow-forms allow-popups',style:{border:'0',width:'100%',flex:'1',background:'#fff'}});frame.srcdoc=html;panel.append(bar,frame);modal.appendChild(panel);document.body.appendChild(modal);
+              }else{
+                const response=await fetch(origin+'/api/content/'+encodeURIComponent(item.id),{signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Download failed: HTTP '+response.status);
+                const blob=await response.blob(),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=item.filename||item.title;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+              }
+            }catch(e){Notif.push('Open failed',e.message,3500);}
+          };
+          top.append(copy,download);card.appendChild(top);
+          if(item.local){const del=U.mk('button',{class:'btn danger',text:'Delete from my node'});del.style.alignSelf='start';del.onclick=async()=>{if(!confirm('Permanently delete this publication from your node?'))return;try{await api('/api/item/'+encodeURIComponent(item.id),{method:'DELETE'});await searchItems();}catch(e){Notif.push('Delete failed',e.message);}};card.appendChild(del);}
+          results.appendChild(card);
+        });
+        nodeInfo.textContent='Found '+data.count+' publication(s); queried '+data.peersQueried+' peer node(s).';
+      }catch(e){results.appendChild(U.mk('div',{text:'Search unavailable: '+e.message,style:{padding:'12px',color:'#f59e0b',fontSize:'11px'}}));}
+    }
+    searchBtn.onclick=searchItems;query.onkeydown=e=>{if(e.key==='Enter')searchItems();};
+    connectNode().then(()=>{if(query.value.trim())searchItems();}).catch(()=>{});
+  }
+});
+
 /* ---------- CONTACTS ---------- */
 Apps.registerBuiltin('contacts', {
   title: 'Contacts', icon: '♙', width: 720, height: 540, autoMax: true,
@@ -3654,6 +3845,7 @@ async function launchOS() {
     { app: 'media', name: 'Media Studio', ic: '♫' },
     { app: 'browser', name: 'Browser', ic: '◎' },
     { app: 'storage', name: 'Storage', ic: '▤' },
+    { app: 'publish', name: 'Publish & Search', ic: '⇧' },
     { app: 'themes', name: 'Themes', ic: '◨' },
     { app: 'settings', name: 'Settings', ic: '⚙' },
   ]);
