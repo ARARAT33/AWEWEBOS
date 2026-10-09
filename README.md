@@ -1,77 +1,59 @@
 # AWEWEBOS
 
-AWEWEBOS is a **browser-based Web OS environment** with a desktop, taskbar/dock, Start menu, application windows, and a user-selected local workspace. It is not a bootable kernel and does not replace Windows, Linux, macOS, or Android.
+AWEWEBOS is a **local-first browser-based Web OS environment** with a desktop shell, taskbar/dock, app windows, settings, file workspace, and a responsive mobile web/PWA layout. It is not a bootable OS and does not have a privileged hardware kernel: the runtime operates inside the browser sandbox.
 
-## Run it
+## Run the Web OS
 
-- **Web:** publish this repository root with GitHub Pages and open the HTTPS URL in a recent Chromium-based browser.
-- **PWA:** use the browser's Install / Add to Home Screen option. The app manifest and service worker provide an installable shell and offline caching of the core UI.
-- **Native wrapper:** the Tauri workflows can package the web environment as a desktop application. That is still a native app containing a Web OS interface, not a bootable operating system.
+- **Web:** publish the repository root with GitHub Pages and open the HTTPS URL in a current browser.
+- **Mobile:** use the same responsive web version on a phone/tablet; install it through the browser's Add to Home Screen / Install option. No separate Android app is required.
+- **Local workspace:** choose a folder when prompted. The browser requires explicit folder selection and may request permission again later.
+- **Desktop wrapper:** Tauri workflows may package the web runtime as a desktop app; that does not turn it into a native OS kernel.
 
-## Desktop and built-in apps
+## New: user-owned publishing backend
 
-The integrated desktop includes a top menu bar, Start menu with application search, dock/taskbar, desktop shortcuts, notifications, right-click context menu, draggable/resizable/minimizable/maximizable windows, and keyboard shortcuts.
+A separate optional Node.js backend stores published files and HTML apps on the user's own device. It persists while that computer's disk and backend process remain available and provides a search API that can query manually configured peer nodes without a central registry.
 
-Built-in applications:
-- **Terminal:** commands such as `help`, `ls`, `cd`, `pwd`, `cat`, `mkdir`, `touch`, `rm`, `open`, and `install`, backed by the selected workspace.
-- **Files:** browse the AWEWEBOS workspace and manage real files.
-- **Editor:** edit and save text files.
-- **Notes:** create and keep notes in the workspace.
-- **Calculator:** local calculations.
-- **Paint:** draw on a canvas.
-- **Image Viewer:** view supported image files.
-- **Messenger:** experimental same-origin tab messaging with local text and recorded voice messages; it is not a production internet messenger and has no remote account discovery or voice/video calls.
-- **Contacts:** save names and stable UIDs locally.
-- **Media Studio:** play local audio/video files and record microphone audio where supported.
+Requirements: Node.js 22+. Start it from the repository root:
+
+    cd backend
+    npm start
+
+The first start prints a private publish token. Open **Publish & Search** inside AWEWEBOS, use the default URL http://127.0.0.1:41801, and paste the token. The token permits publishing/deleting and must not be shared. The backend defaults to loopback-only.
+
+To allow trusted LAN peers, use AWE_BIND=0.0.0.0 and configure the machine's firewall. For remote internet access, use a secure HTTPS reverse proxy or VPN/overlay. Add each reachable peer URL in Publish & Search. The application does not open firewall ports or bypass NAT automatically.
+
+- File publications receive an AWE-FID-... ID.
+- HTML apps receive an AWE-APP-... ID and open in a sandboxed preview.
+- Each publication can be up to 32 MiB.
+- Files and metadata persist in backend/awewebos-node-data/ (or the configured data directory) until deleted.
+- Search queries this node and peers explicitly added to it. There is no central index and no automatic worldwide discovery.
+- The publishing device must be powered on, online, and reachable for others to fetch its content. For public internet use, HTTPS/VPN and firewall setup are required.
+
+See backend/README.md for the API, setup and security model.
+
+## Built-in apps and runtime tools
+
+- **Files:** browse the selected workspace, create folders/files, rename/delete, search the current folder, open supported file types and share/import portable FIDs.
+- **Text Editor:** save/save-as, find/replace, basic formatting and HTML preview.
+- **Media Studio:** local media playback and browser-supported audio recording.
+- **Image Viewer / Paint / Notes / Calculator / Calendar / Clock.**
+- **Contacts:** local contacts and stable user/workspace identifiers.
+- **Messenger:** experimental same-origin tab messaging and locally recorded voice messages; not a production remote messenger and does not yet provide peer-to-peer calls.
+- **App Hub:** bundled apps and portable self-contained HTML mini-app packages.
+- **Publish & Search:** publish persistent files/apps to the optional device-owned backend, search this node and manually configured peers, download files and sandbox-preview HTML apps.
+- **Storage & Drives:** show files/folders readable inside the selected workspace and browser storage estimates. Browsers do not allow automatic enumeration of every OS disk.
+- **Kernel & Processes:** inspect running app windows and exposed browser capabilities. This is a web runtime monitor, not a privileged kernel.
 - **Browser:** restricted in-app browser; some sites block iframe embedding.
-- **App Hub:** browse bundled mini-apps and create/import portable sandboxed HTML mini-app packages by AppID. Packages are local-first and not listed in a global server registry.
-- **Themes and Settings:** change appearance and manage system preferences.
+- **Settings / Themes:** appearance, theme and workspace preferences.
 
-Bundled mini-apps include live weather via Open-Meteo (internet required), clock, calendar, Snake, Tetris, Minesweeper, and a runtime monitor. The runtime monitor reports actual AWEWEBOS window/app counts and browser storage estimates; browser security prevents this web app from reading host CPU/RAM utilization reliably, so those metrics are marked unavailable rather than fabricated.
+## Validation
 
-## Install to a selected folder
+The GitHub Actions validation workflow checks the manifest, extracts and syntax-checks inline JavaScript, checks the Node.js backend syntax, runs backend integration tests for publish/search/download/delete and persistence after restart, and checks patch whitespace.
 
-On first run, select a folder you control. The installer creates a workspace structure and stores actual files in that folder:
+## Current limits
 
-```text
-AWEWEBOS workspace/
-├── System/
-│   ├── device.json
-│   ├── config.json
-│   ├── users.json
-│   └── Runtime/
-│       ├── index.html
-│       └── manifest.webmanifest
-├── Apps/
-│   ├── catalog.json
-│   └── <app-id>/
-│       ├── manifest.json
-│       ├── package.json
-│       ├── app.js
-│       └── README.txt
-├── Users/user/
-│   ├── Desktop/
-│   ├── Documents/
-│   ├── Downloads/
-│   ├── Pictures/
-│   └── Music/
-├── Themes/
-└── Settings/preferences.json
-```
-
-The App Hub writes package metadata and app source into the selected folder; bundled apps run inside the trusted AWEWEBOS runtime. Portable HTML packages are saved under `/Apps/`, remain listed after restart, and open in a sandboxed preview. These are web app packages, not native executables. Existing files are not intentionally formatted or used as a disk image. Choose a dedicated folder rather than the root of a drive.
-
-The folder handle is stored in IndexedDB when the browser supports it. On later visits, the app attempts to reconnect when permission is already granted. If permission was revoked or the browser requires a user gesture, use **Reconnect previous installation** and approve the browser's permission prompt. Browser security means permission cannot be guaranteed to remain granted forever.
-
-## Storage and security boundaries
-
-- The selected folder uses the browser File System Access API and requires explicit user selection and read/write permission. Storage & Drives shows the selected workspace and browser-origin storage estimates; it cannot enumerate every OS disk automatically. Support varies by browser and platform.
-- Browser-local state and selected-folder files are different storage layers; back up important files separately.
-- Imported or third-party app code should be treated as untrusted. The App Hub is not a global signed package registry.
-- Weather requires internet access. Messenger currently works only between tabs sharing the same browser origin and channel; it is not a remote multi-user service. Contacts are local-only. Portable FIDs embed files (maximum 1.2 MB) and portable AppIDs embed self-contained HTML (maximum 180 KB); these do not provide global online discovery or a live-host peer transfer.
-- A browser app cannot boot a computer, format a disk, control unrestricted hardware, run native background services, or guarantee access after permissions are revoked.
-- AWENET transport, production AWEID resolution, a real ONECOIN ledger, global store payments, and production voice/video messaging are not implemented by this Web OS shell.
-
-## Development and CI
-
-Serve the project over HTTPS or localhost. Service workers and PWA installation do not work from ordinary `file://` pages. Check [GitHub Actions](https://github.com/ARARAT33/AWEWEBOS/actions) before treating a commit as successfully deployed or packaged. Native build artifacts are available only after the corresponding workflow completes successfully.
+- This remains a Web OS shell running inside a browser, not a bootable or hardware-level OS.
+- Browser security prevents unrestricted disk/CPU/GPU access and automatic listing of all host disks.
+- User-hosted backend search is federated only across explicitly configured peers; it is not globally discoverable without reachable peer addresses.
+- A node is reachable only while the device is online and network/firewall/NAT settings permit access.
+- Production WebRTC signaling/discovery, end-to-end encrypted remote messaging, video calls, identity verification, a global signed app registry, and an audited permission/security model remain future work.
