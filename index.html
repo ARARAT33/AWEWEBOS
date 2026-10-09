@@ -2945,88 +2945,105 @@ Apps.registerBuiltin('media', {
   }
 });
 
-/* ---------- LOCAL BROWSER ---------- */
+/* ---------- NATIVE-WEBVIEW BROWSER ---------- */
 Apps.registerBuiltin('browser', {
   title: 'Browser', icon: '◎', width: 980, height: 680, autoMax: true,
   mount(body, state) {
     body.style.padding='0';body.style.display='flex';body.style.flexDirection='column';body.style.minHeight='0';
     const bar=U.mk('div',{class:'files-toolbar',style:{flexWrap:'wrap',gap:'6px'}});
-    const address=U.mk('input',{class:'input',placeholder:'Search Google or enter https://example.com',style:{flex:'1',minWidth:'200px'}});
-    const go=U.mk('button',{class:'btn primary',text:'Open'});
-    const google=U.mk('button',{class:'btn',text:'Google Search'});
-    const preview=U.mk('button',{class:'btn',text:'Preview here'});
-    const external=U.mk('button',{class:'btn',text:'Open website ↗'});
+    const back=U.mk('button',{class:'btn',text:'←'});
+    const forward=U.mk('button',{class:'btn',text:'→'});
+    const reload=U.mk('button',{class:'btn',text:'↻'});
+    const address=U.mk('input',{class:'input',placeholder:'Search Google or enter a website address',style:{flex:'1',minWidth:'200px'}});
+    const go=U.mk('button',{class:'btn primary',text:'Go'});
+    const google=U.mk('button',{class:'btn',text:'Google'});
     const bookmark=U.mk('button',{class:'btn',text:'☆ Save'});
     const historyBtn=U.mk('button',{class:'btn',text:'History'});
     const home=U.mk('button',{class:'btn',text:'Home'});
-    const frame=U.mk('iframe',{title:'Optional website preview',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',minHeight:'220px',background:'#fff'},sandbox:'allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox'});
     const tools=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'8px',padding:'10px 12px',borderBottom:'1px solid var(--border)'}});
     const quick=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
     const saved=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
+    const viewport=U.mk('div',{title:'Real website view supplied by the native desktop WebView',style:{position:'relative',flex:'1',minHeight:'220px',background:'#fff',overflow:'hidden'}});
     const status=U.mk('div',{text:'Ready · Enter a search phrase or website address.',style:{fontSize:'11px',color:'var(--fg-2)',padding:'7px 12px',borderTop:'1px solid var(--border)'}});
-    bar.append(home,address,go,google,preview,external,bookmark,historyBtn);
-    tools.append(quick,saved);body.append(bar,tools,frame,status);
+    bar.append(back,forward,reload,address,go,google,bookmark,historyBtn,home);
+    tools.append(quick,saved);body.append(bar,tools,viewport,status);
     const links=[
       {name:'Google',url:'https://www.google.com/'},{name:'YouTube',url:'https://www.youtube.com/'},
       {name:'Wikipedia',url:'https://www.wikipedia.org/'},{name:'GitHub',url:'https://github.com/'},
       {name:'Gmail',url:'https://mail.google.com/'},{name:'AWEWEBOS',url:'https://github.com/ARARAT33/AWEWEBOS'}
     ];
-    const key='awewebos.browser.v3';
+    const key='awewebos.browser.v4';
     let data={bookmarks:[],history:[]};
     try{const raw=localStorage.getItem(key);if(raw){const p=JSON.parse(raw);data={bookmarks:Array.isArray(p.bookmarks)?p.bookmarks:[],history:Array.isArray(p.history)?p.history:[]};}}catch(e){}
+    let currentUrl='',nativeActive=false,lastBounds='',lastBoundsAt=0,raf=0;
+    const tauriInvoke=window.__TAURI__?.core?.invoke;
+    const isNative=typeof tauriInvoke==='function'&&!!window.__TAURI_INTERNALS__;
     function persist(){try{localStorage.setItem(key,JSON.stringify(data));}catch(e){}}
     function normalize(raw){
       let v=String(raw||'').trim();if(!v)throw new Error('Enter a search phrase or website address.');
       if(/\s/.test(v)&&!/^https?:\/\//i.test(v))return 'https://www.google.com/search?q='+encodeURIComponent(v);
       if(!/^[a-z][a-z0-9+.-]*:/i.test(v))v='https://'+v;
       let u;try{u=new URL(v);}catch(e){throw new Error('That address is not valid. Try example.com or a search phrase.');}
-      if(u.protocol!=='http:'&&u.protocol!=='https:')throw new Error('For safety, only HTTP and HTTPS websites are supported.');
+      if(u.protocol!=='http:'&&u.protocol!=='https:')throw new Error('Only HTTP and HTTPS websites are supported.');
       return u.href;
     }
-    function remember(url,title){
-      data.history.push({url,title:title||url,time:Date.now()});data.history=data.history.slice(-80);persist();
+    function remember(url,title){data.history.push({url,title:title||url,time:Date.now()});data.history=data.history.slice(-100);persist();}
+    function setHome(){
+      viewport.innerHTML='<div style="height:100%;overflow:auto;font-family:system-ui;background:#fff;color:#111;padding:clamp(22px,5vw,52px);line-height:1.6"><div style="max-width:850px;margin:auto"><div style="font-size:12px;letter-spacing:3px;color:#2563eb;font-weight:700">AWEWEBOS NATIVE BROWSER</div><h1 style="font-size:clamp(30px,5vw,52px);margin:10px 0 4px">The web, inside your OS.</h1><p>In the installed AWEWEBOS desktop app, websites render in a native system WebView—not an iframe. Enter a website or a Google search above.</p><div style="margin-top:22px;color:#555;font-size:13px">Native website rendering requires the AWEWEBOS desktop build. In a normal browser/PWA, sites open in a separate browser tab because web pages cannot embed every website.</div></div></div>';
     }
-    function openExternal(url){
-      const w=window.open(url,'_blank');
-      if(!w){status.textContent='The browser blocked the new tab. Allow pop-ups for AWEWEBOS and click Open again.';return false;}
-      try{w.opener=null;}catch(e){}
-      return true;
+    async function closeNative(){
+      nativeActive=false;lastBounds='';
+      if(isNative){try{await tauriInvoke('close_browser_site');}catch(e){}}
     }
-    function goTo(raw,forceExternal){
+    async function syncBounds(){
+      if(!nativeActive||!isNative)return;
+      const rect=viewport.getBoundingClientRect();
+      const b={x:Math.max(0,rect.left),y:Math.max(0,rect.top),width:Math.max(1,rect.width),height:Math.max(1,rect.height)};
+      const keyNow=[b.x,b.y,b.width,b.height].map(n=>Math.round(n)).join(',');
+      const now=Date.now();
+      if(keyNow!==lastBounds&&now-lastBoundsAt>90){
+        lastBounds=keyNow;lastBoundsAt=now;
+        try{await tauriInvoke('set_browser_site_bounds',b);}catch(e){}
+      }
+      raf=requestAnimationFrame(syncBounds);
+    }
+    async function openSite(raw){
       let url;try{url=normalize(raw);}catch(e){status.textContent=e.message;return;}
-      address.value=url;
+      address.value=url;currentUrl=url;
       let title;try{title=new URL(url).hostname;}catch(e){title=url;}
       remember(url,title);
-      if(forceExternal||/^https:\/\/www\.google\.com\/search\?/i.test(url)){
-        status.textContent='Opening '+title+' in a new browser tab…';
-        openExternal(url);return;
+      if(isNative){
+        viewport.innerHTML='<div style="padding:24px;color:#222;font:14px system-ui">Loading '+title+'…</div>';
+        const r=viewport.getBoundingClientRect();
+        try{
+          await closeNative();
+          await tauriInvoke('open_browser_site',{url,x:Math.max(0,r.left),y:Math.max(0,r.top),width:Math.max(1,r.width),height:Math.max(1,r.height)});
+          nativeActive=true;lastBounds='';status.textContent='Loaded in AWEWEBOS native browser · '+title;
+          cancelAnimationFrame(raf);raf=requestAnimationFrame(syncBounds);
+          return;
+        }catch(e){
+          nativeActive=false;status.textContent='Native WebView failed: '+String(e)+' · Opening in a browser tab instead.';
+        }
+      }else{
+        status.textContent='This web/PWA version cannot host unrestricted websites inside its own page. Opening the real site in a separate browser tab.';
       }
-      frame.src=url;
-      status.textContent='Previewing '+title+' here. If the page is blank or blocked, click Open website ↗.';
+      const w=window.open(url,'_blank','noopener,noreferrer');
+      if(!w)status.textContent='Pop-up blocked. Allow pop-ups for AWEWEBOS, then retry.';
     }
     function searchGoogle(){
-      const q=address.value.trim();if(!q){address.focus();status.textContent='Type what you want to search for.';return;}
+      const q=address.value.trim();if(!q){address.focus();return;}
       let url;
-      if(/^https?:\/\//i.test(q)){goTo(q,true);return;}
+      if(/^https?:\/\//i.test(q)){openSite(q);return;}
       url='https://www.google.com/search?q='+encodeURIComponent(q);
-      address.value=q;remember(url,'Google search: '+q);
-      status.textContent='Opening Google search results in a new browser tab…';
-      openExternal(url);
-    }
-    function openFullSite(){
-      let url;try{url=normalize(address.value);}catch(e){status.textContent=e.message;return;}
-      if(/^https:\/\/www\.google\.com\/search\?/i.test(url)){status.textContent='Opening Google search results…';}
-      else status.textContent='Opening full website in your default browser…';
-      let title;try{title=new URL(url).hostname;}catch(e){title=url;}
-      remember(url,title);openExternal(url);
+      openSite(url);
     }
     function renderSaved(){
       quick.innerHTML='';
-      links.forEach(item=>{const b=U.mk('button',{class:'btn',text:item.name});b.style.cssText='font-size:11px;padding:6px 10px';b.onclick=()=>{address.value=item.url;goTo(item.url,true);};quick.appendChild(b);});
+      links.forEach(item=>{const b=U.mk('button',{class:'btn',text:item.name});b.style.cssText='font-size:11px;padding:6px 10px';b.onclick=()=>openSite(item.url);quick.appendChild(b);});
       saved.innerHTML='';
       saved.appendChild(U.mk('span',{text:'Bookmarks:',style:{fontSize:'11px',color:'var(--fg-2)',alignSelf:'center',marginRight:'3px'}}));
       if(!data.bookmarks.length)saved.appendChild(U.mk('span',{text:'None saved yet',style:{fontSize:'11px',color:'var(--fg-3)',alignSelf:'center'}}));
-      data.bookmarks.slice(-12).reverse().forEach(item=>{const b=U.mk('button',{class:'btn',text:'★ '+item.title});b.style.cssText='font-size:11px;padding:5px 8px';b.title=item.url;b.onclick=()=>{address.value=item.url;goTo(item.url,true);};saved.appendChild(b);});
+      data.bookmarks.slice(-12).reverse().forEach(item=>{const b=U.mk('button',{class:'btn',text:'★ '+item.title});b.style.cssText='font-size:11px;padding:5px 8px';b.title=item.url;b.onclick=()=>openSite(item.url);saved.appendChild(b);});
     }
     function showHistory(){
       const overlay=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.72)',display:'flex',alignItems:'center',justifyContent:'center',padding:'16px'}});
@@ -3041,16 +3058,18 @@ Apps.registerBuiltin('browser', {
         const row=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'8px',border:'1px solid var(--border)',borderRadius:'8px'}});
         const info=U.mk('div',{style:{flex:'1',minWidth:'0'}});
         info.append(U.mk('div',{text:item.title||item.url,style:{fontSize:'12px',fontWeight:'600',overflowWrap:'anywhere'}}),U.mk('div',{text:item.url,style:{fontSize:'10px',color:'var(--fg-2)',overflowWrap:'anywhere',marginTop:'3px'}}));
-        const open=U.mk('button',{class:'btn',text:'Open'});open.onclick=()=>{overlay.remove();address.value=item.url;goTo(item.url,true);};
+        const open=U.mk('button',{class:'btn',text:'Open'});open.onclick=()=>{overlay.remove();openSite(item.url);};
         row.append(info,open);list.appendChild(row);
       });
       panel.append(head,list);overlay.appendChild(panel);document.body.appendChild(overlay);
     }
-    go.onclick=()=>{const q=address.value.trim();if(!q)return;if(/\s/.test(q)&&!/^https?:\/\//i.test(q)){searchGoogle();return;}goTo(q,true);};
-    google.onclick=searchGoogle;external.onclick=openFullSite;
-    preview.onclick=()=>goTo(address.value,false);
+    go.onclick=()=>openSite(address.value);
+    google.onclick=searchGoogle;
+    address.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();openSite(address.value);}};
+    back.onclick=()=>{status.textContent='Back navigation is available in the native site view where supported; use the website controls or re-open a history entry.';};
+    forward.onclick=()=>{status.textContent='Forward navigation is available in the native site view where supported.';};
+    reload.onclick=()=>{if(currentUrl)openSite(currentUrl);};
     historyBtn.onclick=showHistory;
-    address.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go.click();}};
     bookmark.onclick=()=>{
       let url;try{url=normalize(address.value);}catch(e){status.textContent=e.message;return;}
       const at=data.bookmarks.findIndex(x=>x.url===url);
@@ -3058,13 +3077,9 @@ Apps.registerBuiltin('browser', {
       else{let title;try{title=new URL(url).hostname;}catch(e){title=url;}data.bookmarks.push({url,title});data.bookmarks=data.bookmarks.slice(-50);status.textContent='Bookmark saved: '+title;bookmark.textContent='★ Saved';}
       persist();renderSaved();
     };
-    home.onclick=()=>{
-      address.value='';frame.removeAttribute('src');
-      frame.srcdoc='<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;background:#0b0f19;color:#eef;padding:clamp(20px,5vw,48px);line-height:1.6"><div style="max-width:820px;margin:auto"><div style="color:#7dd3fc;font-size:12px;letter-spacing:3px">AWEWEBOS</div><h1 style="font-size:clamp(30px,5vw,52px);margin:10px 0">Browser</h1><p>Enter a website or search phrase, then press Open or Google Search.</p><p style="color:#aab8ca;margin-top:14px">Some sites block in-app previews. Open website launches the complete page in your default browser.</p></div></body></html>';
-      status.textContent='Browser ready.';
-    };
-    renderSaved();
-    home.click();
+    home.onclick=async()=>{cancelAnimationFrame(raf);await closeNative();currentUrl='';address.value='';setHome();status.textContent='Browser ready.';};
+    state.cleanup=()=>{cancelAnimationFrame(raf);if(nativeActive)closeNative();};
+    renderSaved();setHome();
   }
 });
 /* ============================================================
