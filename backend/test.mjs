@@ -20,6 +20,7 @@ try{
  const tokenMatch=logs.match(/Publish token \(keep private\): ([a-f0-9]+)/);
  assert.ok(tokenMatch,'startup prints a publish token');const token=tokenMatch[1];
  const headers={'content-type':'application/json',authorization:'Bearer '+token};
+ const denied=await fetch(base+'/api/publish',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title:'Unauthorized',kind:'file',filename:'x.txt',dataBase64:Buffer.from('x').toString('base64')})});assert.equal(denied.status,401,'publishing requires the private token');
  const bytes=Buffer.from('AWEWEBOS test publication\n');
  const publish=await fetch(base+'/api/publish',{method:'POST',headers,body:JSON.stringify({title:'Validation document',description:'ci test searchable document',kind:'file',filename:'validation.txt',mime:'text/plain',dataBase64:bytes.toString('base64'),author:'CI'})});
  const publishRaw=await publish.text();assert.equal(publish.status,201,publishRaw);
