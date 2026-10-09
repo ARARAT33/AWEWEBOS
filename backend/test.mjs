@@ -16,13 +16,14 @@ async function stop(){if(!child)return;const c=child;child=null;if(c.exitCode!==
 async function ready(){for(let i=0;i<80;i++){if(child?.exitCode!==null)throw new Error('Node exited early: '+logs);try{const r=await fetch(base+'/api/health');if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw new Error('Node did not start: '+logs);}
 try{
  start();await ready();
+ for(let i=0;i<30&&!/Publish token \(keep private\): [a-f0-9]+/.test(logs);i++)await new Promise(r=>setTimeout(r,20));
  const tokenMatch=logs.match(/Publish token \(keep private\): ([a-f0-9]+)/);
  assert.ok(tokenMatch,'startup prints a publish token');const token=tokenMatch[1];
  const headers={'content-type':'application/json',authorization:'Bearer '+token};
  const bytes=Buffer.from('AWEWEBOS test publication\n');
  const publish=await fetch(base+'/api/publish',{method:'POST',headers,body:JSON.stringify({title:'Validation document',description:'ci test searchable document',kind:'file',filename:'validation.txt',mime:'text/plain',dataBase64:bytes.toString('base64'),author:'CI'})});
- assert.equal(publish.status,201,await publish.text());
- const first=await publish.json();assert.match(first.publication.id,/^AWE-FID-[a-f0-9]{24}$/);
+ const publishRaw=await publish.text();assert.equal(publish.status,201,publishRaw);
+ const first=JSON.parse(publishRaw);assert.match(first.publication.id,/^AWE-FID-[a-f0-9]{24}$/);
  const search=await fetch(base+'/api/search?q=searchable+document');assert.equal(search.status,200);
  const result=await search.json();assert.ok(result.results.some(x=>x.id===first.publication.id),'new publication appears in search');
  const download=await fetch(base+'/api/content/'+first.publication.id);assert.equal(download.status,200);
