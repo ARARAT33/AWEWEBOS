@@ -29,22 +29,42 @@ async fn open_browser_site(
         return Err("Only HTTP and HTTPS websites are allowed".into());
     }
     let window = app
-        .get_webview_window("main")
+        .get_window("main")
         .ok_or_else(|| "AWEWEBOS main window was not found".to_string())?;
 
     if let Some(existing) = app.get_webview("awewebos-browser-site") {
         existing.close().map_err(|e| e.to_string())?;
     }
 
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    static NEXT_POPUP_ID: AtomicUsize = AtomicUsize::new(1);
+    let popup_app = app.clone();
     let builder = WebviewBuilder::new(
         "awewebos-browser-site",
         WebviewUrl::External(parsed),
     )
-    .on_new_window(|new_url, _features| {
-        // Keep target=_blank links inside the native browser surface by
-        // navigating the existing view when the next explicit navigation occurs.
-        let _ = new_url;
-        tauri::webview::NewWindowResponse::Deny
+    .on_new_window(move |new_url, features| {
+        if new_url.scheme() != "http" && new_url.scheme() != "https" {
+            return tauri::webview::NewWindowResponse::Deny;
+        }
+        let label = format!(
+            "awewebos-browser-popup-{}",
+            NEXT_POPUP_ID.fetch_add(1, Ordering::Relaxed)
+        );
+        let title = new_url.host_str().unwrap_or("Website").to_string();
+        match tauri::WebviewWindowBuilder::new(
+            &popup_app,
+            label,
+            WebviewUrl::External(new_url),
+        )
+        .title(title)
+        .inner_size(1100.0, 760.0)
+        .window_features(features)
+        .build()
+        {
+            Ok(window) => tauri::webview::NewWindowResponse::Create { window },
+            Err(_) => tauri::webview::NewWindowResponse::Deny,
+        }
     });
 
     window
