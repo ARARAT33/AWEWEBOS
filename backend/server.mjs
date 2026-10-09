@@ -15,7 +15,7 @@ const CONFIG_PATH=path.join(DATA_DIR,'config.json');
 const PEERS_PATH=path.join(DATA_DIR,'peers.json');
 const MAX_BYTES=32*1024*1024,MAX_PEERS=24;
 let config;
-const CORS={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,authorization','access-control-max-age':'600','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
+const CORS={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,authorization','access-control-max-age':'600','access-control-allow-private-network':'true','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
 function json(res,status,value,extra={}){const b=Buffer.from(JSON.stringify(value));res.writeHead(status,{'content-type':'application/json; charset=utf-8','content-length':b.length,'cache-control':'no-store',...extra});res.end(b);}
 function safeId(s){return typeof s==='string'&&/^AWE-(PUB|APP|FID)-[a-f0-9]{24}$/.test(s);}
 function cleanText(s,max){return String(s??'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);}
