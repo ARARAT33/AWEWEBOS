@@ -36,4 +36,4 @@ try{
  const deleted=await fetch(base+'/api/item/'+first.publication.id,{method:'DELETE',headers});assert.equal(deleted.status,200);
  const afterDelete=await fetch(base+'/api/item/'+first.publication.id);assert.equal(afterDelete.status,404);
  console.log('PASS: health, token auth, FID/AppID IDs, publish, search, download, persistence across restart, and delete.');
-} catch(e){console.error(e);process.exitCode=1;} finally {await stop();await rm(dataDir,{recursive:true,force:true});}
+} catch(e){console.error(e);console.error('Backend output:\n'+logs);process.exitCode=1;} finally {await stop();await rm(dataDir,{recursive:true,force:true});}
