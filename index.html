@@ -2769,7 +2769,7 @@ Apps.registerBuiltin('publish', {
         if(tokenInput.value.trim())sessionStorage.setItem('awewebos-publish-token',tokenInput.value.trim());
         await refreshPeers();publishNote.textContent='Connected to your own node. Published data is stored on its disk.';
         return info;
-      }catch(e){status.textContent='Offline';status.style.color='#f59e0b';nodeInfo.textContent='Cannot connect: '+e.message+' Start backend/server.mjs on this computer first.';throw e;}
+      }catch(e){status.textContent='Offline';status.style.color='#f59e0b';nodeInfo.textContent='Cannot connect: '+e.message+' Start backend/server.mjs on this computer first. If your browser asks, allow this site to access the local network.';throw e;}
     }
     connect.onclick=()=>connectNode().catch(()=>{});
     kind.onchange=()=>{const isApp=kind.value==='app';fileInput.style.display=isApp?'none':'block';appCode.style.display=isApp?'block':'none';fileInput.required=!isApp;};
