@@ -984,6 +984,35 @@ const Kernel = (() => {
   };
 
   let deviceId = null;
+  const processes = new Map();
+  function registerProcess(appId,title,windowId) {
+    const pid='AWE-PROC-'+U.uid().replace(/[^a-zA-Z0-9]/g,'').toUpperCase().slice(0,20);
+    const process={pid,appId,title,windowId,state:'running',startedAt:Date.now()};
+    processes.set(pid,process);
+    try{Bus.emit('kernel.process.start',{...process});}catch(e){}
+    return {...process};
+  }
+  function stopProcessByWindow(windowId) {
+    for(const [pid,process] of processes)if(process.windowId===windowId){
+      processes.delete(pid);
+      try{Bus.emit('kernel.process.stop',{...process,state:'stopped',stoppedAt:Date.now()});}catch(e){}
+    }
+  }
+  function listProcesses() { return [...processes.values()].map(p=>({...p,uptimeMs:Date.now()-p.startedAt})); }
+  async function requestCapability(appId,capability,reason='This feature needs permission.') {
+    config.settings.capabilities ||= {};
+    const granted=config.settings.capabilities[appId]||[];
+    if(granted.includes(capability))return true;
+    const allow=confirm(appId+' requests '+capability+'.\\n\\n'+reason+'\\n\\nAllow this capability for this workspace?');
+    if(!allow)return false;
+    config.settings.capabilities[appId]=[...new Set([...granted,capability])];
+    await save();Bus.emit('kernel.capability.granted',{appId,capability});return true;
+  }
+  async function revokeCapability(appId,capability) {
+    config.settings.capabilities ||= {};
+    config.settings.capabilities[appId]=(config.settings.capabilities[appId]||[]).filter(x=>x!==capability);
+    await save();Bus.emit('kernel.capability.revoked',{appId,capability});
+  }
   async function init() {
     // A stable identifier belongs to this selected workspace, not a remote account.
     try {
@@ -1088,7 +1117,9 @@ const Kernel = (() => {
   return {
     get config() { return config; },
     get deviceId() { return deviceId; },
-    init, save, setSetting, addInstalledApp, removeInstalledApp, applyTheme,  };
+    init, save, setSetting, addInstalledApp, removeInstalledApp, applyTheme,
+    registerProcess, stopProcessByWindow, listProcesses, requestCapability, revokeCapability,
+  };
 })();
 
 /* ============ VFS — Virtual path → real FS ============ */
@@ -1301,6 +1332,7 @@ const WM = (() => {
     if (!s) return;
     if (s.opts.onClose && s.opts.onClose() === false) return;
     s.cleanup?.();
+    Kernel.stopProcessByWindow(id);
     s.win.remove();
     wins.delete(id);
     updateDockIndicators();
@@ -1409,7 +1441,7 @@ const Apps = (() => {
   function launch(name, opts = {}) {
     const def = get(name);
     if (!def) return Notif.push('Error', 'App not found: ' + name);
-    return WM.create({
+    const win=WM.create({
       title: def.title,
       icon: def.icon,
       width: def.width,
@@ -1419,6 +1451,9 @@ const Apps = (() => {
       onMount: (body, st) => def.mount(body, st, opts),
       onClose: def.onClose,
     });
+    const process=Kernel.registerProcess(name,def.title,win.id);
+    win.processId=process.pid;
+    return win;
   }
 
   function list() {
