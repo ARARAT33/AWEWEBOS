@@ -2956,13 +2956,14 @@ Apps.registerBuiltin('browser', {
     const google=U.mk('button',{class:'btn',text:'Google'});
     const external=U.mk('button',{class:'btn',text:'Open website'});
     const bookmark=U.mk('button',{class:'btn',text:'☆ Save'});
+    const historyBtn=U.mk('button',{class:'btn',text:'History'});
     const back=U.mk('button',{class:'btn',text:'Home'});
     const frame=U.mk('iframe',{title:'Browser page preview',referrerpolicy:'no-referrer',style:{border:'0',width:'100%',flex:'1',minHeight:'220px',background:'#fff'},sandbox:'allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox'});
     const tools=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'8px',padding:'10px 12px',borderBottom:'1px solid var(--border)'}});
     const quick=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
     const saved=U.mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
     const status=U.mk('div',{text:'Ready · Search with Google or open a website.',style:{fontSize:'11px',color:'var(--fg-2)',padding:'7px 12px',borderTop:'1px solid var(--border)'}});
-    bar.append(back,address,go,google,external,bookmark);
+    bar.append(back,address,go,google,external,bookmark,historyBtn);
     tools.append(quick,saved);
     body.append(bar,tools,frame,status);
     const links=[
@@ -2992,6 +2993,25 @@ Apps.registerBuiltin('browser', {
       if(!data.bookmarks.length)saved.appendChild(U.mk('span',{text:'None saved yet',style:{fontSize:'11px',color:'var(--fg-3)',alignSelf:'center'}}));
       data.bookmarks.slice(-12).reverse().forEach(item=>{const b=U.mk('button',{class:'btn',text:'★ '+item.title});b.style.cssText='font-size:11px;padding:5px 8px';b.title=item.url;b.onclick=()=>{address.value=item.url;visit(item.url,true);};saved.appendChild(b);});
     }
+    function showHistory(){
+      const overlay=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.72)',display:'flex',alignItems:'center',justifyContent:'center',padding:'16px'}});
+      const panel=U.mk('div',{style:{width:'min(760px,100%)',maxHeight:'85vh',display:'flex',flexDirection:'column',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'14px',overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,.5)'}});
+      const head=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'14px',borderBottom:'1px solid var(--border)'}});
+      head.appendChild(U.mk('strong',{text:'Browsing history',style:{flex:'1'}}));
+      const clear=U.mk('button',{class:'btn',text:'Clear history'});clear.onclick=()=>{data.history=[];persist();overlay.remove();status.textContent='Browsing history cleared.';};
+      const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>overlay.remove();head.append(clear,close);
+      const list=U.mk('div',{style:{overflow:'auto',padding:'10px',display:'flex',flexDirection:'column',gap:'6px'}});
+      if(!data.history.length)list.appendChild(U.mk('div',{text:'No browsing history yet.',style:{padding:'18px',color:'var(--fg-2)'}}));
+      data.history.slice().reverse().forEach(item=>{
+        const row=U.mk('div',{style:{display:'flex',alignItems:'center',gap:'8px',padding:'8px',border:'1px solid var(--border)',borderRadius:'8px'}});
+        const info=U.mk('div',{style:{flex:'1',minWidth:'0'}});
+        info.append(U.mk('div',{text:item.title||item.url,style:{fontSize:'12px',fontWeight:'600',overflowWrap:'anywhere'}}),U.mk('div',{text:item.url,style:{fontSize:'10px',color:'var(--fg-2)',overflowWrap:'anywhere',marginTop:'3px'}}));
+        const open=U.mk('button',{class:'btn',text:'Open'});open.onclick=()=>{address.value=item.url;overlay.remove();if(/^https:\/\/www\.google\.com\/search\?q=/i.test(item.url))openExternal(item.url);else visit(item.url,false);};
+        row.append(info,open);list.appendChild(row);
+      });
+      panel.append(head,list);overlay.appendChild(panel);document.body.appendChild(overlay);
+    }
+    historyBtn.onclick=showHistory;
     function visit(raw,quickOpen){
       let url;try{url=normalized(raw);}catch(e){status.textContent=e.message;return;}
       if(!url)return;
