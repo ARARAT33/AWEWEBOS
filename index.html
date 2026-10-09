@@ -2984,7 +2984,7 @@ Apps.registerBuiltin('browser', {
       if(!/^[a-z][a-z0-9+.-]*:/i.test(value))value='https://'+value;
       try{const u=new URL(value);if(!['http:','https:'].includes(u.protocol))throw new Error('Only HTTP and HTTPS websites are supported.');return u.href;}catch(e){throw new Error('Enter a valid website address or search phrase.');}
     }
-    function openExternal(url){const w=window.open(url,'_blank','noopener,noreferrer');if(!w){status.textContent='Popup blocked. Allow popups for AWEWEBOS, then try again.';return false;}return true;}
+    function openExternal(url){const w=window.open(url,'_blank');if(!w){status.textContent='Popup blocked. Allow popups for AWEWEBOS, then try again.';return false;}try{w.opener=null;}catch(e){}return true;}
     function renderSaved(){
       quick.innerHTML='';links.forEach(item=>{const b=U.mk('button',{class:'btn',text:item.name});b.style.cssText='font-size:11px;padding:6px 10px';b.onclick=()=>{address.value=item.url;visit(item.url,true);};quick.appendChild(b);});
       saved.innerHTML='';
