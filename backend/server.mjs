@@ -15,7 +15,7 @@ const MAX_BYTES=32*1024*1024,MAX_PEERS=24;
 let config;
 const CORS={'access-control-allow-origin':'*','access-control-allow-methods':'GET,POST,DELETE,OPTIONS','access-control-allow-headers':'content-type,authorization','access-control-max-age':'600','x-content-type-options':'nosniff','referrer-policy':'no-referrer'};
 function json(res,status,value,extra={}){const b=Buffer.from(JSON.stringify(value));res.writeHead(status,{'content-type':'application/json; charset=utf-8','content-length':b.length,'cache-control':'no-store',...extra});res.end(b);}
-function safeId(s){return typeof s==='string'&&/^AWE-PUB-[a-f0-9]{24}$/.test(s);}
+function safeId(s){return typeof s==='string'&&/^AWE-(PUB|APP|FID)-[a-f0-9]{24}$/.test(s);}
 function cleanText(s,max){return String(s??'').replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,max);}
 function safeFilename(s){const n=path.basename(String(s||'download.bin')).replace(/[^\p{L}\p{N}._ -]/gu,'_').slice(0,120);return n&&n!=='.'&&n!=='..'?n:'download.bin';}
 async function readJson(file,fallback){try{return JSON.parse(await fs.readFile(file,'utf8'));}catch{return fallback;}}
@@ -38,7 +38,7 @@ async function route(req,res){
  if(req.method==='GET'&&p==='/api/search'){
   const q=cleanText(url.searchParams.get('q'),160),kind=cleanText(url.searchParams.get('kind')||'all',16);
   const local=await searchLocal(q,kind),peers=await peerList();
-  const remote=await Promise.all(peers.map(async peer=>{try{const base=peer.url.replace(/\/+$/,'');const resp=await fetch(base+'/api/search?q='+encodeURIComponent(q)+'&kind='+encodeURIComponent(kind),{signal:AbortSignal.timeout(1800),headers:{accept:'application/json'}});if(!resp.ok)return [];const data=await resp.json();return (Array.isArray(data.results)?data.results:[]).slice(0,20).map(x=>({...x,local:false,peer:base}));}catch{return [];}}));
+  const remote=await Promise.all(peers.map(async peer=>{try{const base=peer.url.replace(/\/+$/,'');const resp=await fetch(base+'/api/search?q='+encodeURIComponent(q)+'&kind='+encodeURIComponent(kind),{signal:AbortSignal.timeout(1800),headers:{accept:'application/json'}});if(!resp.ok)return [];const data=await resp.json();return (Array.isArray(data.results)?data.results:[]).slice(0,20).map(x=>({...x,local:false,peer:x.local?base:(x.peer||base)}));}catch{return [];}}));
   const seen=new Set(local.map(x=>x.id)),results=[...local];for(const group of remote)for(const item of group)if(item&&safeId(item.id)&&!seen.has(item.id)){seen.add(item.id);results.push(item);}
   return json(res,200,{query:q,count:results.length,results:results.slice(0,100),nodeId:config.nodeId,peersQueried:peers.length});
  }
@@ -53,7 +53,7 @@ async function route(req,res){
   if(input.dataBase64.length>Math.ceil(MAX_BYTES*4/3)+8)return json(res,413,{error:'Publication exceeds 32 MiB'});
   const bytes=Buffer.from(input.dataBase64,'base64');if(!bytes.length||bytes.length>MAX_BYTES)return json(res,413,{error:'Publication must be between 1 byte and 32 MiB'});
   if(kind==='app'&&!/\.html?$/i.test(filename))return json(res,400,{error:'App publications must be HTML files'});
-  const id='AWE-PUB-'+crypto.randomBytes(12).toString('hex'),dir=path.join(ITEMS_DIR,id);await fs.mkdir(dir,{recursive:false});
+  const prefix=kind==='app'?'AWE-APP-':'AWE-FID-';const id=prefix+crypto.randomBytes(12).toString('hex'),dir=path.join(ITEMS_DIR,id);await fs.mkdir(dir,{recursive:false});
   const meta={id,title,description,kind,filename,mime:cleanText(input.mime,100)||'application/octet-stream',size:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex'),author:cleanText(input.author,100)||'unknown',publishedAt:Date.now(),version:1};
   try{await fs.writeFile(path.join(dir,'content.bin'),bytes,{flag:'wx'});await fs.writeFile(path.join(dir,'meta.json'),JSON.stringify(meta,null,2),{flag:'wx'});}catch(e){await fs.rm(dir,{recursive:true,force:true});throw e;}
   return json(res,201,{ok:true,publication:meta,contentUrl:'/api/content/'+id});
