@@ -2596,6 +2596,7 @@ Apps.registerBuiltin('messenger', {
       if (voiceRecorder && voiceRecorder.state !== 'inactive') { voiceRecorder.stop(); return; }
       if (!active) { Notif.push('Voice message','Select a contact first.'); return; }
       if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { Notif.push('Voice message','Audio recording is not supported in this browser.'); return; }
+      if (!await Kernel.requestCapability('messenger','microphone','Messenger records voice messages only when you press the Voice button. The browser will also ask for microphone permission.')) { Notif.push('Voice message','Microphone capability denied in AWEWEBOS settings.'); return; }
       try {
         voiceTarget = { ...active }; voiceChunks = [];
         voiceStream = await navigator.mediaDevices.getUserMedia({audio:true});
@@ -2719,23 +2720,32 @@ Apps.registerBuiltin('runtime', {
     const cards=U.mk('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'8px'}});
     const processes=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}});
     const caps=U.mk('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'6px'}});
-    wrap.append(head,note,cards,U.mk('h3',{text:'Running windows / processes',style:{fontSize:'13px'}}),processes,U.mk('h3',{text:'Browser capabilities',style:{fontSize:'13px'}}),caps);
+    const grants=U.mk('div',{style:{display:'flex',flexDirection:'column',gap:'6px'}});
+    wrap.append(head,note,cards,U.mk('h3',{text:'Running windows / processes',style:{fontSize:'13px'}}),processes,U.mk('h3',{text:'Browser capabilities',style:{fontSize:'13px'}}),caps,U.mk('h3',{text:'Granted app capabilities',style:{fontSize:'13px'}}),grants);
     body.appendChild(wrap);
     function card(label,value,sub){return U.mk('div',{style:{padding:'12px',border:'1px solid var(--border)',borderRadius:'8px'}},[U.mk('div',{text:label,style:{fontSize:'10px',color:'var(--fg-2)'}}),U.mk('div',{text:value,style:{fontSize:'17px',fontWeight:'700',margin:'4px 0',overflowWrap:'anywhere'}}),U.mk('div',{text:sub||'',style:{fontSize:'10px',color:'var(--fg-3)' }})]);}
     function capability(name,ok,detail){return U.mk('div',{style:{padding:'8px',border:'1px solid var(--border)',borderRadius:'7px',fontSize:'11px'}},[U.mk('div',{text:(ok?'● ':'○ ')+name,style:{fontWeight:'600',color:ok?'#22c55e':'var(--fg-2)'}}),U.mk('div',{text:detail,style:{fontSize:'10px',color:'var(--fg-2)',marginTop:'3px'}})]);}
     async function render(){
-      cards.innerHTML='';processes.innerHTML='';caps.innerHTML='';
-      const wins=WM.list(),apps=Apps.list();
-      cards.append(card('Open windows',String(wins.length),'Live window manager count'),card('Available apps',String(apps.length),'Built-in and installed'),card('Runtime',navigator.userAgentData?.platform||navigator.platform||'Browser','Sandboxed web runtime'),card('Workspace',FS.root?.name||'Not connected','User-selected folder'));
-      for(const w of wins){
-        const appId=w.opts?.appId||'window',title=w.opts?.title||w.title||appId;
+      cards.innerHTML='';processes.innerHTML='';caps.innerHTML='';grants.innerHTML='';
+      const wins=WM.list(),apps=Apps.list(),procs=Kernel.listProcesses();
+      cards.append(card('Running processes',String(procs.length),'Kernel process registry'),card('Available apps',String(apps.length),'Built-in and installed'),card('Runtime',navigator.userAgentData?.platform||navigator.platform||'Browser','Sandboxed web runtime'),card('Workspace',FS.root?.name||'Not connected','User-selected folder'));
+      for(const proc of procs){
+        const w=wins.find(x=>x.id===proc.windowId);if(!w)continue;
         const row=U.mk('div',{style:{display:'flex',gap:'8px',alignItems:'center',padding:'9px',border:'1px solid var(--border)',borderRadius:'7px',flexWrap:'wrap'}});
-        row.append(U.mk('div',{text:w.opts?.icon||'▣'}),U.mk('div',{text:title+' · '+appId,style:{flex:'1',minWidth:'120px',overflowWrap:'anywhere'}}));
+        row.append(U.mk('div',{text:w.opts?.icon||'▣'}),U.mk('div',{text:proc.title+' · '+proc.appId+' · '+proc.pid,style:{flex:'1',minWidth:'120px',overflowWrap:'anywhere'}}),U.mk('div',{text:Math.floor(proc.uptimeMs/1000)+'s',style:{fontSize:'10px',color:'var(--fg-2)'}}));
         const focus=U.mk('button',{class:'btn',text:'Focus'});focus.onclick=()=>WM.focus(w.id);
-        const close=U.mk('button',{class:'btn danger',text:'Close'});close.onclick=()=>{WM.close(w.id);render();};
+        const close=U.mk('button',{class:'btn danger',text:'Stop'});close.onclick=()=>{WM.close(w.id);render();};
         row.append(focus,close);processes.appendChild(row);
       }
-      if(!wins.length)processes.appendChild(U.mk('div',{text:'No running application windows.',style:{padding:'10px',color:'var(--fg-2)'}}));
+      if(!procs.length)processes.appendChild(U.mk('div',{text:'No running application processes.',style:{padding:'10px',color:'var(--fg-2)'}}));
+      const saved=Kernel.config.settings.capabilities||{};let count=0;
+      for(const [appId,items] of Object.entries(saved))for(const capability of (Array.isArray(items)?items:[])){
+        count++;const row=U.mk('div',{style:{display:'flex',gap:'8px',alignItems:'center',padding:'8px',border:'1px solid var(--border)',borderRadius:'7px',flexWrap:'wrap'}});
+        row.append(U.mk('div',{text:appId+' → '+capability,style:{flex:'1',fontSize:'11px'}}));
+        const revoke=U.mk('button',{class:'btn danger',text:'Revoke'});revoke.onclick=async()=>{await Kernel.revokeCapability(appId,capability);render();};
+        row.appendChild(revoke);grants.appendChild(row);
+      }
+      if(!count)grants.appendChild(U.mk('div',{text:'No extra app capabilities have been granted.',style:{fontSize:'11px',color:'var(--fg-2)',padding:'8px'}}));
       let estimate=null;try{estimate=await navigator.storage?.estimate?.();}catch(e){}
       caps.append(capability('Local folder access',Boolean(FS.root),'Requires user-granted File System Access API permission.'),capability('Persistent browser storage',Boolean(navigator.storage?.persist),'Browser may still manage storage; filesystem workspace is separate.'),capability('Service worker',Boolean(navigator.serviceWorker),'Offline shell support, not a privileged background daemon.'),capability('WebRTC',Boolean(window.RTCPeerConnection),'Available for peer transport; peer discovery/signaling must be configured.'),capability('Microphone',Boolean(navigator.mediaDevices?.getUserMedia),'Requires HTTPS or localhost and user permission.'),capability('Storage estimate',Boolean(estimate),estimate?Math.round((estimate.usage||0)/1048576)+' MB used of about '+Math.round((estimate.quota||0)/1048576)+' MB browser quota':'Not exposed by this browser.'));
     }
