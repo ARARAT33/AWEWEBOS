@@ -13,7 +13,7 @@ AWEWEBOS is a **local-first browser-based Web OS environment** with a desktop sh
 
 A separate optional Node.js backend stores published files and HTML apps on the user's own device. It persists while that computer's disk and backend process remain available and provides a search API that can query manually configured peer nodes without a central registry.
 
-Requirements: Node.js 22+. Start it from the repository root:
+Requirements: Node.js 22+. On Windows, double-click backend/start-windows.bat. Or start it from a terminal:
 
     cd backend
     npm start
