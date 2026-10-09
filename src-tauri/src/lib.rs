@@ -4,7 +4,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             open_browser_site,
             set_browser_site_bounds,
-            close_browser_site
+            close_browser_site,
+            control_browser_site
         ])
         .run(tauri::generate_context!())
         .expect("AWEWEBOS failed to start");
@@ -115,4 +116,26 @@ async fn close_browser_site(app: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn close_browser_site(_app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
+}
+
+#[cfg(desktop)]
+#[tauri::command]
+async fn control_browser_site(app: tauri::AppHandle, action: String) -> Result<(), String> {
+    use tauri::Manager;
+    let view = app
+        .get_webview("awewebos-browser-site")
+        .ok_or_else(|| "Native browser view is not open".to_string())?;
+    let script = match action.as_str() {
+        "back" => "history.back()",
+        "forward" => "history.forward()",
+        "reload" => "location.reload()",
+        _ => return Err("Unsupported browser action".into()),
+    };
+    view.eval(script).map_err(|e| e.to_string())
+}
+
+#[cfg(not(desktop))]
+#[tauri::command]
+async fn control_browser_site(_app: tauri::AppHandle, _action: String) -> Result<(), String> {
+    Err("Native embedded browser is available in the desktop build only".into())
 }
