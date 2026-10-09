@@ -2822,12 +2822,12 @@ Apps.registerBuiltin('publish', {
                 const modal=U.mk('div',{style:{position:'fixed',inset:'0',zIndex:'99999',background:'rgba(0,0,0,.8)',display:'grid',placeItems:'center',padding:'10px'}});
                 const panel=U.mk('div',{style:{width:'min(960px,100%)',height:'min(760px,95%)',background:'var(--bg-2)',border:'1px solid var(--border-strong)',borderRadius:'10px',display:'flex',flexDirection:'column',overflow:'hidden'}});
                 const bar=U.mk('div',{style:{padding:'8px',display:'flex',alignItems:'center',gap:'8px'}},[U.mk('strong',{text:item.title,style:{flex:'1'}})]);
-                const save=U.mk('button',{class:'btn',text:'Save HTML'});save.onclick=()=>{const blob=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=item.filename||'app.html';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);};
+                const save=U.mk('button',{class:'btn',text:'Save HTML'});save.onclick=async()=>{const filename=String(item.filename||'app.html').replace(/[\\/:*?"<>|]/g,'_');try{await VFS.write('/home/user/Downloads/'+filename,new Blob([html],{type:'text/html'}));Notif.push('App saved',filename+' saved in Files → Downloads.');}catch(e){const blob=new Blob([html],{type:'text/html'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);}};
                 const close=U.mk('button',{class:'btn',text:'Close'});close.onclick=()=>modal.remove();bar.append(save,close);
                 const frame=U.mk('iframe',{title:'Untrusted published app preview',sandbox:'allow-scripts allow-forms allow-popups',style:{border:'0',width:'100%',flex:'1',background:'#fff'}});frame.srcdoc=html;panel.append(bar,frame);modal.appendChild(panel);document.body.appendChild(modal);
               }else{
                 const response=await fetch(origin+'/api/content/'+encodeURIComponent(item.id),{signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Download failed: HTTP '+response.status);
-                const blob=await response.blob(),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=item.filename||item.title;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+                const blob=await response.blob();const filename=String(item.filename||item.title||'download.bin').replace(/[\\/:*?"<>|]/g,'_');try{await VFS.write('/home/user/Downloads/'+filename,blob);Notif.push('Download complete',filename+' saved in Files → Downloads.');}catch(saveError){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);Notif.push('Download started','Browser download fallback: '+saveError.message,3500);}
               }
             }catch(e){Notif.push('Open failed',e.message,3500);}
           };
