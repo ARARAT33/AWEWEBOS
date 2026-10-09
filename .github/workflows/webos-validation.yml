@@ -39,5 +39,9 @@ jobs:
           for file in /tmp/awewebos-inline/*.js; do
             node --check "$file"
           done
+      - name: Check local node backend syntax
+        run: node --check backend/server.mjs && node --check backend/test.mjs
+      - name: Test local publish node API and persistence
+        run: node backend/test.mjs
       - name: Check patch whitespace
         run: git diff --check
