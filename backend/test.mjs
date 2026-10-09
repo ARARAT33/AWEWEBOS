@@ -8,9 +8,14 @@ import { fileURLToPath } from 'node:url';
 
 const serverFile=fileURLToPath(new URL('./server.mjs',import.meta.url));
 const dataDir=await mkdtemp(path.join(tmpdir(),'awewebos-node-test-'));
+const peerDir=await mkdtemp(path.join(tmpdir(),'awewebos-peer-test-'));
 async function freePort(){return await new Promise((resolve,reject)=>{const s=net.createServer();s.once('error',reject);s.listen(0,'127.0.0.1',()=>{const p=s.address().port;s.close(e=>e?reject(e):resolve(p));});});}
 const port=await freePort(),base='http://127.0.0.1:'+port;
-let child,logs='';
+let child,logs='',peerChild,peerLogs='';
+const peerPort=await freePort(),peerBase='http://127.0.0.1:'+peerPort;
+function startPeer(){peerLogs='';peerChild=spawn(process.execPath,[serverFile],{env:{...process.env,AWE_BIND:'127.0.0.1',AWE_PORT:String(peerPort),AWE_DATA_DIR:peerDir},stdio:['ignore','pipe','pipe']});peerChild.stdout.on('data',d=>peerLogs+=d.toString());peerChild.stderr.on('data',d=>peerLogs+=d.toString());}
+async function stopPeer(){if(!peerChild)return;const c=peerChild;peerChild=null;if(c.exitCode!==null)return;await new Promise(resolve=>{const timer=setTimeout(()=>{c.kill('SIGKILL');resolve();},3000);c.once('exit',()=>{clearTimeout(timer);resolve();});c.kill('SIGTERM');});}
+async function readyPeer(){for(let i=0;i<80;i++){if(peerChild?.exitCode!==null)throw new Error('Peer node exited early: '+peerLogs);try{const r=await fetch(peerBase+'/api/health');if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw new Error('Peer node did not start: '+peerLogs);}
 function start(){logs='';child=spawn(process.execPath,[serverFile],{env:{...process.env,AWE_BIND:'127.0.0.1',AWE_PORT:String(port),AWE_DATA_DIR:dataDir},stdio:['ignore','pipe','pipe']});child.stdout.on('data',d=>logs+=d.toString());child.stderr.on('data',d=>logs+=d.toString());}
 async function stop(){if(!child)return;const c=child;child=null;if(c.exitCode!==null)return;await new Promise(resolve=>{const timer=setTimeout(()=>{c.kill('SIGKILL');resolve();},3000);c.once('exit',()=>{clearTimeout(timer);resolve();});c.kill('SIGTERM');});}
 async function ready(){for(let i=0;i<80;i++){if(child?.exitCode!==null)throw new Error('Node exited early: '+logs);try{const r=await fetch(base+'/api/health');if(r.ok)return;}catch{}await new Promise(r=>setTimeout(r,100));}throw new Error('Node did not start: '+logs);}
@@ -34,7 +39,14 @@ try{
  assert.equal(appResp.status,201);const app=await appResp.json();assert.match(app.publication.id,/^AWE-APP-[a-f0-9]{24}$/);
  await stop();start();await ready();
  const afterRestart=await fetch(base+'/api/search?q=searchable+document');assert.ok((await afterRestart.json()).results.some(x=>x.id===first.publication.id),'publication persists after backend restart');
+ startPeer();await readyPeer();for(let i=0;i<30&&!/Publish token \(keep private\): [a-f0-9]+/.test(peerLogs);i++)await new Promise(r=>setTimeout(r,20));
+ const peerTokenMatch=peerLogs.match(/Publish token \(keep private\): ([a-f0-9]+)/);assert.ok(peerTokenMatch,'peer node has a separate publish token');
+ const addPeer=await fetch(base+'/api/peers',{method:'POST',headers,body:JSON.stringify({url:peerBase})});assert.equal(addPeer.status,200,'peer can be added to the local node');
+ const peerBytes=Buffer.from('<!doctype html><title>federated app</title>');
+ const peerPublish=await fetch(peerBase+'/api/publish',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+peerTokenMatch[1]},body:JSON.stringify({title:'Federated peer app',description:'remote federated peer test',kind:'app',filename:'peer-app.html',mime:'text/html',dataBase64:peerBytes.toString('base64'),author:'Peer CI'})});assert.equal(peerPublish.status,201);
+ const federated=await (await fetch(base+'/api/search?q=federated+peer+app')).json();const remote=federated.results.find(x=>x.title==='Federated peer app');assert.ok(remote,'search on node A discovers publication on configured node B');assert.equal(remote.local,false);assert.equal(remote.peer,peerBase,'result contains the peer that actually hosts it');
+ const peerDownload=await fetch(remote.peer+'/api/content/'+remote.id);assert.equal(peerDownload.status,200);assert.deepEqual(Buffer.from(await peerDownload.arrayBuffer()),peerBytes,'federated result downloads from the hosting peer');
  const deleted=await fetch(base+'/api/item/'+first.publication.id,{method:'DELETE',headers});assert.equal(deleted.status,200);
  const afterDelete=await fetch(base+'/api/item/'+first.publication.id);assert.equal(afterDelete.status,404);
- console.log('PASS: health, token auth, FID/AppID IDs, publish, search, download, persistence across restart, and delete.');
-} catch(e){console.error(e);console.error('Backend output:\n'+logs);process.exitCode=1;} finally {await stop();await rm(dataDir,{recursive:true,force:true});}
+ console.log('PASS: health, token auth, FID/AppID IDs, publish, local search, download, persistence across restart, peer federation, remote download, and delete.');
+} catch(e){console.error(e);console.error('Backend output:\n'+logs);process.exitCode=1;} finally {await stop();await stopPeer();await rm(dataDir,{recursive:true,force:true});await rm(peerDir,{recursive:true,force:true});}
